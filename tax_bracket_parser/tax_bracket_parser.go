@@ -15,11 +15,6 @@ const (
 	floatBitSize = 64
 )
 
-type TaxBracket struct {
-	Floor float64
-	Rate float64
-}
-
 /*
 Reads a CSV filepath with a history of tax brackets and gets the latest one
  */
