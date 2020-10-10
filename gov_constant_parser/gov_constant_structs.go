@@ -19,6 +19,10 @@ type FICAConstants struct {
 	MedicareBaseRate float64
 	MedicareSurtaxFloor float64
 	MedicareSurtaxExtraRate float64
+
+	// aka Unearned Income Medicare Contribution Surtax
+	NetInvestmentIncomeTaxRate float64
+	NetInvestmentIncomeThreshold float64
 }
 
 type ForeignConstants struct {

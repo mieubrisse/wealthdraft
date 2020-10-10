@@ -39,6 +39,8 @@
     medicareBaseRate: 0.0145
     medicareSurtaxFloor: 200000
     medicareSurtaxExtraRate: 0.009
+    netInvestmentIncomeTaxRate: 0.038
+    netInvestmentIncomeThreshold: 200000
 
   foreign:
     foreignEarnedIncomeExemption: 107600

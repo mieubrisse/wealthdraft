@@ -6,10 +6,6 @@ import (
 	"io/ioutil"
 )
 
-type YearlyGovConstants struct {
-
-}
-
 /*
 Parses a YAML file containing scenario information into scenario objects which can be used when making projections
 */

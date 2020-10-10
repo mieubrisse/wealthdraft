@@ -19,6 +19,22 @@ const (
 	sumLine = "----------------------------------------------"
 )
 
+type allIncome struct {
+	earnedIncome float64
+	otherUnearnedIncome float64
+	stcg float64
+	ltcg float64
+}
+
+type allTaxes struct {
+	federalIncome float64
+	socialSecurity float64
+	medicare float64
+	niit float64
+	stcg float64
+	ltcg float64
+}
+
 func main() {
 	// Parse flags
 	scenariosFilepathArg := flag.String(
@@ -51,7 +67,7 @@ func main() {
 	exitWithErrorIfExists(err, "An error occurred parsing the gov constants file")
 
 	latestYear := 0
-	for year, constants := range(allGovConstants) {
+	for year, _ := range(allGovConstants) {
 		if year > latestYear {
 			latestYear = year
 		}
@@ -78,53 +94,38 @@ func exitWithErrorIfExists(err error, humanReadableText string) {
 	os.Exit(failureExitCode)
 }
 
+/*
+NOTE: This does NOT calculate in the same was as the 1040, which is very confusing (lots of subtract and adding back,
+	etc. Instead, this tries to provide a more straightforward approach that gets to the same results
+ */
 func calculateScenario(scenario scenario_parser.Scenario, govConstants gov_constant_parser.GovConstantsForYear) error {
 	if err := scenario_validator.ValidateScenario(scenario, govConstants); err != nil {
 		return stacktrace.Propagate(err, "An error occurred during scenario validation")
 	}
 
-	var earnedIncome float64 = 0
-	for _, earnedIncomePart := range(scenario.EarnedIncome) {
-		earnedIncome += earnedIncomePart.Amount
-	}
-	logrus.Info("Earned Income: %v", earnedIncome)
+	grossIncomeStreams := sumIncomeStreams(scenario)
 
 	// IRA contributions MUST be done with earned income!!
 	// See: https://www.investopedia.com/retirement/ira-contribution-limits/
 	regIraContrib := scenario.ContribIRA.Regular * govConstants.Retirement.IraContribLimit
 	rothIraContrib := scenario.ContribIRA.Roth * govConstants.Retirement.IraContribLimit
 	totalIraContrib := regIraContrib + rothIraContrib
-	if earnedIncome < totalIraContrib {
+	if grossIncomeStreams.earnedIncome < totalIraContrib {
 		return stacktrace.NewError(
 			"IRA contributions are limited to earned income, but earned income %v is < total IRA contrib %v",
-			earnedIncome,
+			grossIncomeStreams.earnedIncome,
 			totalIraContrib)
 	}
 
-	// TODO add interest, dividends, STCG, and LTCG
-	var totalUnearnedIncome float64 = 0
-	logrus.Info("Unearned Income: %v", totalUnearnedIncome)
-
+	logrus.Infof("Earned Income: %v", grossIncomeStreams.earnedIncome)
+	logrus.Infof("Longterm Cap Gains: %v", grossIncomeStreams.ltcg)
+	logrus.Infof("Shortterm Cap Gains: %v", grossIncomeStreams.stcg)
+	logrus.Infof("Other Unearned Income: %v", grossIncomeStreams.otherUnearnedIncome)
 	logrus.Info(sumLine)
-	grossIncome := earnedIncome + totalUnearnedIncome
-	logrus.Info("Gross Income: %v", grossIncome)
+	grossIncome := grossIncomeStreams.earnedIncome + grossIncomeStreams.ltcg + grossIncomeStreams.stcg + grossIncomeStreams.otherUnearnedIncome
+	logrus.Infof("Gross Income: %v", grossIncome)
 
-	// regular 401k contribs don't show up at all in "wages, salaries, and tips"
 	reg401kContrib := scenario.Contrib401k.Regular * govConstants.Retirement.Personal401kContribLimit
-	logrus.Info("Trad 401k Deduction: -%v", reg401kContrib)
-
-	logrus.Info(sumLine)
-	grossIncomeLess401k := grossIncome - reg401kContrib
-	logrus.Info("IRS Gross Income: %v (less 401k deductions)", grossIncomeLess401k)
-
-	// TODO add box 2, tax-exempt interest
-	// TODO add box 3, qualified & ordinary dividends
-	// TODO add box 4, IRA distributions (it was in my 2019 tax return)
-
-	// TODO incorporate IRA deductible limit (if AGI is < 65k)
-
-
-	// TODO implement HSA deduction here
 
 	// MAGI (which DOESN'T show up on the 1040) is sometimes defined as "AGI, with certain deductions like
 	// IRA contrib added back in". If we sue this way, we get a circular dependency: you need IRA contrib to calculate
@@ -132,25 +133,7 @@ func calculateScenario(scenario scenario_parser.Scenario, govConstants gov_const
 	//  https://money.stackexchange.com/questions/94585/circular-dependency-involving-ira-deduction
 	// Instead, we do things in the logical order and find MAGI *first*
 	// See also : https://www.investopedia.com/terms/m/magi.asp
-	// TODO Implement HSA deduction here, AND with AGI calculation
-	logrus.Info(sumLine)
-	modifiedAdjustedGrossIncome := grossIncomeLess401k
-	logrus.Info("MAGI: %v", modifiedAdjustedGrossIncome)
-
-
-
-
-
-	// NOTE NOTE NOTE: all the below is for AGI calculation, which I'm NOT sure is that useful
-
-	var adjustmentsForAGI float64 = 0
-	excludedFEI := math.Min(
-		govConstants.Foreign.ForeignEarnedIncomeExemption,
-		scenario.FractionForeignEarnedIncome * earnedIncome)
-	if excludedFEI > 0 {
-		logrus.Info("FEI Exclusion: -%v", excludedFEI)
-	}
-	adjustmentsForAGI -= excludedFEI
+	modifiedAdjustedGrossIncome := grossIncome - reg401kContrib // TODO implement HSA deduction here
 
 	// Figure out how much the trad IRA deduction reduces by (if anything)
 	phaseoutRangeFill := math.Max(0, modifiedAdjustedGrossIncome - govConstants.Retirement.TradIraDeductiblePhaseoutFloor)
@@ -158,43 +141,135 @@ func calculateScenario(scenario scenario_parser.Scenario, govConstants gov_const
 	phaseoutRangeFillPct := math.Min(1, phaseoutRangeFill / phaseoutRangeWidth)
 	deductionMultiplier := 1 / phaseoutRangeFillPct
 	tradIraDeduction := deductionMultiplier * regIraContrib
-	if tradIraDeduction > 0 {
-		logrus.Info("Trad IRA Deduction: -%v", tradIraDeduction)
-	}
-	adjustmentsForAGI -= tradIraDeduction
 
-	// TODO add interest deductions, and other things that only AGI (and not MAGI) receives
+	totalDeductions := reg401kContrib + tradIraDeduction + govConstants.StandardDeduction
+	taxableIncomeStreams := applyDeductions(grossIncomeStreams, totalDeductions)
+	taxes := calculateTaxes(taxableIncomeStreams, scenario.FractionForeignEarnedIncome, govConstants)
 
+	logrus.Info("")
+	logrus.Infof("Fed Income Tax: %v", taxes.federalIncome)
+	logrus.Infof("Social Security Tax: %v", taxes.socialSecurity)
+	logrus.Infof("Medicare Tax: %v", taxes.medicare)
+	logrus.Infof("NIIT: %v", taxes.niit)
+	logrus.Infof("STCG Tax: %v", taxes.stcg)
+	logrus.Infof("LTCG Tax: %v", taxes.ltcg)
 	logrus.Info(sumLine)
-	adjustedGrossIncome := modifiedAdjustedGrossIncome + adjustmentsForAGI
-	logrus.Info("AGI: %v", adjustedGrossIncome)
-
-	var adjustmentsForTaxableIncome float64 = 0
-
-	logrus.Info("Standard Deduction: -%v", govConstants.StandardDeduction)
-	adjustmentsForTaxableIncome -= govConstants.StandardDeduction
-
-	logrus.Info(sumLine)
-	taxableIncome := adjustedGrossIncome + adjustmentsForTaxableIncome
-	logrus.Info("Taxable Income: %v", taxableIncome)
-
-
-
-
-
-
-	// TODO reduce by deductions, ordinary income first
-	// Deductions apply to ordinary income first, THEN capital gains
-	// See: https://www.kitces.com/blog/long-term-capital-gains-bump-zone-higher-marginal-tax-rate-phase-in-0-rate
-
-
-
-
-	foreignEarnedIncome -
-
-
-	excludedForeignEarnedIncome
-
-	federalIncomeTax := progressive_tax_calculator.Calculate(govConstants.FederalIncomeBrackets, earnedIncome)
-	logrus.Info("Federal Income Tax: %v", federalIncomeTax)
+	totalTax := taxes.federalIncome + taxes.socialSecurity + taxes.medicare + taxes.niit + taxes.stcg + taxes.ltcg
+	logrus.Infof("Total Tax: %v", totalTax)
+	marginalTaxRate := totalTax / grossIncome
+	logrus.Infof("Marginal Tax Rate: %v", marginalTaxRate)
 }
+
+func sumIncomeStreams(scenario scenario_parser.Scenario) allIncome {
+	var earnedIncome float64 = 0
+	for _, earnedIncomePart := range (scenario.EarnedIncome) {
+		earnedIncome += earnedIncomePart
+	}
+
+	var ltcg float64 = 0
+	for _, ltcgPart := range scenario.LongTermCapitalGains {
+		ltcg += ltcgPart
+	}
+
+	var stcg float64 = 0
+	for _, stcgPart := range scenario.ShortTermCapitalGains {
+		stcg += stcgPart
+	}
+
+	// TODO add interest & qualified/regular dividends here
+	var otherUnearnedIncome float64 = 0
+
+	return allIncome{
+		earnedIncome:        earnedIncome,
+		otherUnearnedIncome: otherUnearnedIncome,
+		stcg:                stcg,
+		ltcg:                ltcg,
+	}
+}
+
+/*
+Applies the deductions in the proper order to the given incomes
+
+Returns: The input income streams with deductions applied
+ */
+func applyDeductions(
+		income allIncome,
+		deductions float64) allIncome {
+	// Deductions get applied to earned income first, and only after to unearned income (which is good)
+	// See: https://www.kitces.com/blog/long-term-capital-gains-bump-zone-higher-marginal-tax-rate-phase-in-0-rate
+	incomesToReduceInOrder := []float64{
+		income.earnedIncome,
+		income.otherUnearnedIncome,
+		income.stcg,
+		income.ltcg,
+	}
+	resultingReducedIncomes := []float64{}
+	remainingDeduction := deductions
+	for _, incomeToReduce := range incomesToReduceInOrder {
+		if remainingDeduction > 0 {
+			amountToReduce := math.Min(remainingDeduction, incomeToReduce)
+			reducedIncome := incomeToReduce - amountToReduce
+			resultingReducedIncomes = append(resultingReducedIncomes, reducedIncome)
+			remainingDeduction -= amountToReduce
+		}
+	}
+	
+	return allIncome{
+		earnedIncome:        resultingReducedIncomes[0],
+		otherUnearnedIncome: resultingReducedIncomes[1],
+		stcg:                resultingReducedIncomes[2],
+		ltcg:                resultingReducedIncomes[3],
+	}
+}
+
+/*
+Calculates the big taxes on the input. Note that the args should be POST-DEDUCTION income!
+ */
+func calculateTaxes(income allIncome, fractionForeignEarnedIncome float64, govConstants gov_constant_parser.GovConstantsForYear) allTaxes {
+	taxableEarnedIncome := income.earnedIncome
+	taxableOtherUnearnedIncome := income.otherUnearnedIncome
+	taxableStcg := income.stcg
+	taxableLtcg := income.ltcg
+
+	// Federal income tax
+	fedIncomeTaxableIncome := taxableEarnedIncome + taxableOtherUnearnedIncome + taxableStcg
+	fedIncomeTaxBeforeFEIE := progressive_tax_calculator.Calculate(govConstants.FederalIncomeBrackets, fedIncomeTaxableIncome)
+	excludedFEI := math.Min(
+		govConstants.Foreign.ForeignEarnedIncomeExemption,
+		fractionForeignEarnedIncome * taxableEarnedIncome)
+	fedIncomeTax := fedIncomeTaxBeforeFEIE - progressive_tax_calculator.Calculate(govConstants.FederalIncomeBrackets, excludedFEI)
+	logrus.Info("Federal Income Tax: %v", fedIncomeTax)
+
+	// Social security tax
+	socialSecurityTaxableAmount := math.Min(govConstants.FICA.SocialSecurityWageCap, taxableEarnedIncome)
+	socialSecurityTax := govConstants.FICA.SocialSecurityRate * socialSecurityTaxableAmount
+	logrus.Info("Social Security Tax: %v", socialSecurityTax)
+
+	// Medicare tax
+	medicareTax := govConstants.FICA.MedicareBaseRate * taxableEarnedIncome
+	medicareSurtaxableAmount := math.Max(0, taxableEarnedIncome - govConstants.FICA.MedicareSurtaxFloor)
+	medicareTax += medicareSurtaxableAmount * govConstants.FICA.MedicareSurtaxExtraRate
+	logrus.Info("Medicare Tax: %v", medicareTax)
+
+	// Net Investment Income Tax (aka Unearned Income Medicare Contribution Surtax)
+	investmentIncome := taxableStcg + taxableLtcg + taxableOtherUnearnedIncome
+	niitTaxableAmount := math.Max(0, investmentIncome - govConstants.FICA.NetInvestmentIncomeThreshold)
+	niitTax := niitTaxableAmount * govConstants.FICA.NetInvestmentIncomeTaxRate
+	logrus.Info("NIIT: %v", niitTax)
+
+	// Capital gains
+	stcgTax := progressive_tax_calculator.Calculate(govConstants.FederalIncomeBrackets, taxableStcg)
+	logrus.Info("STCG Tax: %v", stcgTax)
+	ltcgTax := progressive_tax_calculator.Calculate(govConstants.FederalLTCGBrackets, taxableLtcg)
+	logrus.Info("LTCG Tax: %v", ltcgTax)
+
+	return allTaxes{
+		federalIncome:  fedIncomeTax,
+		socialSecurity: socialSecurityTax,
+		medicare:       medicareTax,
+		niit:           niitTax,
+		stcg:           stcgTax,
+		ltcg:           ltcgTax,
+	}
+}
+

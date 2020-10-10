@@ -6,6 +6,10 @@ test:
     regular: 1.0
     roth: 0
   earnedIncome:
-    - amount: 250000
-      note: salary
+    - 250000
   fractionForeignEarnedIncome: 1.0
+  longTermCapitalGains:
+    - 10000
+    - 15000
+  shortTermCapitalGains:
+    - 5000
