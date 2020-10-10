@@ -1,10 +1,11 @@
-- contrib401k: 
-    regularPct: 100
-    rothPct: 0
+test:
+  contrib401k: 
+    regular: 1.0
+    roth: 0
   contribIRA: 
-    regularPct: 100
-    rothPct: 0
+    regular: 1.0
+    roth: 0
   earnedIncome:
     - amount: 250000
       note: salary
-  foreignEarnedIncomePct: 100
+  fractionForeignEarnedIncome: 1.0

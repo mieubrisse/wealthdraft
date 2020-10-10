@@ -29,7 +29,8 @@ type RetirementConstants struct {
 	Personal401kContribLimit float64
 	Total401kContribLimit float64
 	IraContribLimit float64
-	TradIraContribDeductibleCeiling float64
+	TradIraDeductiblePhaseoutFloor float64
+	TradIraDeductiblePhaseoutCeiling float64
 }
 
 type GovConstantsForYear struct {

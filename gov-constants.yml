@@ -50,8 +50,8 @@
     total401kContribLimit: 57000
 
     iraContribLimit: 6000
-
-    tradIraContribDeductibleCeiling: 75000
+    tradIraDeductiblePhaseoutFloor: 65000
+    tradIraDeductiblePhaseoutCeiling: 75000
 
   # NOTE: this is for singles
   standardDeduction: 12400

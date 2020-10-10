@@ -12,33 +12,35 @@ type AnnotatedAmount struct {
 }
 
 // Struct representing classification of IRA or 401k contributions
-// The percentages are percentages OF THE YEAR'S TOTAL LIMIT
-type RegOrRothPct struct {
-	RegularPct float64
-	RothPct float64
+// The percentages are percentages OF THE YEAR'S TOTAL LIMIT, and should add up to 1.0!
+type ContributionBalance struct {
+	Regular float64
+	Roth float64
 }
 
+// TODO Switch all the values in this file to use something other than float64, which has small precision problems:
+//  See: https://github.com/shopspring/decimal
 type Scenario struct {
 	EarnedIncome []AnnotatedAmount
 
-	// What percentage of my earned income was from foreign sources
-	ForeignEarnedIncomePct float64
+	// What fraction of my earned income was from foreign sources
+	FractionForeignEarnedIncome float64
 
-	Contrib401k RegOrRothPct
+	Contrib401k ContributionBalance
 
-	ContribIRA RegOrRothPct
+	ContribIRA ContributionBalance
 }
 
 /*
 Parses a YAML file containing scenario information into scenario objects which can be used when making projections
  */
-func GetScenarios(scenariosFilepath string) ([]Scenario, error) {
+func GetScenarios(scenariosFilepath string) (map[string]Scenario, error) {
 	fileBytes, err := ioutil.ReadFile(scenariosFilepath)
 	if err != nil {
 		return nil, stacktrace.Propagate(err, "An IO error occurred reading scenarios file '%v'", scenariosFilepath)
 	}
 
-	var result []Scenario
+	var result map[string]Scenario
 	if err := yaml.Unmarshal(fileBytes, &result); err != nil {
 		return nil, stacktrace.Propagate(err, "An error occurred deserializing the scenarios file contents")
 	}

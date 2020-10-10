@@ -1,13 +1,13 @@
 package progressive_tax_calculator
 
 import (
-	"github.com/mieubrisse/financial-predictor/tax_bracket_parser"
+	"github.com/mieubrisse/financial-predictor/gov_constant_parser"
 	"github.com/sirupsen/logrus"
 	"math"
 	"sort"
 )
 
-func Calculate(brackets []tax_bracket_parser.TaxBracket, amount float64) float64 {
+func Calculate(brackets []gov_constant_parser.TaxBracket, amount float64) float64 {
 	// Sort the brackets in REVERSE order
 	comesBeforeFunc := func(firstElemIdx int, secondElemIdx int) bool {
 		return brackets[firstElemIdx].Floor > brackets[secondElemIdx].Floor
