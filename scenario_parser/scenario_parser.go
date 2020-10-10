@@ -9,25 +9,25 @@ import (
 // Struct representing classification of IRA or 401k contributions
 // The percentages are percentages OF THE YEAR'S TOTAL LIMIT, and should add up to 1.0!
 type ContributionBalance struct {
-	Regular float64
-	Roth float64
+	Regular float64	`yaml:"regular"`
+	Roth float64	`yaml:"roth"`
 }
 
 // TODO Switch all the values in this file to use something other than float64, which has small precision problems:
 //  See: https://github.com/shopspring/decimal
 type Scenario struct {
-	Contrib401k ContributionBalance
+	Contrib401k ContributionBalance `yaml:"contrib401k""`
 
-	ContribIRA ContributionBalance
+	ContribIRA ContributionBalance	`yaml:"contribIRA"`
 
-	EarnedIncome []float64
+	EarnedIncome []float64	`yaml:"earnedIncome"`
 
 	// What fraction of my earned income was from foreign sources
-	FractionForeignEarnedIncome float64
+	FractionForeignEarnedIncome float64	`yaml:"fractionForeignEarnedIncome"`
 
-	LongTermCapitalGains []float64
+	LongTermCapitalGains []float64	`yaml:"longTermCapitalGains"`
 
-	ShortTermCapitalGains []float64
+	ShortTermCapitalGains []float64	`yaml:"shortTermCapitalGains"`
 }
 
 /*
@@ -40,7 +40,7 @@ func GetScenarios(scenariosFilepath string) (map[string]Scenario, error) {
 	}
 
 	var result map[string]Scenario
-	if err := yaml.Unmarshal(fileBytes, &result); err != nil {
+	if err := yaml.UnmarshalStrict(fileBytes, &result); err != nil {
 		return nil, stacktrace.Propagate(err, "An error occurred deserializing the scenarios file contents")
 	}
 	return result, nil

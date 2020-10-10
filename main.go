@@ -80,6 +80,7 @@ func main() {
 
 	for idx, scenario := range(scenarios) {
 		logrus.Infof("================ Scenario %v ===============", idx)
+		logrus.Debugf("Scenario: %+v", scenario)
 		calculateScenario(scenario, latestConstants)
 	}
 }
@@ -158,6 +159,8 @@ func calculateScenario(scenario scenario_parser.Scenario, govConstants gov_const
 	logrus.Infof("Total Tax: %v", totalTax)
 	marginalTaxRate := totalTax / grossIncome
 	logrus.Infof("Marginal Tax Rate: %v", marginalTaxRate)
+
+	return nil
 }
 
 func sumIncomeStreams(scenario scenario_parser.Scenario) allIncome {
@@ -206,12 +209,13 @@ func applyDeductions(
 	resultingReducedIncomes := []float64{}
 	remainingDeduction := deductions
 	for _, incomeToReduce := range incomesToReduceInOrder {
+		resultingIncome := incomeToReduce
 		if remainingDeduction > 0 {
 			amountToReduce := math.Min(remainingDeduction, incomeToReduce)
-			reducedIncome := incomeToReduce - amountToReduce
-			resultingReducedIncomes = append(resultingReducedIncomes, reducedIncome)
+			resultingIncome = incomeToReduce - amountToReduce
 			remainingDeduction -= amountToReduce
 		}
+		resultingReducedIncomes = append(resultingReducedIncomes, resultingIncome)
 	}
 	
 	return allIncome{
@@ -238,30 +242,24 @@ func calculateTaxes(income allIncome, fractionForeignEarnedIncome float64, govCo
 		govConstants.Foreign.ForeignEarnedIncomeExemption,
 		fractionForeignEarnedIncome * taxableEarnedIncome)
 	fedIncomeTax := fedIncomeTaxBeforeFEIE - progressive_tax_calculator.Calculate(govConstants.FederalIncomeBrackets, excludedFEI)
-	logrus.Info("Federal Income Tax: %v", fedIncomeTax)
 
 	// Social security tax
 	socialSecurityTaxableAmount := math.Min(govConstants.FICA.SocialSecurityWageCap, taxableEarnedIncome)
 	socialSecurityTax := govConstants.FICA.SocialSecurityRate * socialSecurityTaxableAmount
-	logrus.Info("Social Security Tax: %v", socialSecurityTax)
 
 	// Medicare tax
 	medicareTax := govConstants.FICA.MedicareBaseRate * taxableEarnedIncome
 	medicareSurtaxableAmount := math.Max(0, taxableEarnedIncome - govConstants.FICA.MedicareSurtaxFloor)
 	medicareTax += medicareSurtaxableAmount * govConstants.FICA.MedicareSurtaxExtraRate
-	logrus.Info("Medicare Tax: %v", medicareTax)
 
 	// Net Investment Income Tax (aka Unearned Income Medicare Contribution Surtax)
 	investmentIncome := taxableStcg + taxableLtcg + taxableOtherUnearnedIncome
 	niitTaxableAmount := math.Max(0, investmentIncome - govConstants.FICA.NetInvestmentIncomeThreshold)
 	niitTax := niitTaxableAmount * govConstants.FICA.NetInvestmentIncomeTaxRate
-	logrus.Info("NIIT: %v", niitTax)
 
 	// Capital gains
 	stcgTax := progressive_tax_calculator.Calculate(govConstants.FederalIncomeBrackets, taxableStcg)
-	logrus.Info("STCG Tax: %v", stcgTax)
 	ltcgTax := progressive_tax_calculator.Calculate(govConstants.FederalLTCGBrackets, taxableLtcg)
-	logrus.Info("LTCG Tax: %v", ltcgTax)
 
 	return allTaxes{
 		federalIncome:  fedIncomeTax,

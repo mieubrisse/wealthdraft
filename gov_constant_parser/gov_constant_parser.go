@@ -16,7 +16,7 @@ func GetGovConstants(govConstantsFilepath string) (map[int]GovConstantsForYear, 
 	}
 
 	var result map[int]GovConstantsForYear
-	if err := yaml.Unmarshal(fileBytes, &result); err != nil {
+	if err := yaml.UnmarshalStrict(fileBytes, &result); err != nil {
 		return nil, stacktrace.Propagate(err, "An error occurred deserializing the gov constants file contents")
 	}
 

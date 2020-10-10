@@ -1,40 +1,40 @@
 package gov_constant_parser
 
 type TaxBracket struct {
-	Floor float64
-	Rate float64
+	Floor float64	`yaml:"floor"`
+	Rate float64	`yaml:"rate"`
 }
 
 type AMTConstants struct {
-	Exemption float64
-	ExemptionPhaseoutFloor float64
-	ExemptionPhaseoutRate float64
-	LowEarnerRate float64
-	HighEarnerRate float64
+	Exemption float64	`yaml:"exemption"`
+	ExemptionPhaseoutFloor float64	`yaml:"exemptionPhaseoutFloor"`
+	ExemptionPhaseoutRate float64	`yaml:"exemptionPhaseoutRate"`
+	LowEarnerRate float64	`yaml:"lowEarnersRate"`
+	HighEarnerRate float64	`yaml:"highEarnersRate"`
 }
 
 type FICAConstants struct {
-	SocialSecurityWageCap float64
-	SocialSecurityRate float64
-	MedicareBaseRate float64
-	MedicareSurtaxFloor float64
-	MedicareSurtaxExtraRate float64
+	SocialSecurityWageCap float64	`yaml:"socialSecurityWageCap"`
+	SocialSecurityRate float64	`yaml:"socialSecurityRate"`
+	MedicareBaseRate float64	`yaml:"medicareBaseRate"`
+	MedicareSurtaxFloor float64	`yaml:"medicareSurtaxFloor"`
+	MedicareSurtaxExtraRate float64	`yaml:"medicareSurtaxExtraRate"`
 
 	// aka Unearned Income Medicare Contribution Surtax
-	NetInvestmentIncomeTaxRate float64
-	NetInvestmentIncomeThreshold float64
+	NetInvestmentIncomeTaxRate float64	`yaml:"netInvestmentIncomeTaxRate"`
+	NetInvestmentIncomeThreshold float64	`yaml:"netInvestmentIncomeThreshold"`
 }
 
 type ForeignConstants struct {
-	ForeignEarnedIncomeExemption float64
+	ForeignEarnedIncomeExemption float64	`yaml:"foreignEarnedIncomeExemption"`
 }
 
 type RetirementConstants struct {
-	Personal401kContribLimit float64
-	Total401kContribLimit float64
-	IraContribLimit float64
-	TradIraDeductiblePhaseoutFloor float64
-	TradIraDeductiblePhaseoutCeiling float64
+	Personal401kContribLimit float64	`yaml:"personal401kContribLimit"`
+	Total401kContribLimit float64	`yaml:"total401kContribLimit"`
+	IRAContribLimit float64	`yaml:"iraContribLimit"`
+	TradIraDeductiblePhaseoutFloor float64	`tradIRADeductiblePhaseoutFloor`
+	TradIraDeductiblePhaseoutCeiling float64	`tradIRADeductiblePhaseoutCeiling`
 }
 
 type GovConstantsForYear struct {
