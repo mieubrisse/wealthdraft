@@ -1,4 +1,5 @@
-test:
+# EXAMPLE SCENARIOS
+exampleScenario1:
   401kContrib:
     trad: 19000
     roth: 0
