@@ -1,10 +1,10 @@
 # EXAMPLE SCENARIOS
 exampleScenario1:
   401kContrib:
-    trad: 19000
+    trad: 15000
     roth: 0
   iraContrib:
-    trad: 6000
+    trad: 5000
     roth: 0
   earnedIncome:
     - 250000

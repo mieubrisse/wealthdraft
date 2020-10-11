@@ -173,7 +173,7 @@ public class Main {
                 modifiedAdjustedGrossIncome - retirementConstants.getTradIraDeductiblePhaseoutFloor());
         long phaseoutRangeWidth = retirementConstants.getTradIraDeductiblePhaseoutCeiling() - retirementConstants.getTradIraDeductiblePhaseoutFloor();
         double phaseoutRangeFillPct = Math.min(1.0, (double)phaseoutRangeFill / (double)phaseoutRangeWidth);
-        double deductionMultiplier = 1 / phaseoutRangeFillPct;
+        double deductionMultiplier = phaseoutRangeFillPct == 0 ? 1.0 : 1 / phaseoutRangeFillPct;
         long tradIraDeduction = (long) (deductionMultiplier * scenario.getIraContrib().getTrad());
 
         LOG.info("");
@@ -185,6 +185,14 @@ public class Main {
 
         long totalDeductions = reg401kContrib + tradIraDeduction + govConstants.getStandardDeduction();
         IncomeStreams taxableIncomeStreams = applyDeductions(grossIncomeStreams, totalDeductions);
+
+        LOG.info("");
+        LOG.info("                     TAXABLE INCOME");
+        LOG.info("Earned Income: {}", taxableIncomeStreams.getEarnedIncome());
+        LOG.info("Longterm Cap Gains: {}", taxableIncomeStreams.getLongTermCapGains());
+        LOG.info("Shortterm Cap Gains: {}", taxableIncomeStreams.getShortTermCapGains());
+        LOG.info("Other Unearned Income: {}", taxableIncomeStreams.getOtherUnearnedIncome());
+
 
         ProgressiveTaxCalculator fedIncomeTaxCalculator = new ProgressiveTaxCalculator(govConstants.getFederalIncomeTaxBrackets());
         Map<Tax, Double> taxes = calculateTaxes(taxableIncomeStreams, scenario.getFractionForeignEarnedIncome(), govConstants);
@@ -202,7 +210,8 @@ public class Main {
                 .reduce(0D, (l, r) -> l + r);
         LOG.info("Total Tax: {}", totalTax);
         double marginalTaxRate = totalTax / (double)grossIncome;
-        LOG.info("Marginal Tax Rate: {}", marginalTaxRate);
+        LOG.info("Effective Tax Rate: {}", marginalTaxRate);
+        LOG.info("");
 
         return null;
     }
