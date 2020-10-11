@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.govconstants.objects;
+package com.strangegrotto.wealthdraft.govconstants;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
@@ -8,8 +8,8 @@ import org.immutables.value.Value;
 @Value.Immutable
 @JsonDeserialize(as = ImmutableAmtConstants.class)
 public interface AmtConstants {
-    int getExemption();
-    int getExemptionPhaseoutFloor();
+    long getExemption();
+    long getExemptionPhaseoutFloor();
     double getExemptionPhaseoutRate();
     double getLowEarnerRate();
     double getHighEarnerRate();

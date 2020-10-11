@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.govconstants.objects;
+package com.strangegrotto.wealthdraft.govconstants;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
@@ -8,7 +8,7 @@ import org.immutables.value.Value;
 @Value.Immutable
 @JsonDeserialize(as = ImmutableTaxBracket.class)
 public interface TaxBracket {
-    int getFloor();
+    long getFloor();
     double getRate();
 
     @Value.Check

@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.govconstants.objects;
+package com.strangegrotto.wealthdraft.govconstants;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
@@ -9,10 +9,10 @@ import org.immutables.value.Value;
 @Value.Immutable
 @JsonDeserialize(as = ImmutableFicaConstants.class)
 public interface FicaConstants {
-    int getSocialSecurityWageCap();
+    long getSocialSecurityWageCap();
     double getSocialSecurityRate();
     double getMedicareBaseRate();
-    int getMedicareSurtaxFloor();
+    long getMedicareSurtaxFloor();
     double getMedicareSurtaxExtraRate();
 
     // aka Unearned Income Medicare Contribution Surtax

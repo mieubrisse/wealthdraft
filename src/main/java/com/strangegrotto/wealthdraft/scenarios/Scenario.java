@@ -15,19 +15,19 @@ public interface Scenario {
 
     TradOrRothContribs getIraContrib();
 
-    List<Integer> getEarnedIncome();
+    List<Long> getEarnedIncome();
 
     // What fraction of my earned income was from foreign sources
     double getFractionForeignEarnedIncome();
 
-    List<Integer> getLongTermCapitalGains();
+    List<Long> getLongTermCapitalGains();
 
-    List<Integer> getShortTermCapitalGains();
+    List<Long> getShortTermCapitalGains();
 
     @Value.Check
     default void check() {
         DeserializationValidator.checkIsRatio("fraction foreign earned income", getFractionForeignEarnedIncome());
-        for (Integer earnedIncomePart : getEarnedIncome()) {
+        for (Long earnedIncomePart : getEarnedIncome()) {
             Preconditions.checkState(
                     earnedIncomePart >= 0,
                     "All earned income entries must be >= 0, but found earned entry '%s'");

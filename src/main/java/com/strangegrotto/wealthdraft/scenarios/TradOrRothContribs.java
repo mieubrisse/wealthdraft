@@ -12,8 +12,8 @@ import org.immutables.value.Value;
 @JsonDeserialize(as = ImmutableTradOrRothContribs.class)
 public interface TradOrRothContribs {
 
-    int getTrad();
-    int getRoth();
+    long getTrad();
+    long getRoth();
 
     @Value.Check
     default void check() {

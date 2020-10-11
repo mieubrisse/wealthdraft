@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.govconstants.objects;
+package com.strangegrotto.wealthdraft.govconstants;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
@@ -7,11 +7,11 @@ import org.immutables.value.Value;
 @Value.Immutable
 @JsonDeserialize(as = ImmutableRetirementConstants.class)
 public interface RetirementConstants {
-    int getPersonal401kContribLimit();
-    int getTotal401kContribLimit();
-    int getIraContribLimit();
-    int getTradIraDeductiblePhaseoutFloor();
-    int getTradIraDeductiblePhaseoutCeiling();
+    long getPersonal401kContribLimit();
+    long getTotal401kContribLimit();
+    long getIraContribLimit();
+    long getTradIraDeductiblePhaseoutFloor();
+    long getTradIraDeductiblePhaseoutCeiling();
 
     @Value.Check
     default void check() {

@@ -4,11 +4,10 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 public interface IncomeStreams {
-    int getEarnedIncome();
 
-    int getOtherUnearnedIncome();
+    long getEarnedIncome();
+    long getOtherUnearnedIncome();
+    long getShortTermCapGains();
+    long getLongTermCapGains();
 
-    int getShortTermCapGains();
-
-    int getLongTermCapGains();
 }
