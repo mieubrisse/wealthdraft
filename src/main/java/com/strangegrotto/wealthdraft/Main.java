@@ -9,13 +9,12 @@ import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.strangegrotto.wealthdraft.errors.GError;
 import com.strangegrotto.wealthdraft.errors.ValueOrGError;
-import com.strangegrotto.wealthdraft.govconstants.FicaConstants;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.govconstants.RetirementConstants;
+import com.strangegrotto.wealthdraft.scenarios.IncomeStreams;
 import com.strangegrotto.wealthdraft.scenarios.Scenario;
 import com.strangegrotto.wealthdraft.tax.ProgressiveTaxCalculator;
 import com.strangegrotto.wealthdraft.tax.Tax;
@@ -143,7 +142,8 @@ public class Main {
             LOG.warn("");
         }
 
-        IncomeStreams grossIncomeStreams = sumIncomeStreams(scenario);
+        IncomeStreams grossIncomeStreams = scenario.getIncomeStreams();
+
         LOG.info("                       INCOME");
         LOG.info("Earned Income: {}", grossIncomeStreams.getEarnedIncome());
         LOG.info("Longterm Cap Gains: {}", grossIncomeStreams.getLongTermCapGains());
@@ -156,50 +156,44 @@ public class Main {
                 + grossIncomeStreams.getOtherUnearnedIncome();
         LOG.info("Gross Income: {}", grossIncome);
 
-        long reg401kContrib = scenario.get401kContrib().getTrad();
+        Map<Tax, Double> ficaTaxes = calculateFicaTaxes(grossIncomeStreams, govConstants);
 
-        // MAGI (which DOESN'T show up on the 1040) is sometimes defined as "AGI, with certain deductions like
-        // IRA contrib added back in". If we sue this way, we get a circular dependency: you need IRA contrib to calculate
-        //  AGI to calculate MAGI to determine whether you can include IRA contributions:
-        //  https://money.stackexchange.com/questions/94585/circular-dependency-involving-ira-deduction
-        // Instead, we do things in the logical order and find MAGI *first*
-        // See also : https://www.investopedia.com/terms/m/magi.asp
-        long modifiedAdjustedGrossIncome = grossIncome - reg401kContrib; // TODO implement HSA deduction here
 
-        // Figure out how much the trad IRA deduction reduces by (if anything)
-        RetirementConstants retirementConstants = govConstants.getRetirementConstants();
-        long phaseoutRangeFill = Math.max(
-                0L,
-                modifiedAdjustedGrossIncome - retirementConstants.getTradIraDeductiblePhaseoutFloor());
-        long phaseoutRangeWidth = retirementConstants.getTradIraDeductiblePhaseoutCeiling() - retirementConstants.getTradIraDeductiblePhaseoutFloor();
-        double phaseoutRangeFillPct = Math.min(1.0, (double)phaseoutRangeFill / (double)phaseoutRangeWidth);
-        double deductionMultiplier = phaseoutRangeFillPct == 0 ? 1.0 : 1 / phaseoutRangeFillPct;
-        long tradIraDeduction = (long) (deductionMultiplier * scenario.getIraContrib().getTrad());
-
+        /*
         LOG.info("");
         LOG.info("                      DEDUCTIONS");
         LOG.info("Trad 401k Contrib: {}", reg401kContrib);
         LOG.info("Trad IRA Contrib Deductible: {}", tradIraDeduction);
         LOG.info("Standard Deduction: {}", govConstants.getStandardDeduction());
+         */
+
+        double fractionForeignEarnedIncome = scenario.getFractionForeignEarnedIncome();
+
+        // AMT allows trad IRA & 401k deductions, but not the standard deduction
+        long amtAllowedDeductions = reg401kContrib + tradIraDeduction;
+        IncomeStreams amtTaxableIncome = applyDeductions(grossIncomeStreams, amtAllowedDeductions);
+        Map<Tax, Double> amtTaxes = calculateAmtTaxes(amtTaxableIncome, fractionForeignEarnedIncome, govConstants);
 
 
-        long totalDeductions = reg401kContrib + tradIraDeduction + govConstants.getStandardDeduction();
-        IncomeStreams taxableIncomeStreams = applyDeductions(grossIncomeStreams, totalDeductions);
+        // Primary fed income tax also has the standard deduction
+        long primaryAllowedDeductions = amtAllowedDeductions + govConstants.getStandardDeduction();
+        IncomeStreams primaryTaxableIncome = applyDeductions(grossIncomeStreams, primaryAllowedDeductions);
+        Map<Tax, Double> primaryTaxes = calculatePrimaryTaxes(primaryTaxableIncome, fractionForeignEarnedIncome, govConstants);
 
         LOG.info("");
         LOG.info("                     TAXABLE INCOME");
-        LOG.info("Earned Income: {}", taxableIncomeStreams.getEarnedIncome());
-        LOG.info("Longterm Cap Gains: {}", taxableIncomeStreams.getLongTermCapGains());
-        LOG.info("Shortterm Cap Gains: {}", taxableIncomeStreams.getShortTermCapGains());
-        LOG.info("Other Unearned Income: {}", taxableIncomeStreams.getOtherUnearnedIncome());
+        LOG.info("Earned Income: {}", primaryTaxableIncome.getEarnedIncome());
+        LOG.info("Longterm Cap Gains: {}", primaryTaxableIncome.getLongTermCapGains());
+        LOG.info("Shortterm Cap Gains: {}", primaryTaxableIncome.getShortTermCapGains());
+        LOG.info("Other Unearned Income: {}", primaryTaxableIncome.getOtherUnearnedIncome());
 
 
         ProgressiveTaxCalculator fedIncomeTaxCalculator = new ProgressiveTaxCalculator(govConstants.getFederalIncomeTaxBrackets());
-        Map<Tax, Double> taxes = calculateTaxes(taxableIncomeStreams, scenario.getFractionForeignEarnedIncome(), govConstants);
+        Map<Tax, Double> taxes = calculatePrimaryTaxes(primaryTaxableIncome, scenario.getFractionForeignEarnedIncome(), govConstants);
 
         LOG.info("");
         LOG.info("                        TAXES");
-        LOG.info("Fed Income Tax: {}", taxes.get(Tax.FED_INCOME));
+        LOG.info("Fed Income Tax: {}", taxes.get(Tax.NON_PREFERENTIAL_INCOME));
         LOG.info("Social Security Tax: {}", taxes.get(Tax.SOCIAL_SECURITY));
         LOG.info("Medicare Tax: {}", taxes.get(Tax.MEDICARE));
         LOG.info("NIIT: {}", taxes.get(Tax.NIIT));
@@ -216,118 +210,26 @@ public class Main {
         return null;
     }
 
-    private static IncomeStreams sumIncomeStreams(Scenario scenario) {
-        long earnedIncome = scenario.getEarnedIncome().stream()
-                .reduce(0L, (l, r) -> l + r);
-        long ltcg = scenario.getLongTermCapitalGains().stream()
-                .reduce(0L, (l, r) -> l + r);
-        long stcg = scenario.getShortTermCapitalGains().stream()
-                .reduce(0L, (l, r) -> l + r);
-
-        // TODO add interest & qualified/regular dividends
-        long otherUnearnedIncome = 0L;
-        return ImmutableIncomeStreams.builder()
-                .earnedIncome(earnedIncome)
-                .longTermCapGains(ltcg)
-                .shortTermCapGains(stcg)
-                .otherUnearnedIncome(otherUnearnedIncome)
-                .build();
-    }
     /*
     Applies the deductions in the proper order to the given incomes
 
     Returns: The input income streams with deductions applied
      */
     private static IncomeStreams applyDeductions(IncomeStreams income, long deductions) {
-        // Deductions get applied to earned income first, and only after to unearned income (which is good)
-        // See: https://www.kitces.com/blog/long-term-capital-gains-bump-zone-higher-marginal-tax-rate-phase-in-0-rate
-        List<Long> incomesToReduceInOrder = ImmutableList.of(
-                income.getEarnedIncome(),
-                income.getOtherUnearnedIncome(),
-                income.getShortTermCapGains(),
-                income.getLongTermCapGains());
-        List<Long> resultingReducedIncomes = new ArrayList<>();
-        long remainingDeduction = deductions;
-        for (Long incomeToReduce : incomesToReduceInOrder) {
-            long resultingIncome = incomeToReduce;
-            if (remainingDeduction > 0) {
-                long amountToReduce = Math.min(remainingDeduction, incomeToReduce);
-                resultingIncome = incomeToReduce - amountToReduce;
-                remainingDeduction -= amountToReduce;
-            }
-            resultingReducedIncomes.add(resultingIncome);
-        }
+    }
 
-        return ImmutableIncomeStreams.builder()
-                // TODO we can do better than referencing list indexes, but it's fine for now
-                .earnedIncome(resultingReducedIncomes.get(0))
-                .otherUnearnedIncome(resultingReducedIncomes.get(1))
-                .shortTermCapGains(resultingReducedIncomes.get(2))
-                .longTermCapGains(resultingReducedIncomes.get(3))
-                .build();
+    private static Map<Tax, Double> calculateFicaTaxes(IncomeStreams income, GovConstantsForYear govConstants) {
     }
 
     /*
-    Calculates the big taxes on the input. Note that the args should be POST-DEDUCTION income!
+    Calculates taxes under the AMT system (assumes AMT-allowed deductions have already been included
      */
-    private static Map<Tax, Double> calculateTaxes(
-            IncomeStreams income,
-            double fractionForeignEarnedIncome,
-            GovConstantsForYear govConstantsForYear) {
-        long taxableEarnedIncome = income.getEarnedIncome();
-        long taxableOtherUnearnedIncome = income.getOtherUnearnedIncome();
-        long taxableStcg = income.getShortTermCapGains();
-        long taxableLtcg = income.getLongTermCapGains();
+    private static Map<Tax, Double> calculateAmtTaxes(IncomeStreams income, double fractionForeignEarnedIncome, GovConstantsForYear govConstants) {
+        ImmutableMap.Builder<Tax, Double> amtTaxes = ImmutableMap.builder();
 
-        ImmutableMap.Builder<Tax, Double> totalTaxes = ImmutableMap.builder();
 
-        // Federal income tax
-        ProgressiveTaxCalculator fedIncomeTaxCalculator = new ProgressiveTaxCalculator(govConstantsForYear.getFederalIncomeTaxBrackets());
-        long fedIncomeTaxableIncome = taxableEarnedIncome + taxableOtherUnearnedIncome + taxableStcg;
-        double fedIncomeTaxBeforeFEIE = fedIncomeTaxCalculator.calculateTax(fedIncomeTaxableIncome);
-        long excludedFEI = Math.min(
-                govConstantsForYear.getForeignIncomeConstants().getForeignEarnedIncomeExemption(),
-                (long) (fractionForeignEarnedIncome * (double)taxableEarnedIncome));
-        double fedIncomeTaxOnExcludedFEI = fedIncomeTaxCalculator.calculateTax(excludedFEI);
-        double fedIncomeTax = fedIncomeTaxBeforeFEIE - fedIncomeTaxOnExcludedFEI;
-        totalTaxes.put(Tax.FED_INCOME, fedIncomeTax);
 
-        FicaConstants ficaConstants = govConstantsForYear.getFicaConstants();
-
-        // Social security tax
-        long socialSecurityTaxableAmount = Math.min(ficaConstants.getSocialSecurityWageCap(), taxableEarnedIncome);
-        double socialSecurityTax = ficaConstants.getSocialSecurityRate() * (double)socialSecurityTaxableAmount;
-        totalTaxes.put(Tax.SOCIAL_SECURITY, socialSecurityTax);
-
-        // Medicare tax
-        double medicareBaseTax = ficaConstants.getMedicareBaseRate() * (double)taxableEarnedIncome;
-        long medicareSurtaxableAmount = Math.max(0, taxableEarnedIncome - ficaConstants.getMedicareSurtaxFloor());
-        double medicareSurtax = ficaConstants.getMedicareSurtaxExtraRate() * (double)medicareSurtaxableAmount;
-        double medicareTax = medicareBaseTax + medicareSurtax;
-        totalTaxes.put(Tax.MEDICARE, medicareTax);
-
-        // Net Investment Income Tax (aka Unearned Income Medicare Contribution Surtax)
-        long investmentIncome = taxableStcg + taxableLtcg + taxableOtherUnearnedIncome;
-        long niitTaxableAmount = Math.max(0, investmentIncome - ficaConstants.getNetInvestmentIncomeFloor());
-        double niitTax = ficaConstants.getNetInvestmentIncomeTaxRate() * (double)niitTaxableAmount;
-        totalTaxes.put(Tax.NIIT, niitTax);
-
-        // Capital gains: these are "stacked" on top of other income, so unfortunately they don't start at the absolute
-        //  lowest rate
-        long incomeUnderneathStcg = taxableEarnedIncome + taxableOtherUnearnedIncome;
-        double stcgPlusIncomeUndearneathTax = fedIncomeTaxCalculator.calculateTax(incomeUnderneathStcg + taxableStcg);
-        double incomeUnderneathStcgTax = fedIncomeTaxCalculator.calculateTax(incomeUnderneathStcg);
-        double stcgTax = stcgPlusIncomeUndearneathTax - incomeUnderneathStcgTax;
-        totalTaxes.put(Tax.SHORT_TERM_CAP_GAINS, stcgTax);
-
-        ProgressiveTaxCalculator fedLtcgTaxCalculator = new ProgressiveTaxCalculator(govConstantsForYear.getFederalLtcgBrackets());
-        long incomeUnderneathLtcg = incomeUnderneathStcg + taxableStcg;
-        double ltcgPlusIncomeUnderneathTax = fedLtcgTaxCalculator.calculateTax(incomeUnderneathLtcg + taxableLtcg);
-        double incomeUnderneathLtcgTax = fedLtcgTaxCalculator.calculateTax(incomeUnderneathLtcg);
-        double ltcgTax = ltcgPlusIncomeUnderneathTax - incomeUnderneathLtcgTax;
-        totalTaxes.put(Tax.LONG_TERM_CAP_GAINS, ltcgTax);
-
-        return totalTaxes.build();
+        return amtTaxes.build();
     }
 
     private static ValueOrGError<List<ValidationWarning>> validateScenarioAgainstConstants(Scenario scenario, GovConstantsForYear govConstantsForYear) {
@@ -344,15 +246,6 @@ public class Main {
                     totalIraContrib
             ));
         }
-        // IRA contributions MUST be done with earned income!!
-        // See: https://www.investopedia.com/retirement/ira-contribution-limits/
-        if (grossIncomeStreams.getEarnedIncome() < totalIraContrib) {
-            return ValueOrGError.ofError(GError.newError(
-                    "IRA contributions are limited to earned income, but earned income {} is < total IRA contrib {}",
-                    grossIncomeStreams.getEarnedIncome(),
-                    totalIraContrib
-            ));
-        }
         if (totalIraContrib < retirementConstants.getIraContribLimit()) {
             warnings.add(ValidationWarning.of(
                     "The IRA contribution limit {} but the scenario's total IRA contribution is only {}",
@@ -361,7 +254,8 @@ public class Main {
             ));
         }
 
-        long total401kContrib = scenario.get401kContrib().getTrad() + scenario.get401kContrib().getRoth();
+        long trad401kContrib = scenario.get401kContrib().getTrad();
+        long total401kContrib = trad401kContrib + scenario.get401kContrib().getRoth();
         if (total401kContrib > govConstantsForYear.getRetirementConstants().getPersonal401kContribLimit()) {
             return ValueOrGError.ofError(GError.newError(
                     "The 401k contribution limit is {} but the scenario's total 401k contribution is {}",
@@ -374,6 +268,20 @@ public class Main {
                     "The IRA contribution limit {} but the scenario's total 401k contribution is only {}",
                     retirementConstants.getPersonal401kContribLimit(),
                     total401kContrib
+            ));
+        }
+
+        // IRA contributions MUST be done with earned income, and trad 401k contributions can
+        //  only be done via an employer (i.e. earned income) so total_ira_contrib + trad_401k_contrib must be
+        // See: https://www.investopedia.com/retirement/ira-contribution-limits/
+        if (grossIncomeStreams.getEarnedIncome() < totalIraContrib + trad401kContrib) {
+            return ValueOrGError.ofError(GError.newError(
+                    "IRA contributions are limited to earned income and trad 401k contributions can only be done " +
+                            "using earned income so total_ira_contrib + trad_401k_contrib must be < earned_income, but" +
+                            "earned_income {} is < total_ira_contrib {} + trad_401k_contrib {}",
+                    grossIncomeStreams.getEarnedIncome(),
+                    totalIraContrib,
+                    trad401kContrib
             ));
         }
 
