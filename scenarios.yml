@@ -1,9 +1,9 @@
 test:
-  contrib401k: 
-    regular: 1.0
+  401kContrib:
+    trad: 1.0
     roth: 0
-  contribIRA: 
-    regular: 1.0
+  iraContrib:
+    trad: 1.0
     roth: 0
   earnedIncome:
     - 250000

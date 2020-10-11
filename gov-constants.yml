@@ -1,5 +1,5 @@
 2020:
-  AMT: 
+  amt:
     # NOTE: for singles
     exemption: 72900
     exemptionPhaseoutFloor: 518400
@@ -9,7 +9,7 @@
     lowEarnerRate: 0.26
     highEarnerRate: 0.28
 
-  federalIncomeBrackets:
+  federalIncomeTaxBrackets:
     - floor: 0
       rate: 0.10
     - floor: 9701
@@ -25,7 +25,7 @@
     - floor: 510301
       rate: 0.37
 
-  federalLTCGBrackets:
+  federalLtcgBrackets:
     - floor: 0
       rate: 0.0
     - floor: 40000
@@ -33,16 +33,16 @@
     - floor: 441451
       rate: 0.20
 
-  FICA:
+  fica:
     socialSecurityWageCap: 137700
     socialSecurityRate: 0.062
     medicareBaseRate: 0.0145
     medicareSurtaxFloor: 200000
     medicareSurtaxExtraRate: 0.009
     netInvestmentIncomeTaxRate: 0.038
-    netInvestmentIncomeThreshold: 200000
+    netInvestmentIncomeFloor: 200000
 
-  foreign:
+  foreignIncome:
     foreignEarnedIncomeExemption: 107600
 
   retirement:

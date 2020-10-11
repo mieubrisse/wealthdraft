@@ -11,7 +11,6 @@ import java.util.List;
 @Value.Immutable
 @JsonDeserialize(as = ImmutableGovConstantsForYear.class)
 public interface GovConstantsForYear {
-    int getYear();
     @JsonProperty("amt") AmtConstants getAmtConstants();
     List<TaxBracket> getFederalIncomeTaxBrackets();
     List<TaxBracket> getFederalLtcgBrackets();
@@ -22,7 +21,6 @@ public interface GovConstantsForYear {
 
     @Value.Check
     default void check() {
-        Preconditions.checkState(getYear() > 1900 && getYear() < 2200, "Year must be in range [1990, 2200]");
         DeserializationValidator.checkUniqueBracketFloors("federal income brackets", getFederalIncomeTaxBrackets());
         DeserializationValidator.checkUniqueBracketFloors("federal longterm cap gains brackets", getFederalLtcgBrackets());
         Preconditions.checkState(getStandardDeduction() > 0, "Standard deduction must be > 0");
