@@ -1,5 +1,7 @@
 package com.strangegrotto.wealthdraft.errors;
 
+import org.slf4j.helpers.MessageFormatter;
+
 import java.util.Optional;
 import java.util.StringJoiner;
 
@@ -19,7 +21,7 @@ public class GError {
     }
 
     private static GError buildError(Optional<GError> cause, StackTraceElement stackTraceElem, String message, Object... args) {
-        String formattedMsg = String.format(message, args);
+        String formattedMsg = MessageFormatter.arrayFormat(message, args).getMessage();
         return new GError(formattedMsg, stackTraceElem, cause);
     }
 
@@ -36,12 +38,12 @@ public class GError {
     @Override
     public String toString() {
         StringJoiner joiner = new StringJoiner("\n");
+        joiner.add(this.message);
+        joiner.add(" -- " + stackTraceElem.toString());
         if (this.cause.isPresent()) {
             String causeStr = this.cause.get().toString();
             joiner.add(causeStr);
         }
-        joiner.add(this.message);
-        joiner.add(" -- " + stackTraceElem.toString());
         return joiner.toString();
     }
 }

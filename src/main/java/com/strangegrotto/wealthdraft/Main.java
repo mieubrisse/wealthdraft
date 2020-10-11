@@ -8,15 +8,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.strangegrotto.wealthdraft.errors.GError;
+import com.strangegrotto.wealthdraft.errors.ValueOrGError;
 import com.strangegrotto.wealthdraft.govconstants.FicaConstants;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.govconstants.RetirementConstants;
 import com.strangegrotto.wealthdraft.scenarios.Scenario;
 import com.strangegrotto.wealthdraft.tax.ProgressiveTaxCalculator;
 import com.strangegrotto.wealthdraft.tax.Tax;
+import com.strangegrotto.wealthdraft.validator.ValidationWarning;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.helper.HelpScreenException;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
@@ -27,7 +30,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.time.Year;
 import java.util.*;
 
@@ -47,12 +49,15 @@ public class Main {
                 .defaultHelp(true)
                 .description("A financial modelling CLI");
         parser.addArgument("--" + SCENARIOS_FILEPATH_ARG)
+                .dest(SCENARIOS_FILEPATH_ARG)
                 .required(true)
                 .help("YAML file containing scenarios to calculate");
         parser.addArgument("--" + GOV_CONSTANTS_FILEPATH_ARG)
+                .dest(GOV_CONSTANTS_FILEPATH_ARG)
                 .required(true)
                 .help("YAML file of gov constants per year");
         parser.addArgument("--" + LOG_LEVEL_ARG)
+                .dest(LOG_LEVEL_ARG)
                 .type(Level.class)
                 .setDefault(Level.INFO)
                 .choices(Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR)
@@ -72,12 +77,15 @@ public class Main {
         }
 
         Level logLevel = parsedArgs.get(LOG_LEVEL_ARG);
-        ((ch.qos.logback.classic.Logger) LOG).setLevel(logLevel);
+        Logger rootLogger = org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
+        ((ch.qos.logback.classic.Logger) rootLogger).setLevel(logLevel);
 
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        mapper.registerModules(new GuavaModule());
         TypeFactory typeFactory = mapper.getTypeFactory();
 
         String scenariosFilepath = parsedArgs.getString(SCENARIOS_FILEPATH_ARG);
+        LOG.debug("Scenarios filepath: {}", scenariosFilepath);
         MapType scenariosMapType = typeFactory.constructMapType(HashMap.class, String.class, Scenario.class);
         Map<String, Scenario> scenarios;
         try {
@@ -89,6 +97,7 @@ public class Main {
         }
 
         String govConstantsFilepath = parsedArgs.getString(GOV_CONSTANTS_FILEPATH_ARG);
+        LOG.debug("Gov constants filepath: {}", govConstantsFilepath);
         MapType govConstantsMapType = typeFactory.constructMapType(HashMap.class, Integer.class, GovConstantsForYear.class);
         Map<Integer, GovConstantsForYear> allGovConstants;
         try {
@@ -111,37 +120,41 @@ public class Main {
             Scenario scenario = entry.getValue();
 
             LOG.info("======================= {} ======================", name);
-            calculateScenario(scenario, latestGovConstants);
+            GError err = calculateScenario(scenario, latestGovConstants);
+            if (err != null) {
+                LOG.error(err.toString());
+            }
         }
     }
 
     private static GError calculateScenario(
             Scenario scenario,
             GovConstantsForYear govConstants) {
-
-        IncomeStreams grossIncomeStreams = sumIncomeStreams(scenario);
-
-        // IRA contributions MUST be done with earned income!!
-        // See: https://www.investopedia.com/retirement/ira-contribution-limits/
-        long totalIraContrib = scenario.getIraContrib().getTrad() + scenario.getIraContrib().getRoth();
-        if (grossIncomeStreams.getEarnedIncome() < totalIraContrib) {
-            return GError.newError(
-                    "IRA contributions are limited to earned income, but earned income %s is < total IRA contrib %s",
-                    grossIncomeStreams.getEarnedIncome(),
-                    totalIraContrib
-            );
+        ValueOrGError<List<ValidationWarning>> validationResult = validateScenarioAgainstConstants(scenario, govConstants);
+        if (validationResult.hasError()) {
+            return GError.propagate(validationResult.getError(), "An error occurred validating the scenario against the latest gov constants");
+        }
+        List<ValidationWarning> validationWarnings = validationResult.getValue();
+        if (validationWarnings.size() > 0) {
+            LOG.info("                      WARNINGS");
+            for (ValidationWarning warning : validationWarnings) {
+                LOG.warn(warning.getMessage());
+            }
+            LOG.warn("");
         }
 
-        LOG.info("Earned Income: %s", grossIncomeStreams.getEarnedIncome());
-        LOG.info("Longterm Cap Gains: %s", grossIncomeStreams.getLongTermCapGains());
-        LOG.info("Shortterm Cap Gains: %s", grossIncomeStreams.getShortTermCapGains());
-        LOG.info("Other Unearned Income: %s", grossIncomeStreams.getOtherUnearnedIncome());
+        IncomeStreams grossIncomeStreams = sumIncomeStreams(scenario);
+        LOG.info("                       INCOME");
+        LOG.info("Earned Income: {}", grossIncomeStreams.getEarnedIncome());
+        LOG.info("Longterm Cap Gains: {}", grossIncomeStreams.getLongTermCapGains());
+        LOG.info("Shortterm Cap Gains: {}", grossIncomeStreams.getShortTermCapGains());
+        LOG.info("Other Unearned Income: {}", grossIncomeStreams.getOtherUnearnedIncome());
         LOG.info(SUM_LINE);
         long grossIncome = grossIncomeStreams.getEarnedIncome()
                 + grossIncomeStreams.getLongTermCapGains()
                 + grossIncomeStreams.getShortTermCapGains()
                 + grossIncomeStreams.getOtherUnearnedIncome();
-        LOG.info("Gross Income: %s", grossIncome);
+        LOG.info("Gross Income: {}", grossIncome);
 
         long reg401kContrib = scenario.get401kContrib().getTrad();
 
@@ -163,25 +176,33 @@ public class Main {
         double deductionMultiplier = 1 / phaseoutRangeFillPct;
         long tradIraDeduction = (long) (deductionMultiplier * scenario.getIraContrib().getTrad());
 
+        LOG.info("");
+        LOG.info("                      DEDUCTIONS");
+        LOG.info("Trad 401k Contrib: {}", reg401kContrib);
+        LOG.info("Trad IRA Contrib Deductible: {}", tradIraDeduction);
+        LOG.info("Standard Deduction: {}", govConstants.getStandardDeduction());
+
+
         long totalDeductions = reg401kContrib + tradIraDeduction + govConstants.getStandardDeduction();
         IncomeStreams taxableIncomeStreams = applyDeductions(grossIncomeStreams, totalDeductions);
 
         ProgressiveTaxCalculator fedIncomeTaxCalculator = new ProgressiveTaxCalculator(govConstants.getFederalIncomeTaxBrackets());
-        Map<Tax, BigDecimal> taxes = calculateTaxes(taxableIncomeStreams, scenario.getFractionForeignEarnedIncome(), govConstants);
+        Map<Tax, Double> taxes = calculateTaxes(taxableIncomeStreams, scenario.getFractionForeignEarnedIncome(), govConstants);
 
         LOG.info("");
-        LOG.info("Fed Income Tax: %s", taxes.get(Tax.FED_INCOME));
-        LOG.info("Social Security Tax: %s", taxes.get(Tax.SOCIAL_SECURITY));
-        LOG.info("Medicare Tax: %s", taxes.get(Tax.MEDICARE));
-        LOG.info("NIIT: %s", taxes.get(Tax.NIIT));
-        LOG.info("STCG Tax: %s", taxes.get(Tax.SHORT_TERM_CAP_GAINS));
-        LOG.info("LTCG Tax: %s", taxes.get(Tax.LONG_TERM_CAP_GAINS));
+        LOG.info("                        TAXES");
+        LOG.info("Fed Income Tax: {}", taxes.get(Tax.FED_INCOME));
+        LOG.info("Social Security Tax: {}", taxes.get(Tax.SOCIAL_SECURITY));
+        LOG.info("Medicare Tax: {}", taxes.get(Tax.MEDICARE));
+        LOG.info("NIIT: {}", taxes.get(Tax.NIIT));
+        LOG.info("STCG Tax: {}", taxes.get(Tax.SHORT_TERM_CAP_GAINS));
+        LOG.info("LTCG Tax: {}", taxes.get(Tax.LONG_TERM_CAP_GAINS));
         LOG.info(SUM_LINE);
-        BigDecimal totalTax = taxes.values().stream()
-                .reduce(BigDecimal.ZERO, (l, r) -> l.add(r));
-        LOG.info("Total Tax: %s", totalTax);
-        BigDecimal marginalTaxRate = totalTax.divide(BigDecimal.valueOf(grossIncome));
-        LOG.info("Marginal Tax Rate: %s", marginalTaxRate);
+        double totalTax = taxes.values().stream()
+                .reduce(0D, (l, r) -> l + r);
+        LOG.info("Total Tax: {}", totalTax);
+        double marginalTaxRate = totalTax / (double)grossIncome;
+        LOG.info("Marginal Tax Rate: {}", marginalTaxRate);
 
         return null;
     }
@@ -240,7 +261,7 @@ public class Main {
     /*
     Calculates the big taxes on the input. Note that the args should be POST-DEDUCTION income!
      */
-    private static Map<Tax, BigDecimal> calculateTaxes(
+    private static Map<Tax, Double> calculateTaxes(
             IncomeStreams income,
             double fractionForeignEarnedIncome,
             GovConstantsForYear govConstantsForYear) {
@@ -249,50 +270,104 @@ public class Main {
         long taxableStcg = income.getShortTermCapGains();
         long taxableLtcg = income.getLongTermCapGains();
 
-        ImmutableMap.Builder<Tax, BigDecimal> totalTaxes = ImmutableMap.builder();
+        ImmutableMap.Builder<Tax, Double> totalTaxes = ImmutableMap.builder();
 
         // Federal income tax
         ProgressiveTaxCalculator fedIncomeTaxCalculator = new ProgressiveTaxCalculator(govConstantsForYear.getFederalIncomeTaxBrackets());
         long fedIncomeTaxableIncome = taxableEarnedIncome + taxableOtherUnearnedIncome + taxableStcg;
-        BigDecimal fedIncomeTaxBeforeFEIE = fedIncomeTaxCalculator.calculateTax(fedIncomeTaxableIncome);
+        double fedIncomeTaxBeforeFEIE = fedIncomeTaxCalculator.calculateTax(fedIncomeTaxableIncome);
         long excludedFEI = Math.min(
                 govConstantsForYear.getForeignIncomeConstants().getForeignEarnedIncomeExemption(),
                 (long) (fractionForeignEarnedIncome * (double)taxableEarnedIncome));
-        BigDecimal fedIncomeTaxOnExcludedFEI = fedIncomeTaxCalculator.calculateTax(excludedFEI);
-        BigDecimal fedIncomeTax = fedIncomeTaxBeforeFEIE.subtract(fedIncomeTaxOnExcludedFEI);
+        double fedIncomeTaxOnExcludedFEI = fedIncomeTaxCalculator.calculateTax(excludedFEI);
+        double fedIncomeTax = fedIncomeTaxBeforeFEIE - fedIncomeTaxOnExcludedFEI;
         totalTaxes.put(Tax.FED_INCOME, fedIncomeTax);
 
         FicaConstants ficaConstants = govConstantsForYear.getFicaConstants();
 
         // Social security tax
         long socialSecurityTaxableAmount = Math.min(ficaConstants.getSocialSecurityWageCap(), taxableEarnedIncome);
-        BigDecimal socialSecurityTax = BigDecimal.valueOf(ficaConstants.getSocialSecurityRate())
-                .multiply(BigDecimal.valueOf(socialSecurityTaxableAmount));
+        double socialSecurityTax = ficaConstants.getSocialSecurityRate() * (double)socialSecurityTaxableAmount;
         totalTaxes.put(Tax.SOCIAL_SECURITY, socialSecurityTax);
 
         // Medicare tax
-        BigDecimal medicareBaseTax = BigDecimal.valueOf(ficaConstants.getMedicareBaseRate())
-                .multiply(BigDecimal.valueOf(taxableEarnedIncome));
+        double medicareBaseTax = ficaConstants.getMedicareBaseRate() * (double)taxableEarnedIncome;
         long medicareSurtaxableAmount = Math.max(0, taxableEarnedIncome - ficaConstants.getMedicareSurtaxFloor());
-        BigDecimal medicareSurtax = BigDecimal.valueOf(ficaConstants.getMedicareSurtaxExtraRate())
-                .multiply(BigDecimal.valueOf(medicareSurtaxableAmount));
-        BigDecimal medicareTax = medicareBaseTax.add(medicareSurtax);
+        double medicareSurtax = ficaConstants.getMedicareSurtaxExtraRate() * (double)medicareSurtaxableAmount;
+        double medicareTax = medicareBaseTax + medicareSurtax;
         totalTaxes.put(Tax.MEDICARE, medicareTax);
 
         // Net Investment Income Tax (aka Unearned Income Medicare Contribution Surtax)
         long investmentIncome = taxableStcg + taxableLtcg + taxableOtherUnearnedIncome;
         long niitTaxableAmount = Math.max(0, investmentIncome - ficaConstants.getNetInvestmentIncomeFloor());
-        BigDecimal niitTax = BigDecimal.valueOf(ficaConstants.getNetInvestmentIncomeTaxRate())
-                .multiply(BigDecimal.valueOf(niitTaxableAmount));
+        double niitTax = ficaConstants.getNetInvestmentIncomeTaxRate() * (double)niitTaxableAmount;
         totalTaxes.put(Tax.NIIT, niitTax);
 
-        // Capital gains
-        BigDecimal stcgTax = fedIncomeTaxCalculator.calculateTax(taxableStcg);
+        // Capital gains: these are "stacked" on top of other income, so unfortunately they don't start at the absolute
+        //  lowest rate
+        long incomeUnderneathStcg = taxableEarnedIncome + taxableOtherUnearnedIncome;
+        double stcgPlusIncomeUndearneathTax = fedIncomeTaxCalculator.calculateTax(incomeUnderneathStcg + taxableStcg);
+        double incomeUnderneathStcgTax = fedIncomeTaxCalculator.calculateTax(incomeUnderneathStcg);
+        double stcgTax = stcgPlusIncomeUndearneathTax - incomeUnderneathStcgTax;
         totalTaxes.put(Tax.SHORT_TERM_CAP_GAINS, stcgTax);
+
         ProgressiveTaxCalculator fedLtcgTaxCalculator = new ProgressiveTaxCalculator(govConstantsForYear.getFederalLtcgBrackets());
-        BigDecimal ltcgTax = fedLtcgTaxCalculator.calculateTax(taxableLtcg);
+        long incomeUnderneathLtcg = incomeUnderneathStcg + taxableStcg;
+        double ltcgPlusIncomeUnderneathTax = fedLtcgTaxCalculator.calculateTax(incomeUnderneathLtcg + taxableLtcg);
+        double incomeUnderneathLtcgTax = fedLtcgTaxCalculator.calculateTax(incomeUnderneathLtcg);
+        double ltcgTax = ltcgPlusIncomeUnderneathTax - incomeUnderneathLtcgTax;
         totalTaxes.put(Tax.LONG_TERM_CAP_GAINS, ltcgTax);
 
         return totalTaxes.build();
+    }
+
+    private static ValueOrGError<List<ValidationWarning>> validateScenarioAgainstConstants(Scenario scenario, GovConstantsForYear govConstantsForYear) {
+        IncomeStreams grossIncomeStreams = sumIncomeStreams(scenario);
+
+        List<ValidationWarning> warnings = new ArrayList<>();
+
+        RetirementConstants retirementConstants = govConstantsForYear.getRetirementConstants();
+        long totalIraContrib = scenario.getIraContrib().getTrad() + scenario.getIraContrib().getRoth();
+        if (totalIraContrib > retirementConstants.getIraContribLimit()) {
+            return ValueOrGError.ofError(GError.newError(
+                    "The IRA contribution limit is {} but the scenario's total IRA contribution is {}",
+                    retirementConstants.getIraContribLimit(),
+                    totalIraContrib
+            ));
+        }
+        // IRA contributions MUST be done with earned income!!
+        // See: https://www.investopedia.com/retirement/ira-contribution-limits/
+        if (grossIncomeStreams.getEarnedIncome() < totalIraContrib) {
+            return ValueOrGError.ofError(GError.newError(
+                    "IRA contributions are limited to earned income, but earned income {} is < total IRA contrib {}",
+                    grossIncomeStreams.getEarnedIncome(),
+                    totalIraContrib
+            ));
+        }
+        if (totalIraContrib < retirementConstants.getIraContribLimit()) {
+            warnings.add(ValidationWarning.of(
+                    "The IRA contribution limit {} but the scenario's total IRA contribution is only {}",
+                    retirementConstants.getIraContribLimit(),
+                    totalIraContrib
+            ));
+        }
+
+        long total401kContrib = scenario.get401kContrib().getTrad() + scenario.get401kContrib().getRoth();
+        if (total401kContrib > govConstantsForYear.getRetirementConstants().getPersonal401kContribLimit()) {
+            return ValueOrGError.ofError(GError.newError(
+                    "The 401k contribution limit is {} but the scenario's total 401k contribution is {}",
+                    retirementConstants.getPersonal401kContribLimit(),
+                    total401kContrib
+            ));
+        }
+        if (total401kContrib < retirementConstants.getPersonal401kContribLimit()) {
+            warnings.add(ValidationWarning.of(
+                    "The IRA contribution limit {} but the scenario's total 401k contribution is only {}",
+                    retirementConstants.getPersonal401kContribLimit(),
+                    total401kContrib
+            ));
+        }
+
+        return ValueOrGError.ofValue(warnings);
     }
 }

@@ -10,6 +10,7 @@ public interface RetirementConstants {
     long getPersonal401kContribLimit();
     long getTotal401kContribLimit();
     long getIraContribLimit();
+    // TODO add extra IRA contrib limit if you're over 50
     long getTradIraDeductiblePhaseoutFloor();
     long getTradIraDeductiblePhaseoutCeiling();
 
