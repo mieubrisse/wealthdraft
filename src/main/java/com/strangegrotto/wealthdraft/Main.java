@@ -4,13 +4,11 @@
 package com.strangegrotto.wealthdraft;
 
 import ch.qos.logback.classic.Level;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.strangegrotto.wealthdraft.errors.ValueOrError;
 import com.strangegrotto.wealthdraft.govconstants.objects.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.scenarios.Scenario;
 import net.sourceforge.argparse4j.ArgumentParsers;
@@ -112,7 +110,9 @@ public class Main {
         }
     }
 
-    private static void calculateScenario(Scenario scenario, GovConstantsForYear govConstants) {
-
+    private static ValueOrError<Void> calculateScenario(
+            Scenario scenario,
+            GovConstantsForYear govConstants) {
+        return ValueOrError.ofValue(null);
     }
 }

@@ -1,8 +1,5 @@
 package com.strangegrotto.wealthdraft.errors;
 
-import jdk.jfr.StackTrace;
-
-import java.util.List;
 import java.util.Optional;
 import java.util.StringJoiner;
 
@@ -10,28 +7,28 @@ import java.util.StringJoiner;
  * Class intended to mirror Palantir's 'stacktrace' library in Go, which has a very elegant interface for capturing
  *  the source of errors.
  */
-public class Error {
+public class GError {
     String message;
     StackTraceElement stackTraceElem;
-    Optional<Error> cause;
+    Optional<GError> cause;
 
-    private Error(String message, StackTraceElement stackTraceElem, Optional<Error> cause) {
+    private GError(String message, StackTraceElement stackTraceElem, Optional<GError> cause) {
         this.message = message;
         this.stackTraceElem = stackTraceElem;
         this.cause = cause;
     }
 
-    private static Error buildError(Optional<Error> cause, StackTraceElement stackTraceElem, String message, Object... args) {
+    private static GError buildError(Optional<GError> cause, StackTraceElement stackTraceElem, String message, Object... args) {
         String formattedMsg = String.format(message, args);
-        return new Error(formattedMsg, stackTraceElem, cause);
+        return new GError(formattedMsg, stackTraceElem, cause);
     }
 
-    public static Error newError(String message, Object... args) {
+    public static GError newError(String message, Object... args) {
         StackTraceElement stackTraceElem = Thread.currentThread().getStackTrace()[2];
         return buildError(Optional.empty(), stackTraceElem, message, args);
     }
 
-    public static Error propagate(Error err, String message, Object... args) {
+    public static GError propagate(GError err, String message, Object... args) {
         StackTraceElement stackTraceElem = Thread.currentThread().getStackTrace()[2];
         return buildError(Optional.of(err), stackTraceElem, message, args);
     }

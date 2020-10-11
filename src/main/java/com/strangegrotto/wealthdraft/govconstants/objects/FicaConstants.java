@@ -1,20 +1,32 @@
 package com.strangegrotto.wealthdraft.govconstants.objects;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.base.Preconditions;
+import com.strangegrotto.wealthdraft.validator.DeserializationValidator;
 import org.immutables.value.Value;
 
-import java.math.BigDecimal;
 
 @Value.Immutable
 @JsonDeserialize(as = ImmutableFicaConstants.class)
 public interface FicaConstants {
-    BigDecimal getSocialSecurityWageCap();
-    Double getSocialSecurityRate();
-    Double getMedicareBaseRate();
-    BigDecimal getMedicareSurtaxFloor();
-    Double getMedicareSurtaxExtraRate();
+    int getSocialSecurityWageCap();
+    double getSocialSecurityRate();
+    double getMedicareBaseRate();
+    int getMedicareSurtaxFloor();
+    double getMedicareSurtaxExtraRate();
 
     // aka Unearned Income Medicare Contribution Surtax
-    Double getNetInvestmentIncomeTaxRate();
-    BigDecimal getNetInvestmentIncomeThreshold();
+    double getNetInvestmentIncomeTaxRate();
+    int getNetInvestmentIncomeFloor();
+
+    @Value.Check
+    default void check() {
+        Preconditions.checkState(getSocialSecurityWageCap() > 0, "Social Security wage cap must be > 0");
+        DeserializationValidator.checkIsRatio("Social Security tax rate", getSocialSecurityRate());
+        DeserializationValidator.checkIsRatio("Medicare base rate", getMedicareBaseRate());
+        Preconditions.checkState(getMedicareSurtaxFloor() > 0, "Medicare surtax floor must be > 0");
+        DeserializationValidator.checkIsRatio("Medicare extra surtax rate", getMedicareSurtaxExtraRate());
+        DeserializationValidator.checkIsRatio("NIIT tax rate", getNetInvestmentIncomeTaxRate());
+        Preconditions.checkState(getNetInvestmentIncomeFloor() > 0, "NIIT tax floor must be > 0");
+    }
 }

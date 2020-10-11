@@ -1,6 +1,7 @@
 package com.strangegrotto.wealthdraft.scenarios;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
 
 /**
@@ -10,6 +11,14 @@ import org.immutables.value.Value;
 @Value.Immutable
 @JsonDeserialize(as = ImmutableTradOrRothContribs.class)
 public interface TradOrRothContribs {
-    Double getTrad();
-    Double getRoth();
+
+    int getTrad();
+    int getRoth();
+
+    @Value.Check
+    default void check() {
+        Preconditions.checkState(getTrad() >= 0, "traditional IRA contrib must be >= 0");
+        Preconditions.checkState(getRoth() >= 0, "Roth IRA contrib must be >= 0");
+    }
 }
+

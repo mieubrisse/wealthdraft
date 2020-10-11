@@ -8,9 +8,9 @@ import java.util.Optional;
  */
 public class ValueOrError<T> {
     private final Optional<T> value;
-    private final Optional<Error> error;
+    private final Optional<GError> error;
 
-    private ValueOrError(Optional<T> value, Optional<Error> error) {
+    private ValueOrError(Optional<T> value, Optional<GError> error) {
         this.value = value;
         this.error = error;
     }
@@ -27,7 +27,7 @@ public class ValueOrError<T> {
         return this.error.isPresent();
     }
 
-    public Error getError() {
+    public GError getError() {
         return this.error.get();
     }
 
@@ -38,7 +38,7 @@ public class ValueOrError<T> {
         );
     }
 
-    public static ValueOrError ofError(Error error) {
+    public static ValueOrError ofError(GError error) {
         return new ValueOrError(
                 Optional.empty(),
                 Optional.of(error)
