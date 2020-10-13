@@ -16,18 +16,19 @@
   federalIncomeTaxBrackets:
     - floor: 0
       rate: 0.10
-    - floor: 9701
+    - floor: 9875
       rate: 0.12
-    - floor: 39476
+    - floor: 40125
       rate: 0.22
-    - floor: 84201
+    - floor: 85525
       rate: 0.24
-    - floor: 160726
+    - floor: 163300
       rate: 0.32
-    - floor: 204101
+    - floor: 207350
       rate: 0.35
-    - floor: 510301
+    - floor: 518400
       rate: 0.37
+
 
   federalLtcgBrackets:
     - floor: 0

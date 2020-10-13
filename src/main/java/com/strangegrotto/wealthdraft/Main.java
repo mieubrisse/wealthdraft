@@ -124,17 +124,37 @@ public class Main {
 
         Integer latestYear = Collections.max(allGovConstants.keySet());
         GovConstantsForYear latestGovConstants = allGovConstants.get(latestYear);
-
-        if (Year.now().getValue() != latestYear) {
+        int currentYear = Year.now().getValue();
+        if (currentYear != latestYear) {
             log.warn("The latest gov constants we have are old, from {}!!!", latestYear);
         }
 
         for (Map.Entry<String, Scenario> entry : scenarios.entrySet()) {
             String name = entry.getKey();
             Scenario scenario = entry.getValue();
-
             log.info("======================= {} ======================", name);
-            GError err = calculateScenario(scenario, latestGovConstants);
+
+            int scenarioYear = scenario.getYear();
+            GovConstantsForYear govConstantsToUse;
+            if (scenarioYear > currentYear) {
+                log.info(
+                        "Scenario wants future year {}; using latest gov constants from {}",
+                        scenarioYear,
+                        latestYear
+                );
+                govConstantsToUse = latestGovConstants;
+            } else {
+                if (!allGovConstants.containsKey(scenarioYear)) {
+                    log.error(
+                            "Could not calculate scenario; scenario wants year {} but no gov constants for that year were defined",
+                            scenarioYear
+                    );
+                    continue;
+                }
+                govConstantsToUse = allGovConstants.get(scenarioYear);
+            }
+
+            GError err = calculateScenario(scenario, govConstantsToUse);
             if (err != null) {
                 log.error(err.toString());
             }
@@ -169,13 +189,12 @@ public class Main {
         }
         List<ValidationWarning> validationWarnings = validationResult.getValue();
         if (validationWarnings.size() > 0) {
-            logSectionHeader("WARNINGS");
             for (ValidationWarning warning : validationWarnings) {
                 log.warn(warning.getMessage());
             }
-            log.warn("");
         }
 
+        log.info("");
         logSectionHeader("RETIREMENT");
         logCurrencyItem("Trad 401k Contrib", scenario.get401kContrib().getTrad());
         logCurrencyItem("Roth 401k Contrib", scenario.get401kContrib().getRoth());
@@ -198,8 +217,6 @@ public class Main {
         logCurrencyItem("Gross Income", grossIncome);
 
         Map<Tax, Double> ficaTaxes = FicaTaxCalculator.calculateFicaTax(scenario, govConstants);
-        Double totalFicaTax = ficaTaxes.values().stream()
-                .reduce(0D, (l, r) -> l + r);
         renderTaxesSection("FICA Tax", ficaTaxes, grossIncome);
 
         Map<Tax, Double> regFedIncomeTaxes = RegularIncomeTaxCalculator.calculateRegularIncomeTax(scenario, govConstants);

@@ -1,5 +1,6 @@
 # EXAMPLE SCENARIOS
 exampleScenario1:
+  year: 2021
   401kContrib:
     trad: 15000
     roth: 0
