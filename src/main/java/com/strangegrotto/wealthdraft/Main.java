@@ -4,21 +4,23 @@
 package com.strangegrotto.wealthdraft;
 
 import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.ConsoleAppender;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.base.Strings;
 import com.strangegrotto.wealthdraft.errors.GError;
 import com.strangegrotto.wealthdraft.errors.ValueOrGError;
-import com.strangegrotto.wealthdraft.govconstants.FicaConstants;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.govconstants.RetirementConstants;
+import com.strangegrotto.wealthdraft.scenarios.IncomeStreams;
 import com.strangegrotto.wealthdraft.scenarios.Scenario;
-import com.strangegrotto.wealthdraft.tax.ProgressiveTaxCalculator;
-import com.strangegrotto.wealthdraft.tax.Tax;
+import com.strangegrotto.wealthdraft.tax.*;
 import com.strangegrotto.wealthdraft.validator.ValidationWarning;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.helper.HelpScreenException;
@@ -30,11 +32,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.time.Year;
 import java.util.*;
 
 public class Main {
-    private static final String SUM_LINE = "----------------------------------------------";
     private static final int SUCCESS_EXIT_CODE = 0;
     private static final int FAILURE_EXIT_CODE = 1;
 
@@ -42,9 +44,22 @@ public class Main {
     private static final String GOV_CONSTANTS_FILEPATH_ARG = "gov-constants";
     private static final String LOG_LEVEL_ARG = "log-level";
 
-    private static final Logger LOG = LoggerFactory.getLogger(Main.class);
+    private static final String LOGBACK_LAYOUT_PATTERN = "%highlight(%-5level) %logger{0} - %message%n";
+
+    private static final int MINIMUM_ITEM_TITLE_WIDTH = 30;
+    private static final int MINIMUM_CURRENCY_WIDTH = 9;
+    private static final String SUM_LINE = Strings.repeat(" ", MINIMUM_ITEM_TITLE_WIDTH + 2)
+            + Strings.repeat("-", MINIMUM_CURRENCY_WIDTH);
+    private static final DecimalFormat CURRENCY_FORMAT = new DecimalFormat  ("###,##0");
+    private static final DecimalFormat PERCENT_FORMAT = new DecimalFormat("##.#%");
+
+    private static final Logger log = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
+        Logger slf4jRootLogger = org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
+        ch.qos.logback.classic.Logger logbackRootLogger = (ch.qos.logback.classic.Logger) slf4jRootLogger;
+        configureRootLoggerPattern(logbackRootLogger);
+
         ArgumentParser parser = ArgumentParsers.newFor("Financial Predictor").build()
                 .defaultHelp(true)
                 .description("A financial modelling CLI");
@@ -71,39 +86,38 @@ public class Main {
             System.exit(SUCCESS_EXIT_CODE);
             return;
         } catch (ArgumentParserException e) {
-            LOG.error("An error occurred parsing the CLI args", e);
+            log.error("An error occurred parsing the CLI args", e);
             System.exit(FAILURE_EXIT_CODE);
             return;
         }
 
         Level logLevel = parsedArgs.get(LOG_LEVEL_ARG);
-        Logger rootLogger = org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
-        ((ch.qos.logback.classic.Logger) rootLogger).setLevel(logLevel);
+        logbackRootLogger.setLevel(logLevel);
 
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         mapper.registerModules(new GuavaModule());
         TypeFactory typeFactory = mapper.getTypeFactory();
 
         String scenariosFilepath = parsedArgs.getString(SCENARIOS_FILEPATH_ARG);
-        LOG.debug("Scenarios filepath: {}", scenariosFilepath);
+        log.debug("Scenarios filepath: {}", scenariosFilepath);
         MapType scenariosMapType = typeFactory.constructMapType(HashMap.class, String.class, Scenario.class);
         Map<String, Scenario> scenarios;
         try {
             scenarios = mapper.readValue(new File(scenariosFilepath), scenariosMapType);
         } catch (IOException e) {
-            LOG.error("An error occurred parsing scenarios file '{}'", scenariosFilepath, e);
+            log.error("An error occurred parsing scenarios file '{}'", scenariosFilepath, e);
             System.exit(FAILURE_EXIT_CODE);
             return;
         }
 
         String govConstantsFilepath = parsedArgs.getString(GOV_CONSTANTS_FILEPATH_ARG);
-        LOG.debug("Gov constants filepath: {}", govConstantsFilepath);
+        log.debug("Gov constants filepath: {}", govConstantsFilepath);
         MapType govConstantsMapType = typeFactory.constructMapType(HashMap.class, Integer.class, GovConstantsForYear.class);
         Map<Integer, GovConstantsForYear> allGovConstants;
         try {
             allGovConstants = mapper.readValue(new File(govConstantsFilepath), govConstantsMapType);
         } catch (IOException e) {
-            LOG.error("An error occurred parsing gov constants file '{}'", govConstantsFilepath, e);
+            log.error("An error occurred parsing gov constants file '{}'", govConstantsFilepath, e);
             System.exit(FAILURE_EXIT_CODE);
             return;
         }
@@ -112,19 +126,38 @@ public class Main {
         GovConstantsForYear latestGovConstants = allGovConstants.get(latestYear);
 
         if (Year.now().getValue() != latestYear) {
-            LOG.warn("The latest gov constants we have are old, from {}!!!", latestYear);
+            log.warn("The latest gov constants we have are old, from {}!!!", latestYear);
         }
 
         for (Map.Entry<String, Scenario> entry : scenarios.entrySet()) {
             String name = entry.getKey();
             Scenario scenario = entry.getValue();
 
-            LOG.info("======================= {} ======================", name);
+            log.info("======================= {} ======================", name);
             GError err = calculateScenario(scenario, latestGovConstants);
             if (err != null) {
-                LOG.error(err.toString());
+                log.error(err.toString());
             }
         }
+    }
+
+    private static void configureRootLoggerPattern(ch.qos.logback.classic.Logger rootLogger) {
+        // Configure the logger with our desired pattern
+        // See: http://logback.qos.ch/manual/layouts.html
+        LoggerContext loggerContext = rootLogger.getLoggerContext();
+        loggerContext.reset();
+
+        PatternLayoutEncoder encoder = new PatternLayoutEncoder();
+        encoder.setContext(loggerContext);
+        encoder.setPattern(LOGBACK_LAYOUT_PATTERN);
+        encoder.start();
+
+        ConsoleAppender<ILoggingEvent> appender = new ConsoleAppender<>();
+        appender.setContext(loggerContext);
+        appender.setEncoder(encoder);
+        appender.start();
+
+        rootLogger.addAppender(appender);
     }
 
     private static GError calculateScenario(
@@ -136,202 +169,60 @@ public class Main {
         }
         List<ValidationWarning> validationWarnings = validationResult.getValue();
         if (validationWarnings.size() > 0) {
-            LOG.info("                      WARNINGS");
+            logSectionHeader("WARNINGS");
             for (ValidationWarning warning : validationWarnings) {
-                LOG.warn(warning.getMessage());
+                log.warn(warning.getMessage());
             }
-            LOG.warn("");
+            log.warn("");
         }
 
-        IncomeStreams grossIncomeStreams = sumIncomeStreams(scenario);
-        LOG.info("                       INCOME");
-        LOG.info("Earned Income: {}", grossIncomeStreams.getEarnedIncome());
-        LOG.info("Longterm Cap Gains: {}", grossIncomeStreams.getLongTermCapGains());
-        LOG.info("Shortterm Cap Gains: {}", grossIncomeStreams.getShortTermCapGains());
-        LOG.info("Other Unearned Income: {}", grossIncomeStreams.getOtherUnearnedIncome());
-        LOG.info(SUM_LINE);
+        logSectionHeader("RETIREMENT");
+        logCurrencyItem("Trad 401k Contrib", scenario.get401kContrib().getTrad());
+        logCurrencyItem("Roth 401k Contrib", scenario.get401kContrib().getRoth());
+        logCurrencyItem("Trad IRA Contrib", scenario.getIraContrib().getTrad());
+        logCurrencyItem("Roth IRA Contrib", scenario.getIraContrib().getRoth());
+
+        IncomeStreams grossIncomeStreams = scenario.getIncomeStreams();
+
+        log.info("");
+        logSectionHeader("GROSS INCOME");
+        logCurrencyItem("Earned Income", grossIncomeStreams.getEarnedIncome());
+        logCurrencyItem("Longterm Cap Gains", grossIncomeStreams.getLongTermCapGains());
+        logCurrencyItem("Shortterm Cap Gains", grossIncomeStreams.getShortTermCapGains());
+        logCurrencyItem("Other Unearned Income", grossIncomeStreams.getOtherUnearnedIncome());
+        log.info(SUM_LINE);
         long grossIncome = grossIncomeStreams.getEarnedIncome()
                 + grossIncomeStreams.getLongTermCapGains()
                 + grossIncomeStreams.getShortTermCapGains()
                 + grossIncomeStreams.getOtherUnearnedIncome();
-        LOG.info("Gross Income: {}", grossIncome);
+        logCurrencyItem("Gross Income", grossIncome);
 
-        long reg401kContrib = scenario.get401kContrib().getTrad();
+        Map<Tax, Double> ficaTaxes = FicaTaxCalculator.calculateFicaTax(scenario, govConstants);
+        Double totalFicaTax = ficaTaxes.values().stream()
+                .reduce(0D, (l, r) -> l + r);
+        renderTaxesSection("FICA Tax", ficaTaxes, grossIncome);
 
-        // MAGI (which DOESN'T show up on the 1040) is sometimes defined as "AGI, with certain deductions like
-        // IRA contrib added back in". If we sue this way, we get a circular dependency: you need IRA contrib to calculate
-        //  AGI to calculate MAGI to determine whether you can include IRA contributions:
-        //  https://money.stackexchange.com/questions/94585/circular-dependency-involving-ira-deduction
-        // Instead, we do things in the logical order and find MAGI *first*
-        // See also : https://www.investopedia.com/terms/m/magi.asp
-        long modifiedAdjustedGrossIncome = grossIncome - reg401kContrib; // TODO implement HSA deduction here
+        Map<Tax, Double> regFedIncomeTaxes = RegularIncomeTaxCalculator.calculateRegularIncomeTax(scenario, govConstants);
+        renderTaxesSection("Reg Fed Income Tax", regFedIncomeTaxes, grossIncome);
 
-        // Figure out how much the trad IRA deduction reduces by (if anything)
-        RetirementConstants retirementConstants = govConstants.getRetirementConstants();
-        long phaseoutRangeFill = Math.max(
-                0L,
-                modifiedAdjustedGrossIncome - retirementConstants.getTradIraDeductiblePhaseoutFloor());
-        long phaseoutRangeWidth = retirementConstants.getTradIraDeductiblePhaseoutCeiling() - retirementConstants.getTradIraDeductiblePhaseoutFloor();
-        double phaseoutRangeFillPct = Math.min(1.0, (double)phaseoutRangeFill / (double)phaseoutRangeWidth);
-        double deductionMultiplier = phaseoutRangeFillPct == 0 ? 1.0 : 1 / phaseoutRangeFillPct;
-        long tradIraDeduction = (long) (deductionMultiplier * scenario.getIraContrib().getTrad());
+        Map<Tax, Double> amtTaxes = AmtTaxCalculator.calculateAmtTax(scenario, govConstants);
+        renderTaxesSection("AMT", amtTaxes, grossIncome);
 
-        LOG.info("");
-        LOG.info("                      DEDUCTIONS");
-        LOG.info("Trad 401k Contrib: {}", reg401kContrib);
-        LOG.info("Trad IRA Contrib Deductible: {}", tradIraDeduction);
-        LOG.info("Standard Deduction: {}", govConstants.getStandardDeduction());
-
-
-        long totalDeductions = reg401kContrib + tradIraDeduction + govConstants.getStandardDeduction();
-        IncomeStreams taxableIncomeStreams = applyDeductions(grossIncomeStreams, totalDeductions);
-
-        LOG.info("");
-        LOG.info("                     TAXABLE INCOME");
-        LOG.info("Earned Income: {}", taxableIncomeStreams.getEarnedIncome());
-        LOG.info("Longterm Cap Gains: {}", taxableIncomeStreams.getLongTermCapGains());
-        LOG.info("Shortterm Cap Gains: {}", taxableIncomeStreams.getShortTermCapGains());
-        LOG.info("Other Unearned Income: {}", taxableIncomeStreams.getOtherUnearnedIncome());
-
-
-        ProgressiveTaxCalculator fedIncomeTaxCalculator = new ProgressiveTaxCalculator(govConstants.getFederalIncomeTaxBrackets());
-        Map<Tax, Double> taxes = calculateTaxes(taxableIncomeStreams, scenario.getFractionForeignEarnedIncome(), govConstants);
-
-        LOG.info("");
-        LOG.info("                        TAXES");
-        LOG.info("Fed Income Tax: {}", taxes.get(Tax.FED_INCOME));
-        LOG.info("Social Security Tax: {}", taxes.get(Tax.SOCIAL_SECURITY));
-        LOG.info("Medicare Tax: {}", taxes.get(Tax.MEDICARE));
-        LOG.info("NIIT: {}", taxes.get(Tax.NIIT));
-        LOG.info("STCG Tax: {}", taxes.get(Tax.SHORT_TERM_CAP_GAINS));
-        LOG.info("LTCG Tax: {}", taxes.get(Tax.LONG_TERM_CAP_GAINS));
-        LOG.info(SUM_LINE);
+        /*
+        log.info(SUM_LINE);
         double totalTax = taxes.values().stream()
                 .reduce(0D, (l, r) -> l + r);
-        LOG.info("Total Tax: {}", totalTax);
+        log.info("Total Tax: {}", totalTax);
         double marginalTaxRate = totalTax / (double)grossIncome;
-        LOG.info("Effective Tax Rate: {}", marginalTaxRate);
-        LOG.info("");
+        log.info("Effective Tax Rate: {}", marginalTaxRate);
+        log.info("");
+         */
 
         return null;
     }
 
-    private static IncomeStreams sumIncomeStreams(Scenario scenario) {
-        long earnedIncome = scenario.getEarnedIncome().stream()
-                .reduce(0L, (l, r) -> l + r);
-        long ltcg = scenario.getLongTermCapitalGains().stream()
-                .reduce(0L, (l, r) -> l + r);
-        long stcg = scenario.getShortTermCapitalGains().stream()
-                .reduce(0L, (l, r) -> l + r);
-
-        // TODO add interest & qualified/regular dividends
-        long otherUnearnedIncome = 0L;
-        return ImmutableIncomeStreams.builder()
-                .earnedIncome(earnedIncome)
-                .longTermCapGains(ltcg)
-                .shortTermCapGains(stcg)
-                .otherUnearnedIncome(otherUnearnedIncome)
-                .build();
-    }
-    /*
-    Applies the deductions in the proper order to the given incomes
-
-    Returns: The input income streams with deductions applied
-     */
-    private static IncomeStreams applyDeductions(IncomeStreams income, long deductions) {
-        // Deductions get applied to earned income first, and only after to unearned income (which is good)
-        // See: https://www.kitces.com/blog/long-term-capital-gains-bump-zone-higher-marginal-tax-rate-phase-in-0-rate
-        List<Long> incomesToReduceInOrder = ImmutableList.of(
-                income.getEarnedIncome(),
-                income.getOtherUnearnedIncome(),
-                income.getShortTermCapGains(),
-                income.getLongTermCapGains());
-        List<Long> resultingReducedIncomes = new ArrayList<>();
-        long remainingDeduction = deductions;
-        for (Long incomeToReduce : incomesToReduceInOrder) {
-            long resultingIncome = incomeToReduce;
-            if (remainingDeduction > 0) {
-                long amountToReduce = Math.min(remainingDeduction, incomeToReduce);
-                resultingIncome = incomeToReduce - amountToReduce;
-                remainingDeduction -= amountToReduce;
-            }
-            resultingReducedIncomes.add(resultingIncome);
-        }
-
-        return ImmutableIncomeStreams.builder()
-                // TODO we can do better than referencing list indexes, but it's fine for now
-                .earnedIncome(resultingReducedIncomes.get(0))
-                .otherUnearnedIncome(resultingReducedIncomes.get(1))
-                .shortTermCapGains(resultingReducedIncomes.get(2))
-                .longTermCapGains(resultingReducedIncomes.get(3))
-                .build();
-    }
-
-    /*
-    Calculates the big taxes on the input. Note that the args should be POST-DEDUCTION income!
-     */
-    private static Map<Tax, Double> calculateTaxes(
-            IncomeStreams income,
-            double fractionForeignEarnedIncome,
-            GovConstantsForYear govConstantsForYear) {
-        long taxableEarnedIncome = income.getEarnedIncome();
-        long taxableOtherUnearnedIncome = income.getOtherUnearnedIncome();
-        long taxableStcg = income.getShortTermCapGains();
-        long taxableLtcg = income.getLongTermCapGains();
-
-        ImmutableMap.Builder<Tax, Double> totalTaxes = ImmutableMap.builder();
-
-        // Federal income tax
-        ProgressiveTaxCalculator fedIncomeTaxCalculator = new ProgressiveTaxCalculator(govConstantsForYear.getFederalIncomeTaxBrackets());
-        long fedIncomeTaxableIncome = taxableEarnedIncome + taxableOtherUnearnedIncome + taxableStcg;
-        double fedIncomeTaxBeforeFEIE = fedIncomeTaxCalculator.calculateTax(fedIncomeTaxableIncome);
-        long excludedFEI = Math.min(
-                govConstantsForYear.getForeignIncomeConstants().getForeignEarnedIncomeExemption(),
-                (long) (fractionForeignEarnedIncome * (double)taxableEarnedIncome));
-        double fedIncomeTaxOnExcludedFEI = fedIncomeTaxCalculator.calculateTax(excludedFEI);
-        double fedIncomeTax = fedIncomeTaxBeforeFEIE - fedIncomeTaxOnExcludedFEI;
-        totalTaxes.put(Tax.FED_INCOME, fedIncomeTax);
-
-        FicaConstants ficaConstants = govConstantsForYear.getFicaConstants();
-
-        // Social security tax
-        long socialSecurityTaxableAmount = Math.min(ficaConstants.getSocialSecurityWageCap(), taxableEarnedIncome);
-        double socialSecurityTax = ficaConstants.getSocialSecurityRate() * (double)socialSecurityTaxableAmount;
-        totalTaxes.put(Tax.SOCIAL_SECURITY, socialSecurityTax);
-
-        // Medicare tax
-        double medicareBaseTax = ficaConstants.getMedicareBaseRate() * (double)taxableEarnedIncome;
-        long medicareSurtaxableAmount = Math.max(0, taxableEarnedIncome - ficaConstants.getMedicareSurtaxFloor());
-        double medicareSurtax = ficaConstants.getMedicareSurtaxExtraRate() * (double)medicareSurtaxableAmount;
-        double medicareTax = medicareBaseTax + medicareSurtax;
-        totalTaxes.put(Tax.MEDICARE, medicareTax);
-
-        // Net Investment Income Tax (aka Unearned Income Medicare Contribution Surtax)
-        long investmentIncome = taxableStcg + taxableLtcg + taxableOtherUnearnedIncome;
-        long niitTaxableAmount = Math.max(0, investmentIncome - ficaConstants.getNetInvestmentIncomeFloor());
-        double niitTax = ficaConstants.getNetInvestmentIncomeTaxRate() * (double)niitTaxableAmount;
-        totalTaxes.put(Tax.NIIT, niitTax);
-
-        // Capital gains: these are "stacked" on top of other income, so unfortunately they don't start at the absolute
-        //  lowest rate
-        long incomeUnderneathStcg = taxableEarnedIncome + taxableOtherUnearnedIncome;
-        double stcgPlusIncomeUndearneathTax = fedIncomeTaxCalculator.calculateTax(incomeUnderneathStcg + taxableStcg);
-        double incomeUnderneathStcgTax = fedIncomeTaxCalculator.calculateTax(incomeUnderneathStcg);
-        double stcgTax = stcgPlusIncomeUndearneathTax - incomeUnderneathStcgTax;
-        totalTaxes.put(Tax.SHORT_TERM_CAP_GAINS, stcgTax);
-
-        ProgressiveTaxCalculator fedLtcgTaxCalculator = new ProgressiveTaxCalculator(govConstantsForYear.getFederalLtcgBrackets());
-        long incomeUnderneathLtcg = incomeUnderneathStcg + taxableStcg;
-        double ltcgPlusIncomeUnderneathTax = fedLtcgTaxCalculator.calculateTax(incomeUnderneathLtcg + taxableLtcg);
-        double incomeUnderneathLtcgTax = fedLtcgTaxCalculator.calculateTax(incomeUnderneathLtcg);
-        double ltcgTax = ltcgPlusIncomeUnderneathTax - incomeUnderneathLtcgTax;
-        totalTaxes.put(Tax.LONG_TERM_CAP_GAINS, ltcgTax);
-
-        return totalTaxes.build();
-    }
-
     private static ValueOrGError<List<ValidationWarning>> validateScenarioAgainstConstants(Scenario scenario, GovConstantsForYear govConstantsForYear) {
-        IncomeStreams grossIncomeStreams = sumIncomeStreams(scenario);
+        IncomeStreams grossIncomeStreams = scenario.getIncomeStreams();
 
         List<ValidationWarning> warnings = new ArrayList<>();
 
@@ -344,15 +235,6 @@ public class Main {
                     totalIraContrib
             ));
         }
-        // IRA contributions MUST be done with earned income!!
-        // See: https://www.investopedia.com/retirement/ira-contribution-limits/
-        if (grossIncomeStreams.getEarnedIncome() < totalIraContrib) {
-            return ValueOrGError.ofError(GError.newError(
-                    "IRA contributions are limited to earned income, but earned income {} is < total IRA contrib {}",
-                    grossIncomeStreams.getEarnedIncome(),
-                    totalIraContrib
-            ));
-        }
         if (totalIraContrib < retirementConstants.getIraContribLimit()) {
             warnings.add(ValidationWarning.of(
                     "The IRA contribution limit {} but the scenario's total IRA contribution is only {}",
@@ -361,7 +243,8 @@ public class Main {
             ));
         }
 
-        long total401kContrib = scenario.get401kContrib().getTrad() + scenario.get401kContrib().getRoth();
+        long trad401kContrib = scenario.get401kContrib().getTrad();
+        long total401kContrib = trad401kContrib + scenario.get401kContrib().getRoth();
         if (total401kContrib > govConstantsForYear.getRetirementConstants().getPersonal401kContribLimit()) {
             return ValueOrGError.ofError(GError.newError(
                     "The 401k contribution limit is {} but the scenario's total 401k contribution is {}",
@@ -377,6 +260,68 @@ public class Main {
             ));
         }
 
+        // IRA contributions MUST be done with earned income, and trad 401k contributions can
+        //  only be done via an employer (i.e. earned income) so total_ira_contrib + trad_401k_contrib must be
+        // See: https://www.investopedia.com/retirement/ira-contribution-limits/
+        if (grossIncomeStreams.getEarnedIncome() < totalIraContrib + trad401kContrib) {
+            return ValueOrGError.ofError(GError.newError(
+                    "IRA contributions are limited to earned income and trad 401k contributions can only be done " +
+                            "using earned income so total_ira_contrib + trad_401k_contrib must be < earned_income, but" +
+                            "earned_income {} is < total_ira_contrib {} + trad_401k_contrib {}",
+                    grossIncomeStreams.getEarnedIncome(),
+                    totalIraContrib,
+                    trad401kContrib
+            ));
+        }
+
         return ValueOrGError.ofValue(warnings);
+    }
+
+    private static void logSectionHeader(String header) {
+        header = header.toUpperCase();
+        // We add 2 to account for the ": " that each item entry has
+        int totalWidth = 2 * MINIMUM_ITEM_TITLE_WIDTH + 2;
+        int spacesToAdd = (totalWidth - header.length()) / 2;
+        log.info(
+                "{}{}",
+                Strings.repeat(" ", spacesToAdd),
+                header
+        );
+    }
+
+    private static void logCurrencyItem(String title, Object value) {
+        log.info(
+                "{}: {}",
+                String.format("%1$" + MINIMUM_ITEM_TITLE_WIDTH + "s", title),
+                String.format(
+                        "%1$" + MINIMUM_CURRENCY_WIDTH + "s",
+                        CURRENCY_FORMAT.format(value)
+                )
+        );
+    }
+
+    private static void renderTaxesSection(String titleCaseSumName, Map<Tax, Double> taxes, long grossIncome) {
+
+        log.info("");
+        logSectionHeader(titleCaseSumName);
+        double totalTaxes = 0D;
+        for (Map.Entry<Tax, Double> entry : taxes.entrySet()) {
+            double tax = entry.getValue();
+            totalTaxes += tax;
+            String prettyName = entry.getKey().getPrettyName();
+            logCurrencyItem(prettyName, tax);
+        }
+        double effectiveTaxRate = totalTaxes / (double)grossIncome;
+        log.info(SUM_LINE);
+        String itemTitle = "Total " + titleCaseSumName;
+        log.info(
+                "{}: {} ({} effective tax rate)",
+                String.format("%1$" + MINIMUM_ITEM_TITLE_WIDTH + "s", itemTitle),
+                String.format(
+                        "%1$" + MINIMUM_CURRENCY_WIDTH + "s",
+                        CURRENCY_FORMAT.format(totalTaxes)
+                ),
+                PERCENT_FORMAT.format(effectiveTaxRate)
+        );
     }
 }
