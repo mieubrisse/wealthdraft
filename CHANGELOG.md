@@ -2,6 +2,7 @@ TBD
 ----
 * Add "Total Taxes" section
 * Add unearned income section to scenario
+* Corrected NIIT calculation
 
 0.1.4
 -----

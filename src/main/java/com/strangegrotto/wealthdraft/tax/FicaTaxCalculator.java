@@ -32,10 +32,27 @@ public class FicaTaxCalculator {
         double medicareTax = medicareBaseTax + medicareSurtax;
         result.put(Tax.MEDICARE, medicareTax);
 
-        // TODO NIIT actually isn't an employment tax, though it is Medicare
-        // Net Investment Income Tax (aka Unearned Income Medicare Contribution Surtax)
-        long investmentIncome = income.getShortTermCapGains() + income.getLongTermCapGains() + income.getOtherUnearnedIncome();
-        long niitTaxableAmount = Math.max(0, investmentIncome - ficaConstants.getNetInvestmentIncomeFloor());
+        // TODO NIIT actually isn't an employment tax, though it is Medicare (really, Obamacare)
+        // Net Investment Income Tax is calculated on the lesser of:
+        // 1) the net investment income or
+        // 2) the amount of net investment income that MAGI goes over the 200k threshold
+        // This happens because unearned income stacks on top of earned income, so only investment income would be
+        //  over the 200k threshold
+        // Because we need MAGI, we need to calculate retirement deductions
+        Deductions deductions = DeductionsCalculator.calculateAllowedDeductions(scenario, govConstants);
+        long retirementDeductions = deductions.getTrad401kDeduction() + deductions.getTradIraDeduction();
+        IncomeStreams incomeStreamsLessRetirementDeductions = DeductionsCalculator.applyDeduction(income, retirementDeductions);
+        long investmentIncome = incomeStreamsLessRetirementDeductions.getOtherUnearnedIncome() +
+                incomeStreamsLessRetirementDeductions.getShortTermCapGains() +
+                incomeStreamsLessRetirementDeductions.getLongTermCapGains();
+        long totalIncomeLessRetirementDeductions = incomeStreamsLessRetirementDeductions.getTotal();
+        long niitTaxableAmount = Math.min(
+                investmentIncome,
+                Math.max(
+                        0,
+                        totalIncomeLessRetirementDeductions - ficaConstants.getNetInvestmentIncomeFloor()
+                )
+        );
         double niitTax = ficaConstants.getNetInvestmentIncomeTaxRate() * (double)niitTaxableAmount;
         result.put(Tax.NIIT, niitTax);
 
