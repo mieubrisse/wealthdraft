@@ -1,22 +1,39 @@
 # EXAMPLE SCENARIOS
 exampleScenario1:
+  # Which year the 
   year: 2021
+
+  # Contributions to 401k - either traditional or Roth
   401kContrib:
     trad: 15000
     roth: 0
+
+  # Contributions to IRA - either traditional or Roth
   iraContrib:
     trad: 5000
     roth: 0
+
+  # Earned income: wages, salaries, tips
+  # See: https://www.irs.gov/credits-deductions/individuals/earned-income-tax-credit/earned-income
   earnedIncome:
     - 250000
+
+  # What percentage of the year's earned income is foreign-earned (fraction expressed from 0.0 to 1.0)
   fractionForeignEarnedIncome: 1.0
+
+  # Long-term capital gains earned in the year
   longTermCapitalGains:
     - 10000
     - 15000
+
+  # Short-term capital gains earned in the year
   shortTermCapitalGains:
     - 5000
+
+  # Unearned income that is NOT capital gains, e.g. savings account interest, rental income, and non-qualified dividends
   otherUnearnedIncome:
     - 10000
-  # TODO This relies on the user to know what the AMT adjustments are; ideally we'd itemize them for them
+
+  # Adustments that should be applied to income when calculating AMT (e.g. exercising-and-holding an ISO)
   amtAdjustments:
     - 25000
