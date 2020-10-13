@@ -24,6 +24,7 @@ public class RegularIncomeTaxCalculator {
         // Regular income tax allows trad IRA, trad 401k, and standard deduction
         // We don't apply the standard deduction yet though; that gets added later
         Deductions deductions = DeductionsCalculator.calculateAllowedDeductions(scenario, govConstants);
+        log.debug("Deductions: {}", deductions);
         long retirementDeductions = deductions.getTrad401kDeduction() +
                 deductions.getTradIraDeduction();
         log.debug("Trad 401k & IRA deductions: {}", retirementDeductions);
@@ -46,6 +47,9 @@ public class RegularIncomeTaxCalculator {
                 (long)((double)earnedIncome * scenario.getFractionForeignEarnedIncome())
         );
         long nonPreferentialNonExcludedFEIIncome = nonPreferentialIncome - excludedFEI;
+        log.debug("Non preferential income: {}", nonPreferentialIncome);
+        log.debug("Excluded FEI: {}", excludedFEI);
+        log.debug("Non preferential non excluded income: {}", nonPreferentialNonExcludedFEIIncome);
 
         // We apply the standard deduction separately here, rather than at the start, because the standard deduction
         //  gets applied AFTER the FEI exclusion. If we applied the standard deduction first, we'd potentially be
@@ -59,6 +63,7 @@ public class RegularIncomeTaxCalculator {
                 nonPreferentialNonExcludedFEIIncome - stdDeductionUsedOnNonPrefNonFEIEIncome
         );
         long remainingStdDeduction = deductions.getStandardDeduction() - stdDeductionUsedOnNonPrefNonFEIEIncome;
+        log.debug("Non preferential nonexcluded income less std deduction: {}", nonPrefNonFEIETaxableIncome);
 
         ProgressiveTaxCalculator taxCalculator = new ProgressiveTaxCalculator(govConstants.getFederalIncomeTaxBrackets());
         long nonPreferentialTaxableIncome = excludedFEI + nonPrefNonFEIETaxableIncome;
@@ -74,6 +79,7 @@ public class RegularIncomeTaxCalculator {
                 0,
                 ltcg - remainingStdDeduction
         );
+        log.debug("Preferential income less remaining std deduction: {}", preferentialTaxableIncome);
         double ltcgPlusIncomeUnderneathTax = fedLtcgTaxCalculator.calculateTax(nonPreferentialTaxableIncome + preferentialTaxableIncome);
         double incomeUnderneathLtcgTax = fedLtcgTaxCalculator.calculateTax(nonPreferentialTaxableIncome);
         double ltcgTax = ltcgPlusIncomeUnderneathTax - incomeUnderneathLtcgTax;

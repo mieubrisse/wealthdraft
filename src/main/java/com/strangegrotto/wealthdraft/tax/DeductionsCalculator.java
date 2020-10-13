@@ -35,7 +35,7 @@ public class DeductionsCalculator {
                 modifiedAdjustedGrossIncome - retirementConstants.getTradIraDeductiblePhaseoutFloor());
         long phaseoutRangeWidth = retirementConstants.getTradIraDeductiblePhaseoutCeiling() - retirementConstants.getTradIraDeductiblePhaseoutFloor();
         double phaseoutRangeFillPct = Math.min(1.0, (double)phaseoutRangeFill / (double)phaseoutRangeWidth);
-        double deductionMultiplier = phaseoutRangeFillPct == 0 ? 1.0 : 1 / phaseoutRangeFillPct;
+        double deductionMultiplier = phaseoutRangeFillPct == 0 ? 1.0 : 1.0 - phaseoutRangeFillPct;
         long tradIraDeduction = (long) (deductionMultiplier * scenario.getIraContrib().getTrad());
 
         return ImmutableDeductions.builder()

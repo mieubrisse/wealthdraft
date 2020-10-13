@@ -53,7 +53,7 @@ public class Main {
     private static final String SUM_LINE = Strings.repeat(" ", MINIMUM_ITEM_TITLE_WIDTH + 2)
             + Strings.repeat("-", MINIMUM_CURRENCY_WIDTH);
     private static final DecimalFormat CURRENCY_FORMAT = new DecimalFormat  ("###,##0");
-    private static final DecimalFormat PERCENT_FORMAT = new DecimalFormat("##.#%");
+    private static final DecimalFormat PERCENT_FORMAT = new DecimalFormat("#0.0%");
 
     private static final Logger log = LoggerFactory.getLogger(Main.class);
 
