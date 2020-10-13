@@ -7,6 +7,7 @@ import com.strangegrotto.wealthdraft.validator.DeserializationValidator;
 import org.immutables.value.Value;
 
 import java.util.List;
+import java.util.function.Function;
 
 @Value.Immutable
 @JsonDeserialize(as = ImmutableScenario.class)
@@ -26,7 +27,11 @@ public interface Scenario {
 
     List<Long> getShortTermCapitalGains();
 
-    // TODO Users right now need to know what this means - ideally we'd itemize for them
+    List<Long> getOrdinaryDividends();
+
+    List<Long> getQualifiedDividends();
+
+    // TODO Replace with a set of more descriptive properties
     List<Long> getOtherUnearnedIncome();
 
     // TODO There are a whoooole bunch of extra AMT adjustments that need to be added back here
@@ -45,19 +50,24 @@ public interface Scenario {
 
     @Value.Derived
     default IncomeStreams getIncomeStreams() {
-        long earnedIncome = getEarnedIncome().stream()
-                .reduce(0L, (l, r) -> l + r);
-        long ltcg = getLongTermCapitalGains().stream()
-                .reduce(0L, (l, r) -> l + r);
-        long stcg = getShortTermCapitalGains().stream()
-                .reduce(0L, (l, r) -> l + r);
-        long otherUnearnedIncome = getOtherUnearnedIncome().stream()
-                .reduce(0L, (l, r) -> l + r);
+        Function<List<Long>, Long> aggregateIncome = list -> list.stream().reduce(
+                0L,
+                (l, r) -> l + r
+        );
+
+        long earnedIncome = aggregateIncome.apply(getEarnedIncome());
+        long ltcg = aggregateIncome.apply(getLongTermCapitalGains());
+        long stcg = aggregateIncome.apply(getShortTermCapitalGains());
+        long otherUnearnedIncome = aggregateIncome.apply(getOtherUnearnedIncome());
+        long ordinaryDividends = aggregateIncome.apply(getOrdinaryDividends());
+        long qualifiedDividends = aggregateIncome.apply(getQualifiedDividends());
 
         return ImmutableIncomeStreams.builder()
                 .earnedIncome(earnedIncome)
                 .longTermCapGains(ltcg)
                 .shortTermCapGains(stcg)
+                .ordinaryDividends(ordinaryDividends)
+                .qualifiedDividends(qualifiedDividends)
                 .otherUnearnedIncome(otherUnearnedIncome)
                 .build();
     }
