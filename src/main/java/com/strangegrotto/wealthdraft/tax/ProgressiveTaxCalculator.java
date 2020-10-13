@@ -10,7 +10,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public class ProgressiveTaxCalculator {
-    private static final Logger LOG = LoggerFactory.getLogger(ProgressiveTaxCalculator.class);
+    private static final Logger log = LoggerFactory.getLogger(ProgressiveTaxCalculator.class);
 
     private final List<TaxBracket> brackets;
 
@@ -34,14 +34,14 @@ public class ProgressiveTaxCalculator {
         for (TaxBracket bracket : this.brackets) {
             long floor = bracket.getFloor();
             double rate = bracket.getRate();
-            LOG.debug("Floor: {}, Rate: {}", floor, rate);
+            log.trace("Floor: {}, Rate: {}", floor, rate);
 
             long amountInBracket = Math.max(0, remainingToCalculateTaxFor - floor);
             double taxInBracket = (double)amountInBracket * rate;
             totalTax += taxInBracket;
             remainingToCalculateTaxFor -= amountInBracket;
 
-            LOG.debug("Tax so far: {}", totalTax);
+            log.trace("Tax so far: {}", totalTax);
         }
         return totalTax;
     }

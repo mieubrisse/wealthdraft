@@ -7,8 +7,11 @@
 
     # The amount the AMT exemption will reduce, for every dollar over the phaseout floor
     exemptionPhaseoutRate: 0.25
-    lowEarnerRate: 0.26
-    highEarnerRate: 0.28
+    brackets:
+      - floor: 0
+        rate: 0.26
+      - floor: 197900
+        rate: 0.28
 
   federalIncomeTaxBrackets:
     - floor: 0
