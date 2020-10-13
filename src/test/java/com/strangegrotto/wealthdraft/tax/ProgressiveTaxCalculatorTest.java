@@ -34,9 +34,4 @@ public class ProgressiveTaxCalculatorTest {
         double actualTax = calculator.calculateTax(gross);
         Assert.assertEquals(expectedTax, actualTax, 0.0);
     }
-
-    @Test
-    public void TODODELETE() {
-
-    }
 }
