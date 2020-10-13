@@ -84,7 +84,7 @@ public class AmtTaxCalculator {
         // TODO when calculating the exemption phaseout, do I get to subtract my FEI???? I'm assuming no
         long amountOverPhaseout = Math.max(0, totalTaxableIncome - amtConstants.getExemptionPhaseoutFloor());
         long exemptionReduction = (long)((double)amountOverPhaseout * amtConstants.getExemptionPhaseoutRate());
-        long amtExemption = amtConstants.getExemption() - exemptionReduction;
+        long amtExemption = Math.max(0, amtConstants.getExemption() - exemptionReduction);
         log.debug("AMT Exemption Allowed: {}", amtExemption);
 
         long excludedFEI = Math.min(

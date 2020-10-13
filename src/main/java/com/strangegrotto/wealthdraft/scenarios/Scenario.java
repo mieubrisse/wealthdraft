@@ -26,6 +26,9 @@ public interface Scenario {
 
     List<Long> getShortTermCapitalGains();
 
+    // TODO Users right now need to know what this means - ideally we'd itemize for them
+    List<Long> getOtherUnearnedIncome();
+
     // TODO There are a whoooole bunch of extra AMT adjustments that need to be added back here
     //  Right now this relies on the user to know this, but ideally this should be handled in the YAML
     List<Long> getAmtAdjustments();
@@ -48,8 +51,8 @@ public interface Scenario {
                 .reduce(0L, (l, r) -> l + r);
         long stcg = getShortTermCapitalGains().stream()
                 .reduce(0L, (l, r) -> l + r);
-        // TODO add interest & qualified/regular dividends
-        long otherUnearnedIncome = 0L;
+        long otherUnearnedIncome = getOtherUnearnedIncome().stream()
+                .reduce(0L, (l, r) -> l + r);
 
         return ImmutableIncomeStreams.builder()
                 .earnedIncome(earnedIncome)

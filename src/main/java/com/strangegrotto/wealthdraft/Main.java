@@ -14,6 +14,8 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Ordering;
 import com.strangegrotto.wealthdraft.errors.GError;
 import com.strangegrotto.wealthdraft.errors.ValueOrGError;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
@@ -129,10 +131,12 @@ public class Main {
             log.warn("The latest gov constants we have are old, from {}!!!", latestYear);
         }
 
-        for (Map.Entry<String, Scenario> entry : scenarios.entrySet()) {
-            String name = entry.getKey();
-            Scenario scenario = entry.getValue();
-            log.info("======================= {} ======================", name);
+        List<String> scenarioNames = new ArrayList<>(scenarios.keySet());
+        scenarioNames.sort(Ordering.natural());
+
+        for (String scenarioName : scenarioNames) {
+            Scenario scenario = scenarios.get(scenarioName);
+            log.info("======================= {} ======================", scenarioName);
 
             int scenarioYear = scenario.getYear();
             GovConstantsForYear govConstantsToUse;
@@ -216,14 +220,55 @@ public class Main {
                 + grossIncomeStreams.getOtherUnearnedIncome();
         logCurrencyItem("Gross Income", grossIncome);
 
+        long totalAmtAdjustments = scenario.getAmtAdjustments().stream()
+                .reduce(0L, (l, r) -> l + r);
+        log.info("");
+        logSectionHeader("ADJUSTMENTS");
+        logCurrencyItem("AMT Adjustments", totalAmtAdjustments);
+
         Map<Tax, Double> ficaTaxes = FicaTaxCalculator.calculateFicaTax(scenario, govConstants);
+        log.info("");
+        logSectionHeader("FICA TAX");
         renderTaxesSection("FICA Tax", ficaTaxes, grossIncome);
 
         Map<Tax, Double> regFedIncomeTaxes = RegularIncomeTaxCalculator.calculateRegularIncomeTax(scenario, govConstants);
+        log.info("");
+        logSectionHeader("REG FED INCOME TAX");
         renderTaxesSection("Reg Fed Income Tax", regFedIncomeTaxes, grossIncome);
 
         Map<Tax, Double> amtTaxes = AmtTaxCalculator.calculateAmtTax(scenario, govConstants);
+        log.info("");
+        logSectionHeader("AMT");
         renderTaxesSection("AMT", amtTaxes, grossIncome);
+
+        Double totalRegIncomeTax = regFedIncomeTaxes.values().stream()
+                .reduce(0D, (l, r) -> l + r);
+        Double totalAmtIncomeTax = amtTaxes.values().stream()
+                .reduce(0D, (l, r) -> l + r);
+
+        Map<Tax, Double> totalTaxes = new HashMap<>();
+        totalTaxes.putAll(ficaTaxes);
+        String higherTaxSystem;
+        String lowerTaxSystem;
+        if (totalRegIncomeTax >= totalAmtIncomeTax) {
+            higherTaxSystem = "regular income tax";
+            lowerTaxSystem = "AMT";
+            totalTaxes.putAll(regFedIncomeTaxes);
+        } else {
+            higherTaxSystem = "AMT";
+            lowerTaxSystem = "regular income tax";
+            totalTaxes.putAll(amtTaxes);
+        }
+
+        log.info("");
+        logSectionHeader("TOTAL TAX");
+        log.info(
+                "Year's {} was higher than {}; using {} income tax",
+                higherTaxSystem,
+                lowerTaxSystem,
+                higherTaxSystem
+        );
+        renderTaxesSection("Scenario Tax", totalTaxes, grossIncome);
 
         /*
         log.info(SUM_LINE);
@@ -318,9 +363,6 @@ public class Main {
     }
 
     private static void renderTaxesSection(String titleCaseSumName, Map<Tax, Double> taxes, long grossIncome) {
-
-        log.info("");
-        logSectionHeader(titleCaseSumName);
         double totalTaxes = 0D;
         for (Map.Entry<Tax, Double> entry : taxes.entrySet()) {
             double tax = entry.getValue();

@@ -1,3 +1,8 @@
+TBD
+----
+* Add "Total Taxes" section
+* Add unearned income section to scenario
+
 0.1.4
 -----
 * Let scenarios specify which gov constant years they're going to use
