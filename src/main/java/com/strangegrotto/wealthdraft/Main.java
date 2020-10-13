@@ -4,20 +4,23 @@
 package com.strangegrotto.wealthdraft;
 
 import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.ConsoleAppender;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.base.Strings;
 import com.strangegrotto.wealthdraft.errors.GError;
 import com.strangegrotto.wealthdraft.errors.ValueOrGError;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.govconstants.RetirementConstants;
 import com.strangegrotto.wealthdraft.scenarios.IncomeStreams;
 import com.strangegrotto.wealthdraft.scenarios.Scenario;
-import com.strangegrotto.wealthdraft.tax.ProgressiveTaxCalculator;
-import com.strangegrotto.wealthdraft.tax.Tax;
+import com.strangegrotto.wealthdraft.tax.*;
 import com.strangegrotto.wealthdraft.validator.ValidationWarning;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.helper.HelpScreenException;
@@ -29,11 +32,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.time.Year;
 import java.util.*;
 
 public class Main {
-    private static final String SUM_LINE = "----------------------------------------------";
     private static final int SUCCESS_EXIT_CODE = 0;
     private static final int FAILURE_EXIT_CODE = 1;
 
@@ -41,9 +44,22 @@ public class Main {
     private static final String GOV_CONSTANTS_FILEPATH_ARG = "gov-constants";
     private static final String LOG_LEVEL_ARG = "log-level";
 
-    private static final Logger LOG = LoggerFactory.getLogger(Main.class);
+    private static final String LOGBACK_LAYOUT_PATTERN = "%highlight(%-5level) %logger{0} - %message%n";
+
+    private static final int MINIMUM_ITEM_TITLE_WIDTH = 30;
+    private static final int MINIMUM_CURRENCY_WIDTH = 9;
+    private static final String SUM_LINE = Strings.repeat(" ", MINIMUM_ITEM_TITLE_WIDTH + 2)
+            + Strings.repeat("-", MINIMUM_CURRENCY_WIDTH);
+    private static final DecimalFormat CURRENCY_FORMAT = new DecimalFormat  ("###,##0");
+    private static final DecimalFormat PERCENT_FORMAT = new DecimalFormat("##.#%");
+
+    private static final Logger log = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
+        Logger slf4jRootLogger = org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
+        ch.qos.logback.classic.Logger logbackRootLogger = (ch.qos.logback.classic.Logger) slf4jRootLogger;
+        configureRootLoggerPattern(logbackRootLogger);
+
         ArgumentParser parser = ArgumentParsers.newFor("Financial Predictor").build()
                 .defaultHelp(true)
                 .description("A financial modelling CLI");
@@ -70,39 +86,38 @@ public class Main {
             System.exit(SUCCESS_EXIT_CODE);
             return;
         } catch (ArgumentParserException e) {
-            LOG.error("An error occurred parsing the CLI args", e);
+            log.error("An error occurred parsing the CLI args", e);
             System.exit(FAILURE_EXIT_CODE);
             return;
         }
 
         Level logLevel = parsedArgs.get(LOG_LEVEL_ARG);
-        Logger rootLogger = org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
-        ((ch.qos.logback.classic.Logger) rootLogger).setLevel(logLevel);
+        logbackRootLogger.setLevel(logLevel);
 
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         mapper.registerModules(new GuavaModule());
         TypeFactory typeFactory = mapper.getTypeFactory();
 
         String scenariosFilepath = parsedArgs.getString(SCENARIOS_FILEPATH_ARG);
-        LOG.debug("Scenarios filepath: {}", scenariosFilepath);
+        log.debug("Scenarios filepath: {}", scenariosFilepath);
         MapType scenariosMapType = typeFactory.constructMapType(HashMap.class, String.class, Scenario.class);
         Map<String, Scenario> scenarios;
         try {
             scenarios = mapper.readValue(new File(scenariosFilepath), scenariosMapType);
         } catch (IOException e) {
-            LOG.error("An error occurred parsing scenarios file '{}'", scenariosFilepath, e);
+            log.error("An error occurred parsing scenarios file '{}'", scenariosFilepath, e);
             System.exit(FAILURE_EXIT_CODE);
             return;
         }
 
         String govConstantsFilepath = parsedArgs.getString(GOV_CONSTANTS_FILEPATH_ARG);
-        LOG.debug("Gov constants filepath: {}", govConstantsFilepath);
+        log.debug("Gov constants filepath: {}", govConstantsFilepath);
         MapType govConstantsMapType = typeFactory.constructMapType(HashMap.class, Integer.class, GovConstantsForYear.class);
         Map<Integer, GovConstantsForYear> allGovConstants;
         try {
             allGovConstants = mapper.readValue(new File(govConstantsFilepath), govConstantsMapType);
         } catch (IOException e) {
-            LOG.error("An error occurred parsing gov constants file '{}'", govConstantsFilepath, e);
+            log.error("An error occurred parsing gov constants file '{}'", govConstantsFilepath, e);
             System.exit(FAILURE_EXIT_CODE);
             return;
         }
@@ -111,19 +126,38 @@ public class Main {
         GovConstantsForYear latestGovConstants = allGovConstants.get(latestYear);
 
         if (Year.now().getValue() != latestYear) {
-            LOG.warn("The latest gov constants we have are old, from {}!!!", latestYear);
+            log.warn("The latest gov constants we have are old, from {}!!!", latestYear);
         }
 
         for (Map.Entry<String, Scenario> entry : scenarios.entrySet()) {
             String name = entry.getKey();
             Scenario scenario = entry.getValue();
 
-            LOG.info("======================= {} ======================", name);
+            log.info("======================= {} ======================", name);
             GError err = calculateScenario(scenario, latestGovConstants);
             if (err != null) {
-                LOG.error(err.toString());
+                log.error(err.toString());
             }
         }
+    }
+
+    private static void configureRootLoggerPattern(ch.qos.logback.classic.Logger rootLogger) {
+        // Configure the logger with our desired pattern
+        // See: http://logback.qos.ch/manual/layouts.html
+        LoggerContext loggerContext = rootLogger.getLoggerContext();
+        loggerContext.reset();
+
+        PatternLayoutEncoder encoder = new PatternLayoutEncoder();
+        encoder.setContext(loggerContext);
+        encoder.setPattern(LOGBACK_LAYOUT_PATTERN);
+        encoder.start();
+
+        ConsoleAppender<ILoggingEvent> appender = new ConsoleAppender<>();
+        appender.setContext(loggerContext);
+        appender.setEncoder(encoder);
+        appender.start();
+
+        rootLogger.addAppender(appender);
     }
 
     private static GError calculateScenario(
@@ -135,105 +169,60 @@ public class Main {
         }
         List<ValidationWarning> validationWarnings = validationResult.getValue();
         if (validationWarnings.size() > 0) {
-            LOG.info("                      WARNINGS");
+            logSectionHeader("WARNINGS");
             for (ValidationWarning warning : validationWarnings) {
-                LOG.warn(warning.getMessage());
+                log.warn(warning.getMessage());
             }
-            LOG.warn("");
+            log.warn("");
         }
+
+        logSectionHeader("RETIREMENT");
+        logCurrencyItem("Trad 401k Contrib", scenario.get401kContrib().getTrad());
+        logCurrencyItem("Roth 401k Contrib", scenario.get401kContrib().getRoth());
+        logCurrencyItem("Trad IRA Contrib", scenario.getIraContrib().getTrad());
+        logCurrencyItem("Roth IRA Contrib", scenario.getIraContrib().getRoth());
 
         IncomeStreams grossIncomeStreams = scenario.getIncomeStreams();
 
-        LOG.info("                       INCOME");
-        LOG.info("Earned Income: {}", grossIncomeStreams.getEarnedIncome());
-        LOG.info("Longterm Cap Gains: {}", grossIncomeStreams.getLongTermCapGains());
-        LOG.info("Shortterm Cap Gains: {}", grossIncomeStreams.getShortTermCapGains());
-        LOG.info("Other Unearned Income: {}", grossIncomeStreams.getOtherUnearnedIncome());
-        LOG.info(SUM_LINE);
+        log.info("");
+        logSectionHeader("GROSS INCOME");
+        logCurrencyItem("Earned Income", grossIncomeStreams.getEarnedIncome());
+        logCurrencyItem("Longterm Cap Gains", grossIncomeStreams.getLongTermCapGains());
+        logCurrencyItem("Shortterm Cap Gains", grossIncomeStreams.getShortTermCapGains());
+        logCurrencyItem("Other Unearned Income", grossIncomeStreams.getOtherUnearnedIncome());
+        log.info(SUM_LINE);
         long grossIncome = grossIncomeStreams.getEarnedIncome()
                 + grossIncomeStreams.getLongTermCapGains()
                 + grossIncomeStreams.getShortTermCapGains()
                 + grossIncomeStreams.getOtherUnearnedIncome();
-        LOG.info("Gross Income: {}", grossIncome);
+        logCurrencyItem("Gross Income", grossIncome);
 
-        Map<Tax, Double> ficaTaxes = calculateFicaTaxes(grossIncomeStreams, govConstants);
+        Map<Tax, Double> ficaTaxes = FicaTaxCalculator.calculateFicaTax(scenario, govConstants);
+        Double totalFicaTax = ficaTaxes.values().stream()
+                .reduce(0D, (l, r) -> l + r);
+        renderTaxesSection("FICA Tax", ficaTaxes, grossIncome);
 
+        Map<Tax, Double> regFedIncomeTaxes = RegularIncomeTaxCalculator.calculateRegularIncomeTax(scenario, govConstants);
+        renderTaxesSection("Reg Fed Income Tax", regFedIncomeTaxes, grossIncome);
+
+        Map<Tax, Double> amtTaxes = AmtTaxCalculator.calculateAmtTax(scenario, govConstants);
+        renderTaxesSection("AMT", amtTaxes, grossIncome);
 
         /*
-        LOG.info("");
-        LOG.info("                      DEDUCTIONS");
-        LOG.info("Trad 401k Contrib: {}", reg401kContrib);
-        LOG.info("Trad IRA Contrib Deductible: {}", tradIraDeduction);
-        LOG.info("Standard Deduction: {}", govConstants.getStandardDeduction());
-         */
-
-        double fractionForeignEarnedIncome = scenario.getFractionForeignEarnedIncome();
-
-        // AMT allows trad IRA & 401k deductions, but not the standard deduction
-        long amtAllowedDeductions = reg401kContrib + tradIraDeduction;
-        IncomeStreams amtTaxableIncome = applyDeductions(grossIncomeStreams, amtAllowedDeductions);
-        Map<Tax, Double> amtTaxes = calculateAmtTaxes(amtTaxableIncome, fractionForeignEarnedIncome, govConstants);
-
-
-        // Primary fed income tax also has the standard deduction
-        long primaryAllowedDeductions = amtAllowedDeductions + govConstants.getStandardDeduction();
-        IncomeStreams primaryTaxableIncome = applyDeductions(grossIncomeStreams, primaryAllowedDeductions);
-        Map<Tax, Double> primaryTaxes = calculatePrimaryTaxes(primaryTaxableIncome, fractionForeignEarnedIncome, govConstants);
-
-        LOG.info("");
-        LOG.info("                     TAXABLE INCOME");
-        LOG.info("Earned Income: {}", primaryTaxableIncome.getEarnedIncome());
-        LOG.info("Longterm Cap Gains: {}", primaryTaxableIncome.getLongTermCapGains());
-        LOG.info("Shortterm Cap Gains: {}", primaryTaxableIncome.getShortTermCapGains());
-        LOG.info("Other Unearned Income: {}", primaryTaxableIncome.getOtherUnearnedIncome());
-
-
-        ProgressiveTaxCalculator fedIncomeTaxCalculator = new ProgressiveTaxCalculator(govConstants.getFederalIncomeTaxBrackets());
-        Map<Tax, Double> taxes = calculatePrimaryTaxes(primaryTaxableIncome, scenario.getFractionForeignEarnedIncome(), govConstants);
-
-        LOG.info("");
-        LOG.info("                        TAXES");
-        LOG.info("Fed Income Tax: {}", taxes.get(Tax.NON_PREFERENTIAL_INCOME));
-        LOG.info("Social Security Tax: {}", taxes.get(Tax.SOCIAL_SECURITY));
-        LOG.info("Medicare Tax: {}", taxes.get(Tax.MEDICARE));
-        LOG.info("NIIT: {}", taxes.get(Tax.NIIT));
-        LOG.info("STCG Tax: {}", taxes.get(Tax.SHORT_TERM_CAP_GAINS));
-        LOG.info("LTCG Tax: {}", taxes.get(Tax.LONG_TERM_CAP_GAINS));
-        LOG.info(SUM_LINE);
+        log.info(SUM_LINE);
         double totalTax = taxes.values().stream()
                 .reduce(0D, (l, r) -> l + r);
-        LOG.info("Total Tax: {}", totalTax);
+        log.info("Total Tax: {}", totalTax);
         double marginalTaxRate = totalTax / (double)grossIncome;
-        LOG.info("Effective Tax Rate: {}", marginalTaxRate);
-        LOG.info("");
+        log.info("Effective Tax Rate: {}", marginalTaxRate);
+        log.info("");
+         */
 
         return null;
     }
 
-    /*
-    Applies the deductions in the proper order to the given incomes
-
-    Returns: The input income streams with deductions applied
-     */
-    private static IncomeStreams applyDeductions(IncomeStreams income, long deductions) {
-    }
-
-    private static Map<Tax, Double> calculateFicaTaxes(IncomeStreams income, GovConstantsForYear govConstants) {
-    }
-
-    /*
-    Calculates taxes under the AMT system (assumes AMT-allowed deductions have already been included
-     */
-    private static Map<Tax, Double> calculateAmtTaxes(IncomeStreams income, double fractionForeignEarnedIncome, GovConstantsForYear govConstants) {
-        ImmutableMap.Builder<Tax, Double> amtTaxes = ImmutableMap.builder();
-
-
-
-        return amtTaxes.build();
-    }
-
     private static ValueOrGError<List<ValidationWarning>> validateScenarioAgainstConstants(Scenario scenario, GovConstantsForYear govConstantsForYear) {
-        IncomeStreams grossIncomeStreams = sumIncomeStreams(scenario);
+        IncomeStreams grossIncomeStreams = scenario.getIncomeStreams();
 
         List<ValidationWarning> warnings = new ArrayList<>();
 
@@ -286,5 +275,53 @@ public class Main {
         }
 
         return ValueOrGError.ofValue(warnings);
+    }
+
+    private static void logSectionHeader(String header) {
+        header = header.toUpperCase();
+        // We add 2 to account for the ": " that each item entry has
+        int totalWidth = 2 * MINIMUM_ITEM_TITLE_WIDTH + 2;
+        int spacesToAdd = (totalWidth - header.length()) / 2;
+        log.info(
+                "{}{}",
+                Strings.repeat(" ", spacesToAdd),
+                header
+        );
+    }
+
+    private static void logCurrencyItem(String title, Object value) {
+        log.info(
+                "{}: {}",
+                String.format("%1$" + MINIMUM_ITEM_TITLE_WIDTH + "s", title),
+                String.format(
+                        "%1$" + MINIMUM_CURRENCY_WIDTH + "s",
+                        CURRENCY_FORMAT.format(value)
+                )
+        );
+    }
+
+    private static void renderTaxesSection(String titleCaseSumName, Map<Tax, Double> taxes, long grossIncome) {
+
+        log.info("");
+        logSectionHeader(titleCaseSumName);
+        double totalTaxes = 0D;
+        for (Map.Entry<Tax, Double> entry : taxes.entrySet()) {
+            double tax = entry.getValue();
+            totalTaxes += tax;
+            String prettyName = entry.getKey().getPrettyName();
+            logCurrencyItem(prettyName, tax);
+        }
+        double effectiveTaxRate = totalTaxes / (double)grossIncome;
+        log.info(SUM_LINE);
+        String itemTitle = "Total " + titleCaseSumName;
+        log.info(
+                "{}: {} ({} effective tax rate)",
+                String.format("%1$" + MINIMUM_ITEM_TITLE_WIDTH + "s", itemTitle),
+                String.format(
+                        "%1$" + MINIMUM_CURRENCY_WIDTH + "s",
+                        CURRENCY_FORMAT.format(totalTaxes)
+                ),
+                PERCENT_FORMAT.format(effectiveTaxRate)
+        );
     }
 }

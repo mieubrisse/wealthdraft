@@ -15,5 +15,5 @@ exampleScenario1:
   shortTermCapitalGains:
     - 5000
   # TODO This relies on the user to know what the AMT adjustments are; ideally we'd itemize them for them
-  extraAmtIncome:
+  amtAdjustments:
     - 25000

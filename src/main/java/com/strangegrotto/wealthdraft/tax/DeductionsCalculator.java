@@ -1,9 +1,9 @@
 package com.strangegrotto.wealthdraft.tax;
 
 import com.google.common.collect.ImmutableList;
-import com.strangegrotto.wealthdraft.ImmutableIncomeStreams;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.govconstants.RetirementConstants;
+import com.strangegrotto.wealthdraft.scenarios.ImmutableIncomeStreams;
 import com.strangegrotto.wealthdraft.scenarios.IncomeStreams;
 import com.strangegrotto.wealthdraft.scenarios.Scenario;
 
