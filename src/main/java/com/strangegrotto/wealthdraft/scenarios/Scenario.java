@@ -11,6 +11,8 @@ import java.util.List;
 @Value.Immutable
 @JsonDeserialize(as = ImmutableScenario.class)
 public interface Scenario {
+    int getYear();
+
     @JsonProperty("401kContrib") TradOrRothContribs get401kContrib();
 
     TradOrRothContribs getIraContrib();
