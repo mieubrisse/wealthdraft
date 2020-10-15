@@ -26,8 +26,4 @@ For easy development, the CLI can be run with the `scripts/build_and_run.sh` scr
 
 TODO
 ----
-* Tax credits
-* Foreign housing exclusion
-* Foreign tax credit
-* Mortgage deductions
-* Business income deductions
+See [the issues page](https://github.com/mieubrisse/wealthdraft/issues)
