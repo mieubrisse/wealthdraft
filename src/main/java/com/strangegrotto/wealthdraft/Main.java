@@ -56,6 +56,8 @@ public class Main {
     private static final DecimalFormat CURRENCY_FORMAT = new DecimalFormat  ("###,##0");
     private static final DecimalFormat PERCENT_FORMAT = new DecimalFormat("#0.0%");
 
+    private static final String SCENARIO_HEADER_LINE = Strings.repeat("=", 2 * MINIMUM_ITEM_TITLE_WIDTH + 2);
+
     private static final Logger log = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
@@ -137,7 +139,12 @@ public class Main {
 
         for (String scenarioName : scenarioNames) {
             Scenario scenario = scenarios.get(scenarioName);
-            log.info("======================= {} ======================", scenarioName);
+
+            log.info("");
+            log.info(SCENARIO_HEADER_LINE);
+            int spacesToAdd = (SCENARIO_HEADER_LINE.length() - scenarioName.length()) / 2;
+            log.info(Strings.repeat(" ", spacesToAdd) + scenarioName);
+            log.info(SCENARIO_HEADER_LINE);
 
             int scenarioYear = scenario.getYear();
             GovConstantsForYear govConstantsToUse;
