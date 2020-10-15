@@ -5,16 +5,22 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
 import com.strangegrotto.wealthdraft.validator.DeserializationValidator;
 import org.immutables.value.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.function.Function;
 
 @Value.Immutable
 @JsonDeserialize(as = ImmutableScenario.class)
 public interface Scenario {
+    Logger log = LoggerFactory.getLogger(Scenario.class);
+
     int getYear();
 
-    @JsonProperty("401kContrib") TradOrRothContribs get401kContrib();
+    @JsonProperty("401kContrib")
+    TradOrRothContribs get401kContrib();
 
     TradOrRothContribs getIraContrib();
 
@@ -54,6 +60,8 @@ public interface Scenario {
                 0L,
                 (l, r) -> l + r
         );
+
+        log.debug("Ordinary dividends: {}", getOrdinaryDividends());
 
         long earnedIncome = aggregateIncome.apply(getEarnedIncome());
         long ltcg = aggregateIncome.apply(getLongTermCapitalGains());

@@ -16,7 +16,7 @@ exampleScenario1:
   # Earned income: wages, salaries, tips
   # See: https://www.irs.gov/credits-deductions/individuals/earned-income-tax-credit/earned-income
   earnedIncome:
-    - 250000
+    - 80000
 
   # What percentage of the year's earned income is foreign-earned (fraction expressed from 0.0 to 1.0)
   fractionForeignEarnedIncome: 1.0
@@ -33,6 +33,14 @@ exampleScenario1:
   # Unearned income that is NOT capital gains, e.g. savings account interest, rental income, and non-qualified dividends
   otherUnearnedIncome:
     - 10000
+
+  # Regular dividends, which are subject to regular income tax rates
+  ordinaryDividends:
+    - 3000
+
+  # Qualified dividends, which are subject to preferential longterm cap gains tax rates
+  qualifiedDividends:
+    - 2000
 
   # Adustments that should be applied to income when calculating AMT (e.g. exercising-and-holding an ISO)
   amtAdjustments:
