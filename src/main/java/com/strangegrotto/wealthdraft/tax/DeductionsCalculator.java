@@ -9,6 +9,8 @@ import com.strangegrotto.wealthdraft.scenarios.Scenario;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class DeductionsCalculator {
     private DeductionsCalculator(){}
@@ -46,6 +48,18 @@ public class DeductionsCalculator {
                 .build();
     }
 
+    private static class IncomeToDeductionBuilder {
+        long income;
+        Function<Long, ImmutableIncomeStreams.Builder> builderFunc;
+
+        IncomeToDeductionBuilder(
+                long income,
+                Function<Long, ImmutableIncomeStreams.Builder> builderFunc) {
+            this.income = income;
+            this.builderFunc = builderFunc;
+        }
+    }
+
     /**
      * Reduces the given income streams by the given deduction, applying it in the correct order
      * @param income Income streams to reduce
@@ -53,32 +67,40 @@ public class DeductionsCalculator {
      * @return A new {@link IncomeStreams} object with income reduced by the deduction
      */
     public static IncomeStreams applyDeduction(IncomeStreams income, long deduction) {
-        // Deductions get applied to earned income first, and only after to unearned income (which is good)
+        // Deductions get applied in the following order:
+        //  1. Earned income
+        //  2. Non-preferential unearned income
+        //  3. Preferential unearned income
         // See: https://www.kitces.com/blog/long-term-capital-gains-bump-zone-higher-marginal-tax-rate-phase-in-0-rate
-        List<Long> incomesToReduceInOrder = ImmutableList.of(
-                income.getEarnedIncome(),
-                income.getOtherUnearnedIncome(),
-                income.getShortTermCapGains(),
-                income.getLongTermCapGains());
-        List<Long> resultingReducedIncomes = new ArrayList<>();
+        ImmutableIncomeStreams.Builder resultBuilder = ImmutableIncomeStreams.builder();
+        List<IncomeToDeductionBuilder> incomesToReduceInOrder = ImmutableList.of(
+                new IncomeToDeductionBuilder(
+                        income.getEarnedIncome(),
+                        resultBuilder::earnedIncome
+                ),
+                new IncomeToDeductionBuilder(
+                        income.getNonPreferentialUnearnedIncome(),
+                        resultBuilder::nonPreferentialUnearnedIncome
+                ),
+                new IncomeToDeductionBuilder(
+                        income.getPreferentialUnearnedIncome(),
+                        resultBuilder::preferentialUnearnedIncome
+                )
+        );
         long remainingDeduction = deduction;
-        for (Long incomeToReduce : incomesToReduceInOrder) {
-            long resultingIncome = incomeToReduce;
+        for (IncomeToDeductionBuilder pair : incomesToReduceInOrder) {
+            Function<Long, ImmutableIncomeStreams.Builder> builderFunc = pair.builderFunc;
+            long grossAmountToReduce = pair.income;
+            long resultingIncome = grossAmountToReduce;
             if (remainingDeduction > 0) {
-                long amountToReduce = Math.min(remainingDeduction, incomeToReduce);
-                resultingIncome = incomeToReduce - amountToReduce;
-                remainingDeduction -= amountToReduce;
+                long actualReduction = Math.min(remainingDeduction, grossAmountToReduce);
+                resultingIncome = grossAmountToReduce - actualReduction;
+                remainingDeduction -= actualReduction;
             }
-            resultingReducedIncomes.add(resultingIncome);
+            pair.builderFunc.apply(resultingIncome);
         }
 
-        return ImmutableIncomeStreams.builder()
-                // TODO we can do better than referencing list indexes, but it's fine for now
-                .earnedIncome(resultingReducedIncomes.get(0))
-                .otherUnearnedIncome(resultingReducedIncomes.get(1))
-                .shortTermCapGains(resultingReducedIncomes.get(2))
-                .longTermCapGains(resultingReducedIncomes.get(3))
-                .build();
+        return resultBuilder.build();
     }
 
 }

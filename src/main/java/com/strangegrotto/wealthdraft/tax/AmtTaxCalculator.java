@@ -27,12 +27,11 @@ public class AmtTaxCalculator {
         log.debug("Total AMT Adjustments: {}", totalAmtAdjustments);
         IncomeStreams grossIncomeStreams = scenario.getIncomeStreams();
         // TODO are all AMT adjustments unearned income??
-        long amtUnearnedIncome = grossIncomeStreams.getOtherUnearnedIncome() + totalAmtAdjustments;
+        long grossNonPrefUnearnedIncome = grossIncomeStreams.getNonPreferentialUnearnedIncome() + totalAmtAdjustments;
         IncomeStreams taxableIncomeStreams = ImmutableIncomeStreams.builder()
                 .earnedIncome(grossIncomeStreams.getEarnedIncome())
-                .otherUnearnedIncome(amtUnearnedIncome)
-                .shortTermCapGains(grossIncomeStreams.getShortTermCapGains())
-                .longTermCapGains(grossIncomeStreams.getLongTermCapGains())
+                .nonPreferentialUnearnedIncome(grossNonPrefUnearnedIncome)
+                .preferentialUnearnedIncome(grossIncomeStreams.getPreferentialUnearnedIncome())
                 .build();
 
         // AMT allows trad IRA and trad 401k, but not standard deduction
@@ -46,36 +45,35 @@ public class AmtTaxCalculator {
         log.debug("AMT Taxable Income (includes FEI): {}", taxableIncomeStreams);
 
         long earnedIncome = taxableIncomeStreams.getEarnedIncome();
-        long otherUnearnedIncome = taxableIncomeStreams.getOtherUnearnedIncome();
-        long stcg = taxableIncomeStreams.getShortTermCapGains();
-        long ltcg = taxableIncomeStreams.getLongTermCapGains();
+        long nonPrefUnearnedIncome = taxableIncomeStreams.getNonPreferentialUnearnedIncome();
+        long prefUnearnedIncome = taxableIncomeStreams.getPreferentialUnearnedIncome();
 
-
-        long nonPreferentialIncome = earnedIncome + otherUnearnedIncome + stcg;
+        long nonPrefIncome = earnedIncome + nonPrefUnearnedIncome;
+        long prefIncome = prefUnearnedIncome; // Is there a preferential earned income??
         double nonPreferentialTax = calculateNonPreferentialTax(
                 taxableIncomeStreams.getTotal(),
-                nonPreferentialIncome,
+                nonPrefIncome,
                 earnedIncome,
                 govConstants.getForeignIncomeConstants().getForeignEarnedIncomeExemption(),
                 scenario.getFractionForeignEarnedIncome(),
                 amtConstants);
-        // TODO subtract AMT foreign tax credit (whatever that is)
-        result.put(Tax.NON_PREFERENTIAL_INCOME, nonPreferentialTax);
+        // TODO figure out how to calculate AMT foreign tax credit and subtract it
+        result.put(Tax.FED_NON_PREF_INCOME, nonPreferentialTax);
 
-        // Preferential cap gains: these are "stacked" on top of existing income, so unfortunately they don't start at the absolute
+        // Preferential income: these are "stacked" on top of non-pref income, so unfortunately they don't start at the absolute
         //  lowest rate
         ProgressiveTaxCalculator fedLtcgTaxCalculator = new ProgressiveTaxCalculator(govConstants.getFederalLtcgBrackets());
-        double ltcgPlusNonPrefIncomeLtcgTax = fedLtcgTaxCalculator.calculateTax(nonPreferentialIncome + ltcg);
-        double nonPrefIncomeLtcgTax = fedLtcgTaxCalculator.calculateTax(nonPreferentialIncome);
-        double ltcgTax = ltcgPlusNonPrefIncomeLtcgTax - nonPrefIncomeLtcgTax;
-        result.put(Tax.PREFERENTIAL_INCOME, ltcgTax);
+        double prefPlusNonPrefLtcgTax = fedLtcgTaxCalculator.calculateTax(nonPrefIncome + prefIncome);
+        double nonPrefLtcgTax = fedLtcgTaxCalculator.calculateTax(nonPrefIncome);
+        double prefIncomeTax = prefPlusNonPrefLtcgTax - nonPrefLtcgTax;
+        result.put(Tax.FED_PREF_INCOME, prefIncomeTax);
 
         return result.build();
     }
 
     private static double calculateNonPreferentialTax(
             long totalTaxableIncome,
-            long nonPreferentialIncome,
+            long nonPreferentialIncome, // NOTE: TOTAL non-pref income, not just unearned!
             long earnedIncome,
             long foreignEarnedIncomeExclusion,
             double fractionForeignEarnedIncome,

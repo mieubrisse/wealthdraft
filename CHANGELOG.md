@@ -3,6 +3,7 @@ TBD
 * Add "Total Taxes" section
 * Add unearned income section to scenario
 * Corrected NIIT calculation
+* Refactored to use distinctions of `earnedIncome`, `nonPreferentialUnearnedIncome`, and `preferentialUnearnedIncome`
 
 0.1.4
 -----
