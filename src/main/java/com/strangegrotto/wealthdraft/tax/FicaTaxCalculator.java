@@ -42,9 +42,8 @@ public class FicaTaxCalculator {
         Deductions deductions = DeductionsCalculator.calculateAllowedDeductions(scenario, govConstants);
         long retirementDeductions = deductions.getTrad401kDeduction() + deductions.getTradIraDeduction();
         IncomeStreams incomeStreamsLessRetirementDeductions = DeductionsCalculator.applyDeduction(income, retirementDeductions);
-        long investmentIncome = incomeStreamsLessRetirementDeductions.getOtherUnearnedIncome() +
-                incomeStreamsLessRetirementDeductions.getShortTermCapGains() +
-                incomeStreamsLessRetirementDeductions.getLongTermCapGains();
+        long investmentIncome = incomeStreamsLessRetirementDeductions.getNonPreferentialUnearnedIncome() +
+                incomeStreamsLessRetirementDeductions.getPreferentialUnearnedIncome();
         long totalIncomeLessRetirementDeductions = incomeStreamsLessRetirementDeductions.getTotal();
         long niitTaxableAmount = Math.min(
                 investmentIncome,

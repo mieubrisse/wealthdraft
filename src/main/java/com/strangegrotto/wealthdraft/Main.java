@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.time.Year;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Main {
     private static final int SUCCESS_EXIT_CODE = 0;
@@ -48,7 +49,7 @@ public class Main {
 
     private static final String LOGBACK_LAYOUT_PATTERN = "%highlight(%-5level) %logger{0} - %message%n";
 
-    private static final int MINIMUM_ITEM_TITLE_WIDTH = 30;
+    private static final int MINIMUM_ITEM_TITLE_WIDTH = 40;
     private static final int MINIMUM_CURRENCY_WIDTH = 9;
     private static final String SUM_LINE = Strings.repeat(" ", MINIMUM_ITEM_TITLE_WIDTH + 2)
             + Strings.repeat("-", MINIMUM_CURRENCY_WIDTH);
@@ -210,14 +211,10 @@ public class Main {
         log.info("");
         logSectionHeader("GROSS INCOME");
         logCurrencyItem("Earned Income", grossIncomeStreams.getEarnedIncome());
-        logCurrencyItem("Longterm Cap Gains", grossIncomeStreams.getLongTermCapGains());
-        logCurrencyItem("Shortterm Cap Gains", grossIncomeStreams.getShortTermCapGains());
-        logCurrencyItem("Other Unearned Income", grossIncomeStreams.getOtherUnearnedIncome());
+        logCurrencyItem("Non-Preferential Unearned Income", grossIncomeStreams.getNonPreferentialUnearnedIncome());
+        logCurrencyItem("Preferential Earned Income", grossIncomeStreams.getPreferentialUnearnedIncome());
         log.info(SUM_LINE);
-        long grossIncome = grossIncomeStreams.getEarnedIncome()
-                + grossIncomeStreams.getLongTermCapGains()
-                + grossIncomeStreams.getShortTermCapGains()
-                + grossIncomeStreams.getOtherUnearnedIncome();
+        long grossIncome = grossIncomeStreams.getTotal();
         logCurrencyItem("Gross Income", grossIncome);
 
         long totalAmtAdjustments = scenario.getAmtAdjustments().stream()
@@ -269,16 +266,6 @@ public class Main {
                 higherTaxSystem
         );
         renderTaxesSection("Scenario Tax", totalTaxes, grossIncome);
-
-        /*
-        log.info(SUM_LINE);
-        double totalTax = taxes.values().stream()
-                .reduce(0D, (l, r) -> l + r);
-        log.info("Total Tax: {}", totalTax);
-        double marginalTaxRate = totalTax / (double)grossIncome;
-        log.info("Effective Tax Rate: {}", marginalTaxRate);
-        log.info("");
-         */
 
         return null;
     }
@@ -364,11 +351,16 @@ public class Main {
 
     private static void renderTaxesSection(String titleCaseSumName, Map<Tax, Double> taxes, long grossIncome) {
         double totalTaxes = 0D;
-        for (Map.Entry<Tax, Double> entry : taxes.entrySet()) {
-            double tax = entry.getValue();
-            totalTaxes += tax;
-            String prettyName = entry.getKey().getPrettyName();
-            logCurrencyItem(prettyName, tax);
+
+        List<Tax> displayOrder = taxes.keySet().stream()
+                .sorted(Comparator.comparing(Tax::getPrettyName))
+                .collect(Collectors.toList());
+
+        for (Tax taxType : displayOrder) {
+            double taxAmount = taxes.get(taxType);
+            totalTaxes += taxAmount;
+            String prettyName = taxType.getPrettyName();
+            logCurrencyItem(prettyName, taxAmount);
         }
         double effectiveTaxRate = totalTaxes / (double)grossIncome;
         log.info(SUM_LINE);

@@ -1,7 +1,7 @@
 # EXAMPLE SCENARIOS
 exampleScenario1:
-  # Which year the 
-  year: 2021
+  # Which year of gov constants the scenario should use
+  year: 2020
 
   # Contributions to 401k - either traditional or Roth
   401kContrib:

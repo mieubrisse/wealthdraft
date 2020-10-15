@@ -62,13 +62,17 @@ public interface Scenario {
         long ordinaryDividends = aggregateIncome.apply(getOrdinaryDividends());
         long qualifiedDividends = aggregateIncome.apply(getQualifiedDividends());
 
+        long nonPrefUnearnedIncome = stcg +
+                ordinaryDividends +
+                otherUnearnedIncome;
+
+        long prefUnearnedIncome = ltcg +
+                qualifiedDividends;
+
         return ImmutableIncomeStreams.builder()
                 .earnedIncome(earnedIncome)
-                .longTermCapGains(ltcg)
-                .shortTermCapGains(stcg)
-                .ordinaryDividends(ordinaryDividends)
-                .qualifiedDividends(qualifiedDividends)
-                .otherUnearnedIncome(otherUnearnedIncome)
+                .nonPreferentialUnearnedIncome(nonPrefUnearnedIncome)
+                .preferentialUnearnedIncome(prefUnearnedIncome)
                 .build();
     }
 }
