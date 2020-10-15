@@ -55,6 +55,11 @@ application {
     mainClassName = "${mainClass}"
 }
 
+compileJava {
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
+}
+
 // The 'jar' task will create a fat JAR, with all dependencies inside
 jar {
     
