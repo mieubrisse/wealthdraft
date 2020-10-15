@@ -60,7 +60,7 @@ public class RegularIncomeTaxCalculator {
         double excludedFEITax = taxCalculator.calculateTax(excludedFEI);
         double nonPrefIncomeTax = taxCalculator.calculateTax(nonPrefIncome);
         double nonPrefTaxWithFEIE = nonPrefIncomeTax - excludedFEITax;
-        totalTaxes.put(Tax.NON_PREFERENTIAL_INCOME, nonPrefTaxWithFEIE);
+        totalTaxes.put(Tax.FED_NON_PREF_INCOME, nonPrefTaxWithFEIE);
 
         // Preferential capital gains: these are "stacked" on top of other income, so unfortunately they don't start at the absolute
         //  lowest rate
@@ -68,7 +68,7 @@ public class RegularIncomeTaxCalculator {
         double prefPlusNonPrefLtcgTax = fedLtcgTaxCalculator.calculateTax(prefIncome + nonPrefIncome);
         double nonPrefLtcgTax = fedLtcgTaxCalculator.calculateTax(nonPrefIncome);
         double prefTax = prefPlusNonPrefLtcgTax - nonPrefLtcgTax;
-        totalTaxes.put(Tax.PREFERENTIAL_INCOME, prefTax);
+        totalTaxes.put(Tax.FED_PREF_INCOME, prefTax);
 
         return totalTaxes.build();
     }

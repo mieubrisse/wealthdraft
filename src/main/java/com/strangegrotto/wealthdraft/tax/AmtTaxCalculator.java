@@ -58,7 +58,7 @@ public class AmtTaxCalculator {
                 scenario.getFractionForeignEarnedIncome(),
                 amtConstants);
         // TODO figure out how to calculate AMT foreign tax credit and subtract it
-        result.put(Tax.NON_PREFERENTIAL_INCOME, nonPreferentialTax);
+        result.put(Tax.FED_NON_PREF_INCOME, nonPreferentialTax);
 
         // Preferential income: these are "stacked" on top of non-pref income, so unfortunately they don't start at the absolute
         //  lowest rate
@@ -66,7 +66,7 @@ public class AmtTaxCalculator {
         double prefPlusNonPrefLtcgTax = fedLtcgTaxCalculator.calculateTax(nonPrefIncome + prefIncome);
         double nonPrefLtcgTax = fedLtcgTaxCalculator.calculateTax(nonPrefIncome);
         double prefIncomeTax = prefPlusNonPrefLtcgTax - nonPrefLtcgTax;
-        result.put(Tax.PREFERENTIAL_INCOME, prefIncomeTax);
+        result.put(Tax.FED_PREF_INCOME, prefIncomeTax);
 
         return result.build();
     }
