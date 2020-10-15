@@ -46,6 +46,10 @@ public interface Scenario {
 
     @Value.Check
     default void check() {
+        // TODO In the check, make sure that any List element has >= 1 element, because
+        //  Jackson sadly won't fail with an error if a key corresponding to a List isn't specified -
+        //  it'll just create an empty list
+
         DeserializationValidator.checkIsRatio("fraction foreign earned income", getFractionForeignEarnedIncome());
         for (Long earnedIncomePart : getEarnedIncome()) {
             Preconditions.checkState(
