@@ -8,7 +8,7 @@ A tax calculator for predicting your taxes. Handles:
 * 401k, IRA, and standard deductions, and applying them in the right order
 * Foreign-earned income exclusion
 
-![](images/
+![](images/example.png)
 
 Usage
 -----
