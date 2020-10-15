@@ -1,4 +1,4 @@
-TBD
+0.1.7
 -----
 * Build JAR for Java 8
 * Add 2019 gov constants
