@@ -13,8 +13,10 @@ exampleScenario1:
     trad: 5000
     roth: 0
 
-  # Earned income: wages, salaries, tips
-  # See: https://www.irs.gov/credits-deductions/individuals/earned-income-tax-credit/earned-income
+  # What qualifies: https://www.irs.gov/credits-deductions/individuals/earned-income-tax-credit/earned-income
+  # NOTE: This aims to track your total earned income, not just what the IRS sees. Here you should log your gross
+  #  income (before any 401k contributions), which will be MORE than what shows up on your W2 if you contributed
+  #  to a traditional 401k
   earnedIncome:
     - 80000
 
@@ -35,10 +37,12 @@ exampleScenario1:
     - 10000
 
   # Regular dividends, which are subject to regular income tax rates
+  # NOTE: On the 1099-DIV form, box 1a gives the "total ordinary dividends" which is actually BOTH ordinary and qualified dividends
+  # Here, you should fill in ONLY ordinary dividends = total ordinary dividends (box_1a) - qualified dividends (box_1b)
   ordinaryDividends:
     - 3000
 
-  # Qualified dividends, which are subject to preferential longterm cap gains tax rates
+  # Qualified dividends, which are subject to preferential longterm cap gains tax rates (box 1b on a 1099 form)
   qualifiedDividends:
     - 2000
 

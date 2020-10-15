@@ -57,8 +57,10 @@ public class RegularIncomeTaxCalculator {
         long prefIncome = prefUnearnedIncome; // Is there even pref, earned income??
 
         ProgressiveTaxCalculator taxCalculator = new ProgressiveTaxCalculator(govConstants.getFederalIncomeTaxBrackets());
-        double excludedFEITax = taxCalculator.calculateTax(excludedFEI);
         double nonPrefIncomeTax = taxCalculator.calculateTax(nonPrefIncome);
+        log.debug("Tax on non-pref income: {}", nonPrefIncomeTax);
+        double excludedFEITax = taxCalculator.calculateTax(excludedFEI);
+        log.debug("Tax on excluded FEI income: {}", excludedFEITax);
         double nonPrefTaxWithFEIE = nonPrefIncomeTax - excludedFEITax;
         totalTaxes.put(Tax.FED_NON_PREF_INCOME, nonPrefTaxWithFEIE);
 

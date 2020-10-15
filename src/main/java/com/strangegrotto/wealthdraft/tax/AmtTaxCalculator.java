@@ -64,7 +64,9 @@ public class AmtTaxCalculator {
         //  lowest rate
         ProgressiveTaxCalculator fedLtcgTaxCalculator = new ProgressiveTaxCalculator(govConstants.getFederalLtcgBrackets());
         double prefPlusNonPrefLtcgTax = fedLtcgTaxCalculator.calculateTax(nonPrefIncome + prefIncome);
+        log.debug("Pref + nonpref LTCG tax: {}", prefPlusNonPrefLtcgTax);
         double nonPrefLtcgTax = fedLtcgTaxCalculator.calculateTax(nonPrefIncome);
+        log.debug("Nonpref LTCG tax: {}", nonPrefLtcgTax);
         double prefIncomeTax = prefPlusNonPrefLtcgTax - nonPrefLtcgTax;
         result.put(Tax.FED_PREF_INCOME, prefIncomeTax);
 
@@ -73,7 +75,7 @@ public class AmtTaxCalculator {
 
     private static double calculateNonPreferentialTax(
             long totalTaxableIncome,
-            long nonPreferentialIncome, // NOTE: TOTAL non-pref income, not just unearned!
+            long nonPrefIncome, // NOTE: TOTAL non-pref income, not just unearned!
             long earnedIncome,
             long foreignEarnedIncomeExclusion,
             double fractionForeignEarnedIncome,
@@ -89,15 +91,17 @@ public class AmtTaxCalculator {
                 foreignEarnedIncomeExclusion,
                 (long)((double)earnedIncome * fractionForeignEarnedIncome)
         );
-        long nonPreferentialNonExcludedFEIIncome = nonPreferentialIncome - excludedFEI;
-        long nonPreferentialNonExcludedFEIIncomeLessExemption = Math.max(
+        long nonPrefNonExcludedFEIIncome = nonPrefIncome - excludedFEI;
+        long nonPrefNonExcludedFEIIncomeLessExemption = Math.max(
                 0,
-                nonPreferentialNonExcludedFEIIncome - amtExemption
+                nonPrefNonExcludedFEIIncome - amtExemption
         );
 
         ProgressiveTaxCalculator taxCalculator = new ProgressiveTaxCalculator(amtConstants.getBrackets());
+        double totalIncomeTax = taxCalculator.calculateTax(excludedFEI + nonPrefNonExcludedFEIIncomeLessExemption);
+        log.debug("AMT tax on FEIE income + non-FEI income: {}", totalIncomeTax);
         double excludedIncomeTax = taxCalculator.calculateTax(excludedFEI);
-        double totalIncomeTax = taxCalculator.calculateTax(excludedFEI + nonPreferentialNonExcludedFEIIncomeLessExemption);
+        log.debug("AMT tax on FEIE income: {}", excludedIncomeTax);
 
         return totalIncomeTax - excludedIncomeTax;
     }
