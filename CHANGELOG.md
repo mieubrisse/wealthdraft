@@ -1,3 +1,8 @@
+TBD
+---
+* Explain what use cases are handled now, and which ones aren't
+* Added example image of the CLI
+
 0.1.7
 -----
 * Build JAR for Java 8

@@ -24,4 +24,10 @@ For easy development, the CLI can be run with the `scripts/build_and_run.sh` scr
 ### Building a binary
 `./gradlew jar` will create a standalone JAR in the `build/libs` directory that can be transferred and used on other machines. This fat JAR can be executed with `java -jar wealthdraft.jar --help` to see usage information.
 
-
+TODO
+----
+* Tax credits
+* Foreign housing exclusion
+* Foreign tax credit
+* Mortgage deductions
+* Business income deductions
