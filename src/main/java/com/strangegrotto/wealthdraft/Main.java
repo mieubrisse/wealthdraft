@@ -14,6 +14,8 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Ordering;
 import com.strangegrotto.wealthdraft.errors.GError;
 import com.strangegrotto.wealthdraft.errors.ValueOrGError;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
@@ -35,6 +37,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.time.Year;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Main {
     private static final int SUCCESS_EXIT_CODE = 0;
@@ -46,12 +49,14 @@ public class Main {
 
     private static final String LOGBACK_LAYOUT_PATTERN = "%highlight(%-5level) %logger{0} - %message%n";
 
-    private static final int MINIMUM_ITEM_TITLE_WIDTH = 30;
+    private static final int MINIMUM_ITEM_TITLE_WIDTH = 40;
     private static final int MINIMUM_CURRENCY_WIDTH = 9;
     private static final String SUM_LINE = Strings.repeat(" ", MINIMUM_ITEM_TITLE_WIDTH + 2)
             + Strings.repeat("-", MINIMUM_CURRENCY_WIDTH);
     private static final DecimalFormat CURRENCY_FORMAT = new DecimalFormat  ("###,##0");
-    private static final DecimalFormat PERCENT_FORMAT = new DecimalFormat("##.#%");
+    private static final DecimalFormat PERCENT_FORMAT = new DecimalFormat("#0.0%");
+
+    private static final String SCENARIO_HEADER_LINE = Strings.repeat("=", 2 * MINIMUM_ITEM_TITLE_WIDTH + 2);
 
     private static final Logger log = LoggerFactory.getLogger(Main.class);
 
@@ -129,10 +134,17 @@ public class Main {
             log.warn("The latest gov constants we have are old, from {}!!!", latestYear);
         }
 
-        for (Map.Entry<String, Scenario> entry : scenarios.entrySet()) {
-            String name = entry.getKey();
-            Scenario scenario = entry.getValue();
-            log.info("======================= {} ======================", name);
+        List<String> scenarioNames = new ArrayList<>(scenarios.keySet());
+        scenarioNames.sort(Ordering.natural());
+
+        for (String scenarioName : scenarioNames) {
+            Scenario scenario = scenarios.get(scenarioName);
+
+            log.info("");
+            log.info(SCENARIO_HEADER_LINE);
+            int spacesToAdd = (SCENARIO_HEADER_LINE.length() - scenarioName.length()) / 2;
+            log.info(Strings.repeat(" ", spacesToAdd) + scenarioName);
+            log.info(SCENARIO_HEADER_LINE);
 
             int scenarioYear = scenario.getYear();
             GovConstantsForYear govConstantsToUse;
@@ -206,34 +218,61 @@ public class Main {
         log.info("");
         logSectionHeader("GROSS INCOME");
         logCurrencyItem("Earned Income", grossIncomeStreams.getEarnedIncome());
-        logCurrencyItem("Longterm Cap Gains", grossIncomeStreams.getLongTermCapGains());
-        logCurrencyItem("Shortterm Cap Gains", grossIncomeStreams.getShortTermCapGains());
-        logCurrencyItem("Other Unearned Income", grossIncomeStreams.getOtherUnearnedIncome());
+        logCurrencyItem("Non-Preferential Unearned Income", grossIncomeStreams.getNonPreferentialUnearnedIncome());
+        logCurrencyItem("Preferential Earned Income", grossIncomeStreams.getPreferentialUnearnedIncome());
         log.info(SUM_LINE);
-        long grossIncome = grossIncomeStreams.getEarnedIncome()
-                + grossIncomeStreams.getLongTermCapGains()
-                + grossIncomeStreams.getShortTermCapGains()
-                + grossIncomeStreams.getOtherUnearnedIncome();
+        long grossIncome = grossIncomeStreams.getTotal();
         logCurrencyItem("Gross Income", grossIncome);
 
+        long totalAmtAdjustments = scenario.getAmtAdjustments().stream()
+                .reduce(0L, (l, r) -> l + r);
+        log.info("");
+        logSectionHeader("ADJUSTMENTS");
+        logCurrencyItem("AMT Adjustments", totalAmtAdjustments);
+
         Map<Tax, Double> ficaTaxes = FicaTaxCalculator.calculateFicaTax(scenario, govConstants);
+        log.info("");
+        logSectionHeader("FICA TAX");
         renderTaxesSection("FICA Tax", ficaTaxes, grossIncome);
 
         Map<Tax, Double> regFedIncomeTaxes = RegularIncomeTaxCalculator.calculateRegularIncomeTax(scenario, govConstants);
+        log.info("");
+        logSectionHeader("REG FED INCOME TAX");
         renderTaxesSection("Reg Fed Income Tax", regFedIncomeTaxes, grossIncome);
 
         Map<Tax, Double> amtTaxes = AmtTaxCalculator.calculateAmtTax(scenario, govConstants);
+        log.info("");
+        logSectionHeader("AMT");
         renderTaxesSection("AMT", amtTaxes, grossIncome);
 
-        /*
-        log.info(SUM_LINE);
-        double totalTax = taxes.values().stream()
+        Double totalRegIncomeTax = regFedIncomeTaxes.values().stream()
                 .reduce(0D, (l, r) -> l + r);
-        log.info("Total Tax: {}", totalTax);
-        double marginalTaxRate = totalTax / (double)grossIncome;
-        log.info("Effective Tax Rate: {}", marginalTaxRate);
+        Double totalAmtIncomeTax = amtTaxes.values().stream()
+                .reduce(0D, (l, r) -> l + r);
+
+        Map<Tax, Double> totalTaxes = new HashMap<>();
+        totalTaxes.putAll(ficaTaxes);
+        String higherTaxSystem;
+        String lowerTaxSystem;
+        if (totalRegIncomeTax >= totalAmtIncomeTax) {
+            higherTaxSystem = "regular income tax";
+            lowerTaxSystem = "AMT";
+            totalTaxes.putAll(regFedIncomeTaxes);
+        } else {
+            higherTaxSystem = "AMT";
+            lowerTaxSystem = "regular income tax";
+            totalTaxes.putAll(amtTaxes);
+        }
+
         log.info("");
-         */
+        logSectionHeader("TOTAL TAX");
+        log.info(
+                "Year's {} was higher than {}; using {} income tax",
+                higherTaxSystem,
+                lowerTaxSystem,
+                higherTaxSystem
+        );
+        renderTaxesSection("Scenario Tax", totalTaxes, grossIncome);
 
         return null;
     }
@@ -318,15 +357,17 @@ public class Main {
     }
 
     private static void renderTaxesSection(String titleCaseSumName, Map<Tax, Double> taxes, long grossIncome) {
-
-        log.info("");
-        logSectionHeader(titleCaseSumName);
         double totalTaxes = 0D;
-        for (Map.Entry<Tax, Double> entry : taxes.entrySet()) {
-            double tax = entry.getValue();
-            totalTaxes += tax;
-            String prettyName = entry.getKey().getPrettyName();
-            logCurrencyItem(prettyName, tax);
+
+        List<Tax> displayOrder = taxes.keySet().stream()
+                .sorted(Comparator.comparing(Tax::getPrettyName))
+                .collect(Collectors.toList());
+
+        for (Tax taxType : displayOrder) {
+            double taxAmount = taxes.get(taxType);
+            totalTaxes += taxAmount;
+            String prettyName = taxType.getPrettyName();
+            logCurrencyItem(prettyName, taxAmount);
         }
         double effectiveTaxRate = totalTaxes / (double)grossIncome;
         log.info(SUM_LINE);

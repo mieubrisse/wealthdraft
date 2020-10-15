@@ -4,4 +4,4 @@ root_dirpath="$(dirname "${script_dirpath}")"
 build_dirpath="${root_dirpath}/build"
 cli_filepath="${build_dirpath}/cli"
 
-"${root_dirpath}/gradlew" build run --args="--gov-constants example-gov-constants.yml --scenarios example-scenarios.yml ${1+"${@}"}"
+"${root_dirpath}/gradlew" build run --args="--gov-constants gov-constants-example.yml --scenarios scenarios-example.yml ${1+"${@}"}"

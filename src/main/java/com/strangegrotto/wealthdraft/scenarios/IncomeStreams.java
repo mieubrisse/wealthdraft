@@ -7,15 +7,13 @@ public interface IncomeStreams {
 
     // NOTE NOTE NOTE: When adding a new income stream, make sure to update the 'getTotal' method!
     long getEarnedIncome();
-    long getOtherUnearnedIncome();
-    long getShortTermCapGains();
-    long getLongTermCapGains();
+    long getNonPreferentialUnearnedIncome();
+    long getPreferentialUnearnedIncome();
 
     @Value.Derived
     default long getTotal() {
         return getEarnedIncome() +
-                getOtherUnearnedIncome() +
-                getShortTermCapGains() +
-                getLongTermCapGains();
+                getNonPreferentialUnearnedIncome() +
+                getPreferentialUnearnedIncome();
     }
 }

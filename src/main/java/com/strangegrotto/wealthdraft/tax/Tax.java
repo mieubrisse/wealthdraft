@@ -4,10 +4,10 @@ import org.slf4j.Logger;
 
 public enum Tax {
     // On earned income + non-capgains unearned income + STCG
-    NON_PREFERENTIAL_INCOME("Non-Preferential Income Tax"),
+    FED_NON_PREF_INCOME("Fed Non-Preferential Income Tax"),
 
     // longterm cap gains and qualified dividends
-    PREFERENTIAL_INCOME("Preferential Income Tax"),
+    FED_PREF_INCOME("Fed Preferential Income Tax"),
 
     SOCIAL_SECURITY("Social Security Tax"),
 

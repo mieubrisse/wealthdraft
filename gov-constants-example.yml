@@ -1,12 +1,13 @@
 # EXAMPLE GOV CONSTANTS
 2020:
   amt:
-    # NOTE: for singles
-    exemption: 72900
+    exemption: 72900  # NOTE: this is currently set for singles
     exemptionPhaseoutFloor: 518400
 
     # The amount the AMT exemption will reduce, for every dollar over the phaseout floor
     exemptionPhaseoutRate: 0.25
+
+    # AMT tax brackets, often expressed as "low earner rate" and "high earner rate"
     brackets:
       - floor: 0
         rate: 0.26
@@ -29,7 +30,7 @@
     - floor: 518400
       rate: 0.37
 
-
+  # Long-term capital gains tax brackets
   federalLtcgBrackets:
     - floor: 0
       rate: 0.0
@@ -39,26 +40,36 @@
       rate: 0.20
 
   fica:
+    # The maximum amount of income that will be subject to social security tax
     socialSecurityWageCap: 137700
     socialSecurityRate: 0.062
+
     medicareBaseRate: 0.0145
+
+    # The threshold over which income will become subject to the extra Medicare surtax
     medicareSurtaxFloor: 200000
     medicareSurtaxExtraRate: 0.009
-    netInvestmentIncomeTaxRate: 0.038
+
+    # The threshold over which investment income will become subject to the Net Investment Income Tax
     netInvestmentIncomeFloor: 200000
+    netInvestmentIncomeTaxRate: 0.038
 
   foreignIncome:
     foreignEarnedIncomeExemption: 107600
 
   retirement:
+    # How much an individual can contribute to their 401k in a year
     personal401kContribLimit: 19500
 
-    # Employer + employee
+    # How much an individual, plus the employer, can contribute to the employee's 401k in a year (includes after-tax contributions)
     total401kContribLimit: 57000
 
     iraContribLimit: 6000
+
+    # The threshold over which the trad IRA deduction starts decreasing
     tradIraDeductiblePhaseoutFloor: 65000
+
+    # The threshold over which trad IRA contributions are not deductible at all
     tradIraDeductiblePhaseoutCeiling: 75000
 
-  # NOTE: this is for singles
-  standardDeduction: 12400
+  standardDeduction: 12400   # NOTE: this is currently set for singles!
