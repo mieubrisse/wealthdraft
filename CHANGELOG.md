@@ -2,6 +2,7 @@ TBD
 ---
 * Explain what use cases are handled now, and which ones aren't
 * Added example image of the CLI
+* Extract the tax-calculating module into something that could be included as a library in another Java program
 
 0.1.7
 -----
