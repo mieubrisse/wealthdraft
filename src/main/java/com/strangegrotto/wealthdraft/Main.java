@@ -13,8 +13,11 @@ import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.base.Strings;
 import com.google.common.collect.Ordering;
+import com.strangegrotto.wealthdraft.assets.Asset;
+import com.strangegrotto.wealthdraft.assets.AssetScenarios;
 import com.strangegrotto.wealthdraft.errors.GError;
 import com.strangegrotto.wealthdraft.errors.ValueOrGError;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
@@ -34,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.time.LocalDate;
 import java.time.Year;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -44,6 +48,7 @@ public class Main {
 
     private static final String SCENARIOS_FILEPATH_ARG = "scenarios";
     private static final String GOV_CONSTANTS_FILEPATH_ARG = "gov-constants";
+    private static final String ASSETS_FILEPATH_ARG = "assets";
     private static final String LOG_LEVEL_ARG = "log-level";
     private static final String ALL_SCENARIOS_ARG = "all";
 
@@ -72,6 +77,7 @@ public class Main {
                 .dest(SCENARIOS_FILEPATH_ARG)
                 .required(true)
                 .help("YAML file containing scenarios to calculate");
+        // TODO rename this; it's only tax-specific
         parser.addArgument("--" + ALL_SCENARIOS_ARG)
                 .dest(ALL_SCENARIOS_ARG)
                 .type(Boolean.class)
@@ -82,6 +88,10 @@ public class Main {
                 .dest(GOV_CONSTANTS_FILEPATH_ARG)
                 .required(true)
                 .help("YAML file of gov constants per year");
+        parser.addArgument("--" + ASSETS_FILEPATH_ARG)
+                .dest(ASSETS_FILEPATH_ARG)
+                .required(true)
+                .help("YAML file of asset values");
         parser.addArgument("--" + LOG_LEVEL_ARG)
                 .dest(LOG_LEVEL_ARG)
                 .type(Level.class)
@@ -106,7 +116,8 @@ public class Main {
         logbackRootLogger.setLevel(logLevel);
 
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        mapper.registerModules(new GuavaModule());
+        mapper.registerModule(new GuavaModule());
+        mapper.registerModule(new JavaTimeModule());
         TypeFactory typeFactory = mapper.getTypeFactory();
 
         String scenariosFilepath = parsedArgs.getString(SCENARIOS_FILEPATH_ARG);
@@ -133,6 +144,17 @@ public class Main {
             return;
         }
 
+        String assetsFilepath = parsedArgs.getString(ASSETS_FILEPATH_ARG);
+        log.debug("Assets filepath: {}", assetsFilepath);
+        AssetScenarios assetScenarios;
+        try {
+            assetScenarios = mapper.readValue(new File(assetsFilepath), AssetScenarios.class);
+        } catch (IOException e) {
+            log.error("An error occurred parsing the assets file '{}'", assetsFilepath, e);
+            System.exit(FAILURE_EXIT_CODE);
+            return;
+        }
+
         Integer latestYear = Collections.max(allGovConstants.keySet());
         GovConstantsForYear latestGovConstants = allGovConstants.get(latestYear);
         int currentYear = Year.now().getValue();
@@ -140,6 +162,8 @@ public class Main {
             log.warn("The latest gov constants we have are old, from {}!!!", latestYear);
         }
 
+        // Render scenarios
+        // TODO break this into a helper function
         int minYearToRender = parsedArgs.getBoolean(ALL_SCENARIOS_ARG) ? 0 : Year.now().getValue();
         List<String> scenarioNames = new ArrayList<>(scenarios.keySet());
         scenarioNames.sort(Ordering.natural());
@@ -192,6 +216,31 @@ public class Main {
 
             renderScenario(scenario, govConstantsToUse);
         }
+
+        // Render net worth
+        log.info("");
+        logSectionHeader("NET WORTH");
+        Map<LocalDate, Map<String, Long>> netWorthCheckpointValues = new HashMap<>();
+        assetScenarios.getAssets().forEach((assetId, asset) -> {
+            asset.getHistorical().forEach((date, value) -> {
+                Map<String, Long> assetValuesForDate = netWorthCheckpointValues.getOrDefault(date, new HashMap<>());
+                assetValuesForDate.put(assetId, value);
+                netWorthCheckpointValues.put(date, assetValuesForDate);
+            });
+        });
+
+        List<LocalDate> netWorthCheckpointDates = netWorthCheckpointValues.keySet().stream()
+                .sorted()
+                .collect(Collectors.toList());
+        Map<String, Long> latestAssetValues = new HashMap<>();
+        for (LocalDate date : netWorthCheckpointDates) {
+            Map<String, Long> assetValuesAtCheckpoint = netWorthCheckpointValues.get(date);
+            latestAssetValues.putAll(assetValuesAtCheckpoint);
+            long netWorthAtCheckpoint = latestAssetValues.values().stream()
+                    .reduce(0L, (l, r) -> l + r);
+            logCurrencyItem(date.toString(), netWorthAtCheckpoint);
+        }
+
     }
 
     private static void configureRootLoggerPattern(ch.qos.logback.classic.Logger rootLogger) {

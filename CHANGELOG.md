@@ -2,6 +2,7 @@ TBD
 ----
 * Render only scenarios with year >= currentYear, and provide an `--all` flag to render all scenarios
 * Fix bug that warns user about stale gov constants when the latest gov constants are from a future year
+* Take in an assets YML for printing net worth over time
 
 0.2.0
 -----
