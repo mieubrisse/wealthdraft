@@ -1,3 +1,8 @@
+TBD
+----
+* Render only scenarios with year >= currentYear, and provide an `--all` flag to render all scenarios
+* Fix bug that warns user about stale gov constants when the latest gov constants are from a future year
+
 0.2.0
 -----
 * Explain what use cases are handled now, and which ones aren't
