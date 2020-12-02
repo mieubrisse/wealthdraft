@@ -25,9 +25,9 @@ import com.strangegrotto.wealthdraft.tax.*;
 import com.strangegrotto.wealthdraft.validator.ValidationWarning;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.helper.HelpScreenException;
-import net.sourceforge.argparse4j.inf.ArgumentParser;
-import net.sourceforge.argparse4j.inf.ArgumentParserException;
-import net.sourceforge.argparse4j.inf.Namespace;
+import net.sourceforge.argparse4j.impl.Arguments;
+import net.sourceforge.argparse4j.impl.action.StoreTrueArgumentAction;
+import net.sourceforge.argparse4j.inf.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +45,7 @@ public class Main {
     private static final String SCENARIOS_FILEPATH_ARG = "scenarios";
     private static final String GOV_CONSTANTS_FILEPATH_ARG = "gov-constants";
     private static final String LOG_LEVEL_ARG = "log-level";
+    private static final String ALL_SCENARIOS_ARG = "all";
 
     private static final String LOGBACK_LAYOUT_PATTERN = "%highlight(%-5level) %logger{0} - %message%n";
 
@@ -71,6 +72,12 @@ public class Main {
                 .dest(SCENARIOS_FILEPATH_ARG)
                 .required(true)
                 .help("YAML file containing scenarios to calculate");
+        parser.addArgument("--" + ALL_SCENARIOS_ARG)
+                .dest(ALL_SCENARIOS_ARG)
+                .type(Boolean.class)
+                .setDefault(Boolean.FALSE)
+                .action(Arguments.storeTrue())
+                .help("If set, renders all scenarios (rather than just the current and future years)");
         parser.addArgument("--" + GOV_CONSTANTS_FILEPATH_ARG)
                 .dest(GOV_CONSTANTS_FILEPATH_ARG)
                 .required(true)
@@ -129,15 +136,18 @@ public class Main {
         Integer latestYear = Collections.max(allGovConstants.keySet());
         GovConstantsForYear latestGovConstants = allGovConstants.get(latestYear);
         int currentYear = Year.now().getValue();
-        if (currentYear != latestYear) {
+        if (currentYear > latestYear) {
             log.warn("The latest gov constants we have are old, from {}!!!", latestYear);
         }
 
+        int minYearToRender = parsedArgs.getBoolean(ALL_SCENARIOS_ARG) ? 0 : Year.now().getValue();
         List<String> scenarioNames = new ArrayList<>(scenarios.keySet());
         scenarioNames.sort(Ordering.natural());
-
         for (String scenarioName : scenarioNames) {
             Scenario scenario = scenarios.get(scenarioName);
+            if (scenario.getYear() < minYearToRender) {
+                continue;
+            }
 
             log.info("");
             log.info(SCENARIO_HEADER_LINE);
