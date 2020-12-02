@@ -1,12 +1,20 @@
 Wealthdraft
 ===========
-A modelling CLI for that uses user-defined gov constants to predict what your income and taxes will look like for various scenarios. Government constants and scenarios are defined via YAML, with schema as seen in `gov-constants-example.yml` and `scenarios-example.yml`.
+A tax calculator for predicting your taxes. Handles:
+
+* Regular federal income tax, AMT, and choosing the higher of the two
+* Employment tax (Social Security & Medicare)
+* Net Investment Income Tax
+* 401k, IRA, and standard deductions, and applying them in the right order
+* Foreign-earned income exclusion
+
+![](images/example.png)
 
 Usage
 -----
 ### Quickstart
 1. Download the latest version of the binary from [the releases page](https://github.com/mieubrisse/wealthdraft/releases)
-2. Copy the example gov constants and scenarios files to your machine
+2. Copy the `gov-constants-example` and `scenarios-example` files to your machine
 3. Modify them as you please
 4. Run `java -jar wealthdraft-X.Y.Z.jar --help` to view which flags to pass in
 
@@ -15,3 +23,7 @@ For easy development, the CLI can be run with the `scripts/build_and_run.sh` scr
 
 ### Building a binary
 `./gradlew jar` will create a standalone JAR in the `build/libs` directory that can be transferred and used on other machines. This fat JAR can be executed with `java -jar wealthdraft.jar --help` to see usage information.
+
+TODO
+----
+See [the issues page](https://github.com/mieubrisse/wealthdraft/issues)

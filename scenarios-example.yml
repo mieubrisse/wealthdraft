@@ -14,6 +14,10 @@ exampleScenario1:
     roth: 0
 
   # Earned income definition: https://www.irs.gov/credits-deductions/individuals/earned-income-tax-credit/earned-income
+  # Some examples:
+  #  - Salary
+  #  - Bonus
+  #  - The spread between strike and FMV at time of exercise when exercising NSO options
   # NOTE: This aims to track your total earned income, not just what the IRS sees. Here you should log your gross
   #  income (before any 401k contributions), which will be MORE than what shows up on your W2 if you contributed
   #  to a traditional 401k
@@ -49,3 +53,5 @@ exampleScenario1:
   # Adustments that should be applied to income when calculating AMT (e.g. from exercising-and-holding an ISO option)
   amtAdjustments:
     - 25000
+
+# ....can add more scenarios here.....

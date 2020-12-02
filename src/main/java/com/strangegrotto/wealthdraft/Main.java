@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
 import com.strangegrotto.wealthdraft.errors.GError;
 import com.strangegrotto.wealthdraft.errors.ValueOrGError;
@@ -166,10 +165,22 @@ public class Main {
                 govConstantsToUse = allGovConstants.get(scenarioYear);
             }
 
-            GError err = calculateScenario(scenario, govConstantsToUse);
-            if (err != null) {
-                log.error(err.toString());
+            // Errors
+            ValueOrGError<List<ValidationWarning>> validationResult = validateScenarioAgainstConstants(scenario, govConstantsToUse);
+            if (validationResult.hasError()) {
+                log.error(validationResult.getError().toString());
+                continue;
             }
+
+            // Warnings
+            List<ValidationWarning> validationWarnings = validationResult.getValue();
+            if (validationWarnings.size() > 0) {
+                for (ValidationWarning warning : validationWarnings) {
+                    log.warn(warning.getMessage());
+                }
+            }
+
+            renderScenario(scenario, govConstantsToUse);
         }
     }
 
@@ -190,91 +201,6 @@ public class Main {
         appender.start();
 
         rootLogger.addAppender(appender);
-    }
-
-    private static GError calculateScenario(
-            Scenario scenario,
-            GovConstantsForYear govConstants) {
-        ValueOrGError<List<ValidationWarning>> validationResult = validateScenarioAgainstConstants(scenario, govConstants);
-        if (validationResult.hasError()) {
-            return GError.propagate(validationResult.getError(), "An error occurred validating the scenario against the latest gov constants");
-        }
-        List<ValidationWarning> validationWarnings = validationResult.getValue();
-        if (validationWarnings.size() > 0) {
-            for (ValidationWarning warning : validationWarnings) {
-                log.warn(warning.getMessage());
-            }
-        }
-
-        log.info("");
-        logSectionHeader("RETIREMENT");
-        logCurrencyItem("Trad 401k Contrib", scenario.get401kContrib().getTrad());
-        logCurrencyItem("Roth 401k Contrib", scenario.get401kContrib().getRoth());
-        logCurrencyItem("Trad IRA Contrib", scenario.getIraContrib().getTrad());
-        logCurrencyItem("Roth IRA Contrib", scenario.getIraContrib().getRoth());
-
-        IncomeStreams grossIncomeStreams = scenario.getIncomeStreams();
-
-        log.info("");
-        logSectionHeader("GROSS INCOME");
-        logCurrencyItem("Earned Income", grossIncomeStreams.getEarnedIncome());
-        logCurrencyItem("Non-Preferential Unearned Income", grossIncomeStreams.getNonPreferentialUnearnedIncome());
-        logCurrencyItem("Preferential Earned Income", grossIncomeStreams.getPreferentialUnearnedIncome());
-        log.info(SUM_LINE);
-        long grossIncome = grossIncomeStreams.getTotal();
-        logCurrencyItem("Gross Income", grossIncome);
-
-        long totalAmtAdjustments = scenario.getAmtAdjustments().stream()
-                .reduce(0L, (l, r) -> l + r);
-        log.info("");
-        logSectionHeader("ADJUSTMENTS");
-        logCurrencyItem("AMT Adjustments", totalAmtAdjustments);
-
-        Map<Tax, Double> ficaTaxes = FicaTaxCalculator.calculateFicaTax(scenario, govConstants);
-        log.info("");
-        logSectionHeader("FICA TAX");
-        renderTaxesSection("FICA Tax", ficaTaxes, grossIncome);
-
-        Map<Tax, Double> regFedIncomeTaxes = RegularIncomeTaxCalculator.calculateRegularIncomeTax(scenario, govConstants);
-        log.info("");
-        logSectionHeader("REG FED INCOME TAX");
-        renderTaxesSection("Reg Fed Income Tax", regFedIncomeTaxes, grossIncome);
-
-        Map<Tax, Double> amtTaxes = AmtTaxCalculator.calculateAmtTax(scenario, govConstants);
-        log.info("");
-        logSectionHeader("AMT");
-        renderTaxesSection("AMT", amtTaxes, grossIncome);
-
-        Double totalRegIncomeTax = regFedIncomeTaxes.values().stream()
-                .reduce(0D, (l, r) -> l + r);
-        Double totalAmtIncomeTax = amtTaxes.values().stream()
-                .reduce(0D, (l, r) -> l + r);
-
-        Map<Tax, Double> totalTaxes = new HashMap<>();
-        totalTaxes.putAll(ficaTaxes);
-        String higherTaxSystem;
-        String lowerTaxSystem;
-        if (totalRegIncomeTax >= totalAmtIncomeTax) {
-            higherTaxSystem = "regular income tax";
-            lowerTaxSystem = "AMT";
-            totalTaxes.putAll(regFedIncomeTaxes);
-        } else {
-            higherTaxSystem = "AMT";
-            lowerTaxSystem = "regular income tax";
-            totalTaxes.putAll(amtTaxes);
-        }
-
-        log.info("");
-        logSectionHeader("TOTAL TAX");
-        log.info(
-                "Year's {} was higher than {}; using {} income tax",
-                higherTaxSystem,
-                lowerTaxSystem,
-                higherTaxSystem
-        );
-        renderTaxesSection("Scenario Tax", totalTaxes, grossIncome);
-
-        return null;
     }
 
     private static ValueOrGError<List<ValidationWarning>> validateScenarioAgainstConstants(Scenario scenario, GovConstantsForYear govConstantsForYear) {
@@ -331,6 +257,75 @@ public class Main {
         }
 
         return ValueOrGError.ofValue(warnings);
+    }
+
+    private static void renderScenario(
+            Scenario scenario,
+            GovConstantsForYear govConstants) {
+        log.info("");
+        logSectionHeader("RETIREMENT");
+        logCurrencyItem("Trad 401k Contrib", scenario.get401kContrib().getTrad());
+        logCurrencyItem("Roth 401k Contrib", scenario.get401kContrib().getRoth());
+        logCurrencyItem("Trad IRA Contrib", scenario.getIraContrib().getTrad());
+        logCurrencyItem("Roth IRA Contrib", scenario.getIraContrib().getRoth());
+
+        IncomeStreams grossIncomeStreams = scenario.getIncomeStreams();
+
+        log.info("");
+        logSectionHeader("GROSS INCOME");
+        logCurrencyItem("Earned Income", grossIncomeStreams.getEarnedIncome());
+        logCurrencyItem("Non-Preferential Unearned Income", grossIncomeStreams.getNonPreferentialUnearnedIncome());
+        logCurrencyItem("Preferential Earned Income", grossIncomeStreams.getPreferentialUnearnedIncome());
+        log.info(SUM_LINE);
+        long grossIncome = grossIncomeStreams.getTotal();
+        logCurrencyItem("Gross Income", grossIncome);
+
+        long totalAmtAdjustments = scenario.getAmtAdjustments().stream()
+                .reduce(0L, (l, r) -> l + r);
+        log.info("");
+        logSectionHeader("ADJUSTMENTS");
+        logCurrencyItem("AMT Adjustments", totalAmtAdjustments);
+
+        ScenarioTaxes taxes = ScenarioTaxCalculator.calculateScenarioTax(scenario, govConstants);
+        Map<Tax, Double> ficaTaxes = taxes.getFicaTaxes();
+        Map<Tax, Double> primarySystemTaxes = taxes.getPrimarySystemIncomeTaxes();
+        Map<Tax, Double> amtTaxes = taxes.getAmtTaxes();
+
+        log.info("");
+        logSectionHeader("FICA TAX");
+        renderTaxesSection("FICA Tax", ficaTaxes, grossIncome);
+
+        log.info("");
+        logSectionHeader("REG FED INCOME TAX");
+        renderTaxesSection("Reg Fed Income Tax", primarySystemTaxes, grossIncome);
+
+        log.info("");
+        logSectionHeader("AMT");
+        renderTaxesSection("AMT", amtTaxes, grossIncome);
+
+        Map<Tax, Double> totalTaxes = new HashMap<>();
+        totalTaxes.putAll(ficaTaxes);
+        String higherTaxSystem;
+        String lowerTaxSystem;
+        if (taxes.isPrimarySystemHigher()) {
+            higherTaxSystem = "regular income tax";
+            lowerTaxSystem = "AMT";
+            totalTaxes.putAll(primarySystemTaxes);
+        } else {
+            higherTaxSystem = "AMT";
+            lowerTaxSystem = "regular income tax";
+            totalTaxes.putAll(amtTaxes);
+        }
+
+        log.info("");
+        logSectionHeader("TOTAL TAX");
+        log.info(
+                "Year's {} tax system was higher than {}; using {} income tax",
+                higherTaxSystem,
+                lowerTaxSystem,
+                higherTaxSystem
+        );
+        renderTaxesSection("Scenario Tax", totalTaxes, grossIncome);
     }
 
     private static void logSectionHeader(String header) {
