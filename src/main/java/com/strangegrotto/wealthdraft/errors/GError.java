@@ -20,7 +20,7 @@ public class GError {
         this.cause = cause;
     }
 
-    private static GError buildError(Optional<GError> cause, StackTraceElement stackTraceElem, String message, Object... args) {
+    static GError buildError(Optional<GError> cause, StackTraceElement stackTraceElem, String message, Object... args) {
         String formattedMsg = MessageFormatter.arrayFormat(message, args).getMessage();
         return new GError(formattedMsg, stackTraceElem, cause);
     }

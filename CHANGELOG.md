@@ -2,6 +2,8 @@ TBD
 ----
 * Render only scenarios with year >= currentYear, and provide an `--all` flag to render all scenarios
 * Fix bug that warns user about stale gov constants when the latest gov constants are from a future year
+* Allow user to specify an assets YAML with the `--assets` flag for printing historical net worth over time
+* Allow user to specify a projections YAML with the `--projections` flag for specifying hypothetical scenarios
 
 0.2.0
 -----
