@@ -14,27 +14,35 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.base.Strings;
 import com.google.common.collect.Ordering;
-import com.strangegrotto.wealthdraft.networth.assets.Asset;
-import com.strangegrotto.wealthdraft.networth.NetWorthCalculator;
 import com.strangegrotto.wealthdraft.errors.ValueOrGError;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.govconstants.RetirementConstants;
-import com.strangegrotto.wealthdraft.networth.projections.raw.RawProjections;
+import com.strangegrotto.wealthdraft.networth.assets.Asset;
+import com.strangegrotto.wealthdraft.networth.assets.HistNetWorthCalcResults;
+import com.strangegrotto.wealthdraft.networth.assets.HistNetWorthCalculator;
+import com.strangegrotto.wealthdraft.networth.projections.ProjNetWorthCalcResults;
+import com.strangegrotto.wealthdraft.networth.projections.ProjNetWorthCalculator;
+import com.strangegrotto.wealthdraft.networth.projections.ProjectionScenario;
+import com.strangegrotto.wealthdraft.networth.projections.Projections;
 import com.strangegrotto.wealthdraft.scenarios.IncomeStreams;
 import com.strangegrotto.wealthdraft.scenarios.Scenario;
-
-import com.strangegrotto.wealthdraft.tax.*;
+import com.strangegrotto.wealthdraft.tax.ScenarioTaxCalculator;
+import com.strangegrotto.wealthdraft.tax.ScenarioTaxes;
+import com.strangegrotto.wealthdraft.tax.Tax;
 import com.strangegrotto.wealthdraft.validator.ValidationWarning;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.helper.HelpScreenException;
 import net.sourceforge.argparse4j.impl.Arguments;
-import net.sourceforge.argparse4j.inf.*;
+import net.sourceforge.argparse4j.inf.ArgumentParser;
+import net.sourceforge.argparse4j.inf.ArgumentParserException;
+import net.sourceforge.argparse4j.inf.Namespace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.time.LocalDate;
 import java.time.Year;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -155,7 +163,7 @@ public class Main {
 
         String assetsFilepath = parsedArgs.getString(ASSETS_FILEPATH_ARG);
         log.debug("Assets filepath: {}", assetsFilepath);
-        MapType assetsMapType = typeFactory.constructMapType(HashMap.class, Integer.class, GovConstantsForYear.class);
+        MapType assetsMapType = typeFactory.constructMapType(HashMap.class, String.class, Asset.class);
         Map<String, Asset> assets;
         try {
             assets = mapper.readValue(new File(assetsFilepath), assetsMapType);
@@ -167,9 +175,9 @@ public class Main {
 
         String projectionsFilepath = parsedArgs.getString(PROJECTIONS_FILEPATH_ARG);
         log.debug("Projections filepath: {}", assetsFilepath);
-        RawProjections projections;
+        Projections projections;
         try {
-            projections = mapper.readValue(new File(projectionsFilepath), RawProjections.class);
+            projections = mapper.readValue(new File(projectionsFilepath), Projections.class);
         } catch (IOException e) {
             log.error("An error occurred parsing the projections file '{}'", projectionsFilepath, e);
             System.exit(FAILURE_EXIT_CODE);
@@ -236,14 +244,45 @@ public class Main {
         }
 
 
-        // Render net worth
-        NetWorthCalculator netWorthCalculator = new NetWorthCalculator(STALE_ASSET_THRESHOLD_DAYS, PROJECTION_DISPLAY_INCREMENT_YEARS);
-
-
         log.info("");
         logBannerHeader("Historical Net Worth");
+        HistNetWorthCalculator histNetWorthCalculator = new HistNetWorthCalculator(STALE_ASSET_THRESHOLD_DAYS);
+        ValueOrGError<HistNetWorthCalcResults> histNetWorthCalcResultsOrErr = histNetWorthCalculator.calculateHistoricalNetWorth(assets);
+        if (histNetWorthCalcResultsOrErr.hasError()) {
+            log.error(histNetWorthCalcResultsOrErr.getError().toString());
+            System.exit(FAILURE_EXIT_CODE);
+        }
+        HistNetWorthCalcResults histNetWorthCalcResults = histNetWorthCalcResultsOrErr.getValue();
 
+        for (ValidationWarning warning : histNetWorthCalcResults.getValidationWarnings()) {
+            log.warn(warning.getMessage());
+        }
+        for (Map.Entry<LocalDate, Long> entry : histNetWorthCalcResults.getHistoricalNetWorth().entrySet()) {
+            logCurrencyItem(entry.getKey().toString(), entry.getValue());
+        }
 
+        ProjNetWorthCalculator projNetWorthCalculator = new ProjNetWorthCalculator(PROJECTION_DISPLAY_INCREMENT_YEARS);
+        ValueOrGError<ProjNetWorthCalcResults> projNetWorthCalcResultsOrErr = projNetWorthCalculator.calculateNetWorthProjections(
+                histNetWorthCalcResults.getLatestAssetValues(),
+                projections
+        );
+        if (projNetWorthCalcResultsOrErr.hasError()) {
+            log.error(projNetWorthCalcResultsOrErr.getError().toString());
+            System.exit(FAILURE_EXIT_CODE);
+        }
+        ProjNetWorthCalcResults projNetWorthCalcResults = projNetWorthCalcResultsOrErr.getValue();
+
+        projNetWorthCalcResults.projectionsNetWorth().forEach((projScenarioId, netWorthProjections) -> {
+            ProjectionScenario projScenario = projections.getScenarios().get(projScenarioId);
+            String projScenarioName = projScenario.getName();
+
+            log.info("");
+            logBannerHeader("Net Worth Projection: " + projScenarioName);
+
+            netWorthProjections.forEach((date, netWorth) -> {
+                logCurrencyItem(date.toString(), netWorth);
+            });
+        });
     }
 
     private static void configureRootLoggerPattern(ch.qos.logback.classic.Logger rootLogger) {
@@ -278,7 +317,7 @@ public class Main {
                     "The IRA contribution limit is {} but the scenario's total IRA contribution is {}",
                     retirementConstants.getIraContribLimit(),
                     totalIraContrib
-            ));
+            );
         }
         if (totalIraContrib < retirementConstants.getIraContribLimit()) {
             warnings.add(ValidationWarning.of(
@@ -295,7 +334,7 @@ public class Main {
                     "The 401k contribution limit is {} but the scenario's total 401k contribution is {}",
                     retirementConstants.getPersonal401kContribLimit(),
                     total401kContrib
-            ));
+            );
         }
         if (total401kContrib < retirementConstants.getPersonal401kContribLimit()) {
             warnings.add(ValidationWarning.of(
@@ -316,7 +355,7 @@ public class Main {
                     grossIncomeStreams.getEarnedIncome(),
                     totalIraContrib,
                     trad401kContrib
-            ));
+            );
         }
 
         return ValueOrGError.ofValue(warnings);

@@ -2,14 +2,14 @@ package com.strangegrotto.wealthdraft.networth.projections;
 
 import java.util.function.BiFunction;
 
-enum AssetValueChangeOperation {
+enum AssetChangeValueOperation {
     ADD((oldValue, newValue) -> oldValue + newValue),
     SUBTRACT((oldValue, newValue) -> Math.max(0L, oldValue - newValue)),
     SET((oldValue, newValue) -> newValue);
 
     private final BiFunction<Long, Long, Long> mutator;
 
-    AssetValueChangeOperation(BiFunction<Long, Long, Long> mutator) {
+    AssetChangeValueOperation(BiFunction<Long, Long, Long> mutator) {
         this.mutator = mutator;
     }
 
