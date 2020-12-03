@@ -1,4 +1,13 @@
 ## TBD
+* Rename `GError` -> `Gerr` and `ValueOrGError` -> `ValOrGerr` to be easier to write
+* Rename `Gerr.newError` -> `Gerr.newGerr` and `Gerr.propagate` -> `Gerr.propGerr` to take up less space in code
+* Rename the following `ValOrGerr` methods to be easier to write:
+    * `getValue` -> `getVal`
+    * `hasGError` -> `hasGerr`
+    * `getError` -> `getGerr`
+    * `ofValue` -> `val`
+    * `newError` -> `newGerr`
+    * `propagateErr` -> `propGerr`
 * Flag error if an asset change tries to subtract more funds from an asset than exist
 
 ## 0.3.0
