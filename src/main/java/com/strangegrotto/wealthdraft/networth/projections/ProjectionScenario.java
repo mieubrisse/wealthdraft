@@ -10,6 +10,9 @@ import java.util.Map;
 public interface ProjectionScenario {
     String getName();
 
+    // The ID of a scenario to base the scenario on
+    String getBase();
+
     // Mapping of change_date -> (asset_id -> asset_change)
     Map<String, Map<String, AssetChange>> getChanges();
 }
