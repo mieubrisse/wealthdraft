@@ -6,7 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.scenarios.ImmutableIncomeStreams;
 import com.strangegrotto.wealthdraft.scenarios.IncomeStreams;
-import com.strangegrotto.wealthdraft.scenarios.Scenario;
+import com.strangegrotto.wealthdraft.scenarios.TaxScenario;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +23,7 @@ public class RegularIncomeTaxCalculator {
      * @param govConstants Gov't constants to use in the calculation
      * @return A map of tax type -> tax amount under the regular income tax system
      */
-    public static Map<Tax, Double> calculateRegularIncomeTax(Scenario scenario, GovConstantsForYear govConstants) {
+    public static Map<Tax, Double> calculateRegularIncomeTax(TaxScenario scenario, GovConstantsForYear govConstants) {
         // Regular income tax allows trad IRA, trad 401k, and standard deduction
         // We don't apply the standard deduction yet though; that gets added later
         Deductions deductions = DeductionsCalculator.calculateAllowedDeductions(scenario, govConstants);

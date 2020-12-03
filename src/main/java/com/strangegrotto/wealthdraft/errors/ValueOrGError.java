@@ -38,10 +38,35 @@ public class ValueOrGError<T> {
         );
     }
 
-    public static ValueOrGError ofError(GError error) {
+    // This is a nice convenience so we don't have to call `ValueOrGError.ofError(GError.newError(.....` and can
+    //  do directly to `ValueOrGError.ofNewErr(...` BUT it means that we have to grab the stacktrace element and
+    //  call the package-private GError.buildError method
+    public static ValueOrGError ofNewErr(String message, Object... args) {
+        StackTraceElement stackTraceElem = Thread.currentThread().getStackTrace()[2];
         return new ValueOrGError(
                 Optional.empty(),
-                Optional.of(error)
+                Optional.of(GError.buildError(
+                        Optional.empty(),
+                        stackTraceElem,
+                        message,
+                        args
+                ))
+        );
+    }
+
+    // This is a nice convenience so we don't have to call `ValueOrGError.ofError(GError.propagateError(.....` and can
+    //  do directly to `ValueOrGError.ofPropagatedError(...` BUT it means that we have to grab the stacktrace element and
+    //  call the package-private GError.buildError method
+    public static ValueOrGError ofPropagatedErr(GError err, String message, Object... args) {
+        StackTraceElement stackTraceElem = Thread.currentThread().getStackTrace()[2];
+        return new ValueOrGError(
+                Optional.empty(),
+                Optional.of(GError.buildError(
+                        Optional.of(err),
+                        stackTraceElem,
+                        message,
+                        args
+                ))
         );
     }
 }
