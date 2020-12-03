@@ -63,7 +63,7 @@ public class Main {
     private static final String LOGBACK_LAYOUT_PATTERN = "%highlight(%-5level) %logger{0} - %message%n";
 
     private static final int MINIMUM_ITEM_TITLE_WIDTH = 40;
-    private static final int MINIMUM_CURRENCY_WIDTH = 9;
+    private static final int MINIMUM_CURRENCY_WIDTH = 10;
     private static final String SUM_LINE = Strings.repeat(" ", MINIMUM_ITEM_TITLE_WIDTH + 2)
             + Strings.repeat("-", MINIMUM_CURRENCY_WIDTH);
     private static final DecimalFormat CURRENCY_FORMAT = new DecimalFormat  ("###,##0");
