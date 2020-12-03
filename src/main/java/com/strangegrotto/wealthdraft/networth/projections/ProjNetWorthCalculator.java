@@ -1,6 +1,8 @@
 package com.strangegrotto.wealthdraft.networth.projections;
 
 import com.strangegrotto.wealthdraft.errors.ValueOrGError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -17,6 +19,8 @@ public class ProjNetWorthCalculator {
 
     private static final int MONTHS_IN_YEAR = 12;
 
+    private static final Logger log = LoggerFactory.getLogger(ProjNetWorthCalculator.class);
+
     private final int projectionDisplayIncrementYears;
 
     /**
@@ -27,18 +31,20 @@ public class ProjNetWorthCalculator {
         this.projectionDisplayIncrementYears = projectionDisplayYearIncrement;
     }
 
+    // TODO write tests for this!!
     public ValueOrGError<ProjNetWorthCalcResults> calculateNetWorthProjections(Map<String, Long> latestHistAssetValues, Projections projections) {
         ImmutableProjNetWorthCalcResults.Builder resultBuilder = ImmutableProjNetWorthCalcResults.builder();
 
         // Convert YoY growth into MoM
-        double defaultMonthlyGrowth = Math.pow(projections.getDefaultAnnualGrowth(), 1D / 12D);
+        double defaultMonthlyMultiplier = Math.pow(1 + projections.getDefaultAnnualGrowth(), 1D / 12D);
+        log.debug("Default monthly growth: {}", defaultMonthlyMultiplier);
 
         for (Map.Entry<String, ProjectionScenario> projectionScenarioEntry : projections.getScenarios().entrySet()) {
             String scenarioId = projectionScenarioEntry.getKey();
             ProjectionScenario projectionScenario = projectionScenarioEntry.getValue();
 
             ValueOrGError<SortedMap<LocalDate, Long>> netWorthProjectionsOrErr = calcScenarioNetWorthProjections(
-                    defaultMonthlyGrowth,
+                    defaultMonthlyMultiplier,
                     projectionScenario,
                     latestHistAssetValues,
                     this.projectionDisplayIncrementYears
@@ -96,7 +102,7 @@ public class ProjNetWorthCalculator {
     }
 
     private static ValueOrGError<SortedMap<LocalDate, Long>> calcScenarioNetWorthProjections(
-            double defaultMonthlyGrowth,
+            double defaultMonthlyMultiplier,
             ProjectionScenario projectionScenario,
             Map<String, Long> latestHistAssetValues,
             int projectionDisplayIncrementYears) {
@@ -166,7 +172,7 @@ public class ProjNetWorthCalculator {
             if (compoundingDates.contains(date)) {
                 for (String assetId : currentAssetValues.keySet()) {
                     Long currentValue = currentAssetValues.get(assetId);
-                    long newValue = (long)(currentValue * (1 + defaultMonthlyGrowth));
+                    long newValue = (long)(currentValue * defaultMonthlyMultiplier);
                     currentAssetValues.put(assetId, newValue);
                 }
             }
