@@ -38,10 +38,17 @@ public class ValueOrGError<T> {
         );
     }
 
-    public static ValueOrGError ofError(GError error) {
+    public static ValueOrGError ofNewErr(String message, Object... args) {
         return new ValueOrGError(
                 Optional.empty(),
-                Optional.of(error)
+                Optional.of(GError.newError(message, args))
+        );
+    }
+
+    public static ValueOrGError ofPropagatedErr(GError err, String message, Object... args) {
+        return new ValueOrGError(
+                Optional.empty(),
+                Optional.of(GError.propagate(err, message, args))
         );
     }
 }

@@ -1,0 +1,10 @@
+defaultGrowth: 0.06
+scenarios:
+  btc-5y:
+    name: Sell Bitcoin in 5 years
+    changes:
+      +5y:
+        btc:
+          value: 0
+        bank:
+          value: +15000

@@ -1,6 +1,7 @@
-package com.strangegrotto.wealthdraft.assets;
+package com.strangegrotto.wealthdraft.networth.assets;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.strangegrotto.wealthdraft.networth.ImmutableHistoricalAssetValue;
 import org.immutables.value.Value;
 
 import java.time.LocalDate;
