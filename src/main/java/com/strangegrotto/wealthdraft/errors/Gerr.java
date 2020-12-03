@@ -8,31 +8,33 @@ import java.util.StringJoiner;
 /**
  * Class intended to mirror Palantir's 'stacktrace' library in Go, which has a very elegant interface for capturing
  *  the source of errors.
+ *
+ * Why "Gerr"? Golang + Error = Gerr
  */
-public class GError {
+public class Gerr {
     String message;
     StackTraceElement stackTraceElem;
-    Optional<GError> cause;
+    Optional<Gerr> cause;
 
-    private GError(String message, StackTraceElement stackTraceElem, Optional<GError> cause) {
+    private Gerr(String message, StackTraceElement stackTraceElem, Optional<Gerr> cause) {
         this.message = message;
         this.stackTraceElem = stackTraceElem;
         this.cause = cause;
     }
 
-    static GError buildError(Optional<GError> cause, StackTraceElement stackTraceElem, String message, Object... args) {
+    static Gerr build(Optional<Gerr> cause, StackTraceElement stackTraceElem, String message, Object... args) {
         String formattedMsg = MessageFormatter.arrayFormat(message, args).getMessage();
-        return new GError(formattedMsg, stackTraceElem, cause);
+        return new Gerr(formattedMsg, stackTraceElem, cause);
     }
 
-    public static GError newError(String message, Object... args) {
+    public static Gerr newGerr(String message, Object... args) {
         StackTraceElement stackTraceElem = Thread.currentThread().getStackTrace()[2];
-        return buildError(Optional.empty(), stackTraceElem, message, args);
+        return build(Optional.empty(), stackTraceElem, message, args);
     }
 
-    public static GError propagate(GError err, String message, Object... args) {
+    public static Gerr propGerr(Gerr err, String message, Object... args) {
         StackTraceElement stackTraceElem = Thread.currentThread().getStackTrace()[2];
-        return buildError(Optional.of(err), stackTraceElem, message, args);
+        return build(Optional.of(err), stackTraceElem, message, args);
     }
 
     @Override
