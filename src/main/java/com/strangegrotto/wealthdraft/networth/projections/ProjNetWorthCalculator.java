@@ -159,11 +159,23 @@ public class ProjNetWorthCalculator {
             // First apply any asset value changes
             if (assetChangeDates.contains(date)) {
                 Map<String, AssetChange> assetChanges = assetChangesByDate.get(date);
-                assetChanges.forEach((assetId, change) -> {
+                for (Map.Entry<String, AssetChange> assetChangeEntry : assetChanges.entrySet()) {
+                    String assetId = assetChangeEntry.getKey();
+                    AssetChange change = assetChangeEntry.getValue();
+
                     long oldValue = currentAssetValues.get(assetId);
-                    long updatedValue = change.apply(oldValue);
+                    ValueOrGError<Long> applicationResult = change.apply(oldValue);
+                    if (applicationResult.hasError()) {
+                        return ValueOrGError.ofPropagatedErr(
+                                applicationResult.getError(),
+                                "An error occurred applying asset change from {} to asset with ID '{}'",
+                                date,
+                                assetId
+                        );
+                    }
+                    long updatedValue = applicationResult.getValue();
                     currentAssetValues.put(assetId, updatedValue);
-                });
+                }
             }
 
             // Apply monthly growth "interest" only if we're on the month boundary
