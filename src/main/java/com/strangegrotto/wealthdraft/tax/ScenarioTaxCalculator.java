@@ -1,14 +1,14 @@
 package com.strangegrotto.wealthdraft.tax;
 
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
-import com.strangegrotto.wealthdraft.scenarios.Scenario;
+import com.strangegrotto.wealthdraft.scenarios.TaxScenario;
 
 import java.util.Map;
 
 public class ScenarioTaxCalculator {
     private ScenarioTaxCalculator() {}
 
-    public static ScenarioTaxes calculateScenarioTax(Scenario scenario, GovConstantsForYear govConstants) {
+    public static ScenarioTaxes calculateScenarioTax(TaxScenario scenario, GovConstantsForYear govConstants) {
         Map<Tax, Double> primarySystemIncomeTaxes = RegularIncomeTaxCalculator.calculateRegularIncomeTax(scenario, govConstants);
         Map<Tax, Double> amtTaxes = AmtTaxCalculator.calculateAmtTax(scenario, govConstants);
         Map<Tax, Double> ficaTaxes = FicaTaxCalculator.calculateFicaTax(scenario, govConstants);

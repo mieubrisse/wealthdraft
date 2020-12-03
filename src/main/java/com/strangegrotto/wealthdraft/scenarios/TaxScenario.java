@@ -8,14 +8,15 @@ import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.function.Function;
 
+// TODO Rename this to clarify that this is particularly around tax...
+//  ...OR fuse this with the asset scenario calculator that's getting built
 @Value.Immutable
-@JsonDeserialize(as = ImmutableScenario.class)
-public interface Scenario {
-    Logger log = LoggerFactory.getLogger(Scenario.class);
+@JsonDeserialize(as = ImmutableTaxScenario.class)
+public interface TaxScenario {
+    Logger log = LoggerFactory.getLogger(TaxScenario.class);
 
     int getYear();
 

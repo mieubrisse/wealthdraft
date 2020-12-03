@@ -5,11 +5,9 @@ import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.govconstants.RetirementConstants;
 import com.strangegrotto.wealthdraft.scenarios.ImmutableIncomeStreams;
 import com.strangegrotto.wealthdraft.scenarios.IncomeStreams;
-import com.strangegrotto.wealthdraft.scenarios.Scenario;
+import com.strangegrotto.wealthdraft.scenarios.TaxScenario;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class DeductionsCalculator {
@@ -18,7 +16,7 @@ public class DeductionsCalculator {
     /**
      * Examines the particular scenario and calculates exactly how much of each deduction is allowed
      */
-    public static Deductions calculateAllowedDeductions(Scenario scenario, GovConstantsForYear govConstants) {
+    public static Deductions calculateAllowedDeductions(TaxScenario scenario, GovConstantsForYear govConstants) {
         long grossTotalIncome = scenario.getIncomeStreams().getTotal();
         long reg401kContrib = scenario.get401kContrib().getTrad();
 

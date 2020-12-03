@@ -4,14 +4,14 @@ import com.google.common.collect.ImmutableMap;
 import com.strangegrotto.wealthdraft.govconstants.FicaConstants;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.scenarios.IncomeStreams;
-import com.strangegrotto.wealthdraft.scenarios.Scenario;
+import com.strangegrotto.wealthdraft.scenarios.TaxScenario;
 
 import java.util.Map;
 
 public class FicaTaxCalculator {
     private FicaTaxCalculator(){}
 
-    public static Map<Tax, Double> calculateFicaTax(Scenario scenario, GovConstantsForYear govConstants) {
+    public static Map<Tax, Double> calculateFicaTax(TaxScenario scenario, GovConstantsForYear govConstants) {
         // FICA doesn't care about 401k and IRA contributions, so no deductions here :(
         // See: https://ttlc.intuit.com/community/retirement/discussion/are-contributions-to-401k-plans-subject-to-fica-and-medicare/00/30372
         IncomeStreams income = scenario.getIncomeStreams();
