@@ -17,15 +17,15 @@ import com.google.common.collect.Ordering;
 import com.strangegrotto.wealthdraft.errors.ValueOrGError;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.govconstants.RetirementConstants;
-import com.strangegrotto.wealthdraft.networth.assets.Asset;
-import com.strangegrotto.wealthdraft.networth.assets.HistNetWorthCalcResults;
-import com.strangegrotto.wealthdraft.networth.assets.HistNetWorthCalculator;
+import com.strangegrotto.wealthdraft.networth.historical.Asset;
+import com.strangegrotto.wealthdraft.networth.historical.HistNetWorthCalcResults;
+import com.strangegrotto.wealthdraft.networth.historical.HistNetWorthCalculator;
 import com.strangegrotto.wealthdraft.networth.projections.ProjNetWorthCalcResults;
 import com.strangegrotto.wealthdraft.networth.projections.ProjNetWorthCalculator;
 import com.strangegrotto.wealthdraft.networth.projections.ProjectionScenario;
 import com.strangegrotto.wealthdraft.networth.projections.Projections;
 import com.strangegrotto.wealthdraft.scenarios.IncomeStreams;
-import com.strangegrotto.wealthdraft.scenarios.Scenario;
+import com.strangegrotto.wealthdraft.scenarios.TaxScenario;
 import com.strangegrotto.wealthdraft.tax.ScenarioTaxCalculator;
 import com.strangegrotto.wealthdraft.tax.ScenarioTaxes;
 import com.strangegrotto.wealthdraft.tax.Tax;
@@ -51,7 +51,9 @@ public class Main {
     private static final int SUCCESS_EXIT_CODE = 0;
     private static final int FAILURE_EXIT_CODE = 1;
 
-    private static final String SCENARIOS_FILEPATH_ARG = "scenarios";
+    // TODO Rename this to "tax-scenarios"??? The reason to hold off is to combine the "projections"
+    //  and "scenarios" files into a single one
+    private static final String TAX_SCENARIOS_FILEPATH_ARG = "scenarios";
     private static final String GOV_CONSTANTS_FILEPATH_ARG = "gov-constants";
     private static final String ASSETS_FILEPATH_ARG = "assets";
     private static final String PROJECTIONS_FILEPATH_ARG = "projections";
@@ -86,8 +88,8 @@ public class Main {
         ArgumentParser parser = ArgumentParsers.newFor("Financial Predictor").build()
                 .defaultHelp(true)
                 .description("A financial modelling CLI");
-        parser.addArgument("--" + SCENARIOS_FILEPATH_ARG)
-                .dest(SCENARIOS_FILEPATH_ARG)
+        parser.addArgument("--" + TAX_SCENARIOS_FILEPATH_ARG)
+                .dest(TAX_SCENARIOS_FILEPATH_ARG)
                 .required(true)
                 .help("YAML file containing scenarios to calculate");
         // TODO rename this; it's only tax-specific
@@ -137,14 +139,14 @@ public class Main {
         mapper.registerModule(new JavaTimeModule());
         TypeFactory typeFactory = mapper.getTypeFactory();
 
-        String scenariosFilepath = parsedArgs.getString(SCENARIOS_FILEPATH_ARG);
-        log.debug("Scenarios filepath: {}", scenariosFilepath);
-        MapType scenariosMapType = typeFactory.constructMapType(HashMap.class, String.class, Scenario.class);
-        Map<String, Scenario> scenarios;
+        String taxScenariosFilepath = parsedArgs.getString(TAX_SCENARIOS_FILEPATH_ARG);
+        log.debug("Scenarios filepath: {}", taxScenariosFilepath);
+        MapType taxScenariosMapType = typeFactory.constructMapType(HashMap.class, String.class, TaxScenario.class);
+        Map<String, TaxScenario> taxScenarios;
         try {
-            scenarios = mapper.readValue(new File(scenariosFilepath), scenariosMapType);
+            taxScenarios = mapper.readValue(new File(taxScenariosFilepath), taxScenariosMapType);
         } catch (IOException e) {
-            log.error("An error occurred parsing scenarios file '{}'", scenariosFilepath, e);
+            log.error("An error occurred parsing tax scenarios file '{}'", taxScenariosFilepath, e);
             System.exit(FAILURE_EXIT_CODE);
             return;
         }
@@ -184,6 +186,39 @@ public class Main {
             return;
         }
 
+        renderMultipleTaxScenarios(
+                parsedArgs.getBoolean(ALL_SCENARIOS_ARG),
+                taxScenarios,
+                allGovConstants
+        );
+
+
+        renderNetWorthCalculations(assets, projections);
+    }
+
+    private static void configureRootLoggerPattern(ch.qos.logback.classic.Logger rootLogger) {
+        // Configure the logger with our desired pattern
+        // See: http://logback.qos.ch/manual/layouts.html
+        LoggerContext loggerContext = rootLogger.getLoggerContext();
+        loggerContext.reset();
+
+        PatternLayoutEncoder encoder = new PatternLayoutEncoder();
+        encoder.setContext(loggerContext);
+        encoder.setPattern(LOGBACK_LAYOUT_PATTERN);
+        encoder.start();
+
+        ConsoleAppender<ILoggingEvent> appender = new ConsoleAppender<>();
+        appender.setContext(loggerContext);
+        appender.setEncoder(encoder);
+        appender.start();
+
+        rootLogger.addAppender(appender);
+    }
+
+    private static void renderMultipleTaxScenarios(
+            boolean doRenderAllScenarios,
+            Map<String, TaxScenario> scenarios,
+            Map<Integer, GovConstantsForYear> allGovConstants) {
         Integer latestYear = Collections.max(allGovConstants.keySet());
         GovConstantsForYear latestGovConstants = allGovConstants.get(latestYear);
         int currentYear = Year.now().getValue();
@@ -193,11 +228,11 @@ public class Main {
 
         // Render scenarios
         // TODO break this into a helper function
-        int minYearToRender = parsedArgs.getBoolean(ALL_SCENARIOS_ARG) ? 0 : Year.now().getValue();
+        int minYearToRender = doRenderAllScenarios ? 0 : Year.now().getValue();
         List<String> scenarioNames = new ArrayList<>(scenarios.keySet());
         scenarioNames.sort(Ordering.natural());
         for (String scenarioName : scenarioNames) {
-            Scenario scenario = scenarios.get(scenarioName);
+            TaxScenario scenario = scenarios.get(scenarioName);
             if (scenario.getYear() < minYearToRender) {
                 continue;
             }
@@ -226,7 +261,7 @@ public class Main {
             }
 
             // Errors
-            ValueOrGError<List<ValidationWarning>> validationResult = validateScenarioAgainstConstants(scenario, govConstantsToUse);
+            ValueOrGError<List<ValidationWarning>> validationResult = validateTaxScenarioAgainstGovConstants(scenario, govConstantsToUse);
             if (validationResult.hasError()) {
                 log.error(validationResult.getError().toString());
                 continue;
@@ -240,72 +275,12 @@ public class Main {
                 }
             }
 
-            renderScenario(scenario, govConstantsToUse);
+            renderTaxScenario(scenario, govConstantsToUse);
         }
-
-
-        log.info("");
-        logBannerHeader("Historical Net Worth");
-        HistNetWorthCalculator histNetWorthCalculator = new HistNetWorthCalculator(STALE_ASSET_THRESHOLD_DAYS);
-        ValueOrGError<HistNetWorthCalcResults> histNetWorthCalcResultsOrErr = histNetWorthCalculator.calculateHistoricalNetWorth(assets);
-        if (histNetWorthCalcResultsOrErr.hasError()) {
-            log.error(histNetWorthCalcResultsOrErr.getError().toString());
-            System.exit(FAILURE_EXIT_CODE);
-        }
-        HistNetWorthCalcResults histNetWorthCalcResults = histNetWorthCalcResultsOrErr.getValue();
-
-        for (ValidationWarning warning : histNetWorthCalcResults.getValidationWarnings()) {
-            log.warn(warning.getMessage());
-        }
-        for (Map.Entry<LocalDate, Long> entry : histNetWorthCalcResults.getHistoricalNetWorth().entrySet()) {
-            logCurrencyItem(entry.getKey().toString(), entry.getValue());
-        }
-
-        ProjNetWorthCalculator projNetWorthCalculator = new ProjNetWorthCalculator(PROJECTION_DISPLAY_INCREMENT_YEARS);
-        ValueOrGError<ProjNetWorthCalcResults> projNetWorthCalcResultsOrErr = projNetWorthCalculator.calculateNetWorthProjections(
-                histNetWorthCalcResults.getLatestAssetValues(),
-                projections
-        );
-        if (projNetWorthCalcResultsOrErr.hasError()) {
-            log.error(projNetWorthCalcResultsOrErr.getError().toString());
-            System.exit(FAILURE_EXIT_CODE);
-        }
-        ProjNetWorthCalcResults projNetWorthCalcResults = projNetWorthCalcResultsOrErr.getValue();
-
-        projNetWorthCalcResults.projectionsNetWorth().forEach((projScenarioId, netWorthProjections) -> {
-            ProjectionScenario projScenario = projections.getScenarios().get(projScenarioId);
-            String projScenarioName = projScenario.getName();
-
-            log.info("");
-            logBannerHeader("Net Worth Projection: " + projScenarioName);
-
-            netWorthProjections.forEach((date, netWorth) -> {
-                logCurrencyItem(date.toString(), netWorth);
-            });
-        });
-    }
-
-    private static void configureRootLoggerPattern(ch.qos.logback.classic.Logger rootLogger) {
-        // Configure the logger with our desired pattern
-        // See: http://logback.qos.ch/manual/layouts.html
-        LoggerContext loggerContext = rootLogger.getLoggerContext();
-        loggerContext.reset();
-
-        PatternLayoutEncoder encoder = new PatternLayoutEncoder();
-        encoder.setContext(loggerContext);
-        encoder.setPattern(LOGBACK_LAYOUT_PATTERN);
-        encoder.start();
-
-        ConsoleAppender<ILoggingEvent> appender = new ConsoleAppender<>();
-        appender.setContext(loggerContext);
-        appender.setEncoder(encoder);
-        appender.start();
-
-        rootLogger.addAppender(appender);
     }
 
 
-    private static ValueOrGError<List<ValidationWarning>> validateScenarioAgainstConstants(Scenario scenario, GovConstantsForYear govConstantsForYear) {
+    private static ValueOrGError<List<ValidationWarning>> validateTaxScenarioAgainstGovConstants(TaxScenario scenario, GovConstantsForYear govConstantsForYear) {
         IncomeStreams grossIncomeStreams = scenario.getIncomeStreams();
 
         List<ValidationWarning> warnings = new ArrayList<>();
@@ -361,8 +336,8 @@ public class Main {
         return ValueOrGError.ofValue(warnings);
     }
 
-    private static void renderScenario(
-            Scenario scenario,
+    private static void renderTaxScenario(
+            TaxScenario scenario,
             GovConstantsForYear govConstants) {
         log.info("");
         logSectionHeader("RETIREMENT");
@@ -428,6 +403,48 @@ public class Main {
                 higherTaxSystem
         );
         renderTaxesSection("Scenario Tax", totalTaxes, grossIncome);
+    }
+
+    private static void renderNetWorthCalculations(Map<String, Asset> assets, Projections projections) {
+        log.info("");
+        logBannerHeader("Historical Net Worth");
+        HistNetWorthCalculator histNetWorthCalculator = new HistNetWorthCalculator(STALE_ASSET_THRESHOLD_DAYS);
+        ValueOrGError<HistNetWorthCalcResults> histNetWorthCalcResultsOrErr = histNetWorthCalculator.calculateHistoricalNetWorth(assets);
+        if (histNetWorthCalcResultsOrErr.hasError()) {
+            log.error(histNetWorthCalcResultsOrErr.getError().toString());
+            System.exit(FAILURE_EXIT_CODE);
+        }
+        HistNetWorthCalcResults histNetWorthCalcResults = histNetWorthCalcResultsOrErr.getValue();
+
+        for (ValidationWarning warning : histNetWorthCalcResults.getValidationWarnings()) {
+            log.warn(warning.getMessage());
+        }
+        for (Map.Entry<LocalDate, Long> entry : histNetWorthCalcResults.getHistoricalNetWorth().entrySet()) {
+            logCurrencyItem(entry.getKey().toString(), entry.getValue());
+        }
+
+        ProjNetWorthCalculator projNetWorthCalculator = new ProjNetWorthCalculator(PROJECTION_DISPLAY_INCREMENT_YEARS);
+        ValueOrGError<ProjNetWorthCalcResults> projNetWorthCalcResultsOrErr = projNetWorthCalculator.calculateNetWorthProjections(
+                histNetWorthCalcResults.getLatestAssetValues(),
+                projections
+        );
+        if (projNetWorthCalcResultsOrErr.hasError()) {
+            log.error(projNetWorthCalcResultsOrErr.getError().toString());
+            System.exit(FAILURE_EXIT_CODE);
+        }
+        ProjNetWorthCalcResults projNetWorthCalcResults = projNetWorthCalcResultsOrErr.getValue();
+
+        projNetWorthCalcResults.projectionsNetWorth().forEach((projScenarioId, netWorthProjections) -> {
+            ProjectionScenario projScenario = projections.getScenarios().get(projScenarioId);
+            String projScenarioName = projScenario.getName();
+
+            log.info("");
+            logBannerHeader("Net Worth Projection: " + projScenarioName);
+
+            netWorthProjections.forEach((date, netWorth) -> {
+                logCurrencyItem(date.toString(), netWorth);
+            });
+        });
     }
 
     private static void logBannerHeader(String header) {

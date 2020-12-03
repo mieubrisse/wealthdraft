@@ -5,7 +5,7 @@ import com.strangegrotto.wealthdraft.govconstants.AmtConstants;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.scenarios.ImmutableIncomeStreams;
 import com.strangegrotto.wealthdraft.scenarios.IncomeStreams;
-import com.strangegrotto.wealthdraft.scenarios.Scenario;
+import com.strangegrotto.wealthdraft.scenarios.TaxScenario;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +16,7 @@ public class AmtTaxCalculator {
 
     private AmtTaxCalculator(){}
 
-    public static Map<Tax, Double> calculateAmtTax(Scenario scenario, GovConstantsForYear govConstants) {
+    public static Map<Tax, Double> calculateAmtTax(TaxScenario scenario, GovConstantsForYear govConstants) {
         AmtConstants amtConstants = govConstants.getAmtConstants();
 
         ImmutableMap.Builder<Tax, Double> result = ImmutableMap.builder();

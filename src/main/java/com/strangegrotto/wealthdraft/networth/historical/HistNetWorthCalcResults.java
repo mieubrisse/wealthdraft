@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.networth.assets;
+package com.strangegrotto.wealthdraft.networth.historical;
 
 import com.strangegrotto.wealthdraft.validator.ValidationWarning;
 import org.immutables.value.Value;
