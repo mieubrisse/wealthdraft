@@ -1,3 +1,8 @@
+## TBD
+* Rename `GError` -> `Gerr` and `ValueOrGError` -> `ValOrGerr` to be easier to write
+* Rename `Gerr.newError` -> `Gerr.newGerr` and `Gerr.propagate` -> `Gerr.propGerr` to take up less space in code
+* Rename `ValOrGerr.newError` -> `ValOrGerr.newGerr` and `ValOrGerr.propagateErr` -> `ValOrGerr.propGerr` to take up less space in code
+
 ## 0.3.0
 * Render only scenarios with year >= currentYear, and provide an `--all` flag to render all scenarios
 * Fix bug that warns user about stale gov constants when the latest gov constants are from a future year

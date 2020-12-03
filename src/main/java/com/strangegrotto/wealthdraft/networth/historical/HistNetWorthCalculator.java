@@ -1,6 +1,6 @@
 package com.strangegrotto.wealthdraft.networth.historical;
 
-import com.strangegrotto.wealthdraft.errors.ValueOrGError;
+import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.validator.ValidationWarning;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,19 +18,19 @@ public class HistNetWorthCalculator {
         this.staleAssetThresholdDays = staleAssetThresholdDays;
     }
 
-    public ValueOrGError<HistNetWorthCalcResults> calculateHistoricalNetWorth(
+    public ValOrGerr<HistNetWorthCalcResults> calculateHistoricalNetWorth(
             Map<String, Asset> assets) {
         ImmutableHistNetWorthCalcResults.Builder resultBuilder = ImmutableHistNetWorthCalcResults.builder();
 
-        ValueOrGError<List<ValidationWarning>> assetValidationResult = validateAssets(assets);
-        if (assetValidationResult.hasError()) {
-            log.error(assetValidationResult.getError().toString());
-            return ValueOrGError.ofPropagatedErr(
-                    assetValidationResult.getError(),
+        ValOrGerr<List<ValidationWarning>> assetValidationResult = validateAssets(assets);
+        if (assetValidationResult.hasGerr()) {
+            log.error(assetValidationResult.getGerr().toString());
+            return ValOrGerr.propGerr(
+                    assetValidationResult.getGerr(),
                     "An error occurred validating assets"
             );
         }
-        resultBuilder.addAllValidationWarnings(assetValidationResult.getValue());
+        resultBuilder.addAllValidationWarnings(assetValidationResult.getVal());
 
         Map<LocalDate, Map<String, Long>> histNetWorthCheckpointValues = new HashMap<>();
         assets.forEach((assetId, asset) -> {
@@ -57,12 +57,12 @@ public class HistNetWorthCalculator {
         resultBuilder.latestAssetValues(latestHistAssetValues);
         resultBuilder.historicalNetWorth(historicalNetWorth);
 
-        return ValueOrGError.ofValue(resultBuilder.build());
+        return ValOrGerr.val(resultBuilder.build());
     }
 
-    private ValueOrGError<List<ValidationWarning>> validateAssets(Map<String, Asset> assets) {
+    private ValOrGerr<List<ValidationWarning>> validateAssets(Map<String, Asset> assets) {
         if (assets.size() == 0) {
-            return ValueOrGError.ofNewErr("At least one asset must be specified, but none were");
+            return ValOrGerr.newGerr("At least one asset must be specified, but none were");
         }
 
         // Validate net worth
@@ -74,7 +74,7 @@ public class HistNetWorthCalculator {
             Asset asset = assetEntry.getValue();
 
             if (asset.getHistorical().size() == 0) {
-                return ValueOrGError.ofNewErr(
+                return ValOrGerr.newGerr(
                         "Asset with ID '{}' is specified but has no historical values",
                         assetId
                 );
@@ -86,7 +86,7 @@ public class HistNetWorthCalculator {
                 LocalDate date = historicalAssetValue.getKey();
                 Long value = historicalAssetValue.getValue();
                 if (date.isAfter(LocalDate.now())) {
-                    return ValueOrGError.ofNewErr(
+                    return ValOrGerr.newGerr(
                             "Asset with ID '{}' has a historical value in the future, '{}'",
                             assetId,
                             date
@@ -109,6 +109,6 @@ public class HistNetWorthCalculator {
                 ));
             }
         }
-        return ValueOrGError.ofValue(warnings);
+        return ValOrGerr.val(warnings);
     }
 }
