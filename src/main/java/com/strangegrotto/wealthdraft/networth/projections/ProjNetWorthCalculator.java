@@ -114,6 +114,8 @@ public class ProjNetWorthCalculator {
             ProjectionScenario projectionScenario,
             Map<String, Long> latestHistAssetValues,
             int projectionDisplayIncrementYears) {
+        LocalDate today = LocalDate.now();
+
         Set<LocalDate> assetChangeDates = new HashSet<>();
         Map<LocalDate, Map<String, AssetChange>> assetChangesByDate = new HashMap<>();
         for (Map.Entry<String, Map<String, AssetChange>> multiAssetChangesEntry : projectionScenario.getChanges().entrySet()) {
@@ -129,6 +131,12 @@ public class ProjNetWorthCalculator {
                 );
             }
             LocalDate changeDate = changeDateParseResult.getVal();
+            if (changeDate.isBefore(today)) {
+                return ValOrGerr.newGerr(
+                        "Encountered asset change date '{}' that was in the past, making this scenario invalid",
+                        changeDate
+                );
+            }
             assetChangeDates.add(changeDate);
 
             Map<String, AssetChange> assetChangesForDate = assetChangesByDate.getOrDefault(changeDate, new HashMap<>());
@@ -144,7 +152,6 @@ public class ProjNetWorthCalculator {
         Set<LocalDate> datesToLogNetWorth = new HashSet<>(assetChangesByDate.keySet());
 
         Set<LocalDate> compoundingDates = new HashSet<>();
-        LocalDate today = LocalDate.now();
         for (int i = 0; i < MONTHS_IN_YEAR * MAX_YEARS_TO_PROJECT; i++) {
             LocalDate futureDate = today.plusMonths(i);
             compoundingDates.add(futureDate);
