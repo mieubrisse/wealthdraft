@@ -8,6 +8,7 @@
     * `ofValue` -> `val`
     * `newError` -> `newGerr`
     * `propagateErr` -> `propGerr`
+* Flag error if an asset change tries to subtract more funds from an asset than exist
 
 ## 0.3.0
 * Render only scenarios with year >= currentYear, and provide an `--all` flag to render all scenarios

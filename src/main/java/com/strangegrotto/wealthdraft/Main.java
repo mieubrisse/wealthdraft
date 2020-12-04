@@ -424,27 +424,30 @@ public class Main {
         }
 
         ProjNetWorthCalculator projNetWorthCalculator = new ProjNetWorthCalculator(PROJECTION_DISPLAY_INCREMENT_YEARS);
-        ValOrGerr<ProjNetWorthCalcResults> projNetWorthCalcResultsOrErr = projNetWorthCalculator.calculateNetWorthProjections(
+        ProjNetWorthCalcResults projNetWorthCalcResults = projNetWorthCalculator.calculateNetWorthProjections(
                 histNetWorthCalcResults.getLatestAssetValues(),
                 projections
         );
-        if (projNetWorthCalcResultsOrErr.hasGerr()) {
-            log.error(projNetWorthCalcResultsOrErr.getGerr().toString());
-            System.exit(FAILURE_EXIT_CODE);
-        }
-        ProjNetWorthCalcResults projNetWorthCalcResults = projNetWorthCalcResultsOrErr.getVal();
 
-        projNetWorthCalcResults.projectionsNetWorth().forEach((projScenarioId, netWorthProjections) -> {
+        for (Map.Entry<String, ValOrGerr<SortedMap<LocalDate, Long>>> scenarioCalcEntry
+                : projNetWorthCalcResults.getProjNetWorths().entrySet()) {
+            String projScenarioId = scenarioCalcEntry.getKey();
+            ValOrGerr<SortedMap<LocalDate, Long>> netWorthProjectionsOrErr = scenarioCalcEntry.getValue();
             ProjectionScenario projScenario = projections.getScenarios().get(projScenarioId);
             String projScenarioName = projScenario.getName();
 
             log.info("");
             logBannerHeader("Net Worth Projection: " + projScenarioName);
 
+            if (netWorthProjectionsOrErr.hasGerr()) {
+                log.error(netWorthProjectionsOrErr.getGerr().toString());
+                continue;
+            }
+            Map<LocalDate, Long> netWorthProjections = netWorthProjectionsOrErr.getVal();
             netWorthProjections.forEach((date, netWorth) -> {
                 logCurrencyItem(date.toString(), netWorth);
             });
-        });
+        }
     }
 
     private static void logBannerHeader(String header) {

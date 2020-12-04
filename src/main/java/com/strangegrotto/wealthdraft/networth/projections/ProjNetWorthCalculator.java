@@ -32,7 +32,7 @@ public class ProjNetWorthCalculator {
     }
 
     // TODO write tests for this!!
-    public ValOrGerr<ProjNetWorthCalcResults> calculateNetWorthProjections(Map<String, Long> latestHistAssetValues, Projections projections) {
+    public ProjNetWorthCalcResults calculateNetWorthProjections(Map<String, Long> latestHistAssetValues, Projections projections) {
         ImmutableProjNetWorthCalcResults.Builder resultBuilder = ImmutableProjNetWorthCalcResults.builder();
 
         // Convert YoY growth into MoM
@@ -50,15 +50,23 @@ public class ProjNetWorthCalculator {
                     this.projectionDisplayIncrementYears
             );
             if (netWorthProjectionsOrErr.hasGerr()) {
-                return ValOrGerr.propGerr(
-                        netWorthProjectionsOrErr.getGerr(),
-                        "An error occurred calculating the net worth projections for scenario with ID '{}'",
-                        scenarioId
+                resultBuilder.putProjNetWorths(
+                        scenarioId,
+                        ValOrGerr.propGerr(
+                                netWorthProjectionsOrErr.getGerr(),
+                                "An error occurred calculating the net worth projections for scenario with ID '{}'",
+                                scenarioId
+                        )
+                );
+            } else {
+                SortedMap<LocalDate, Long> projectedNetWorths = netWorthProjectionsOrErr.getVal();
+                resultBuilder.putProjNetWorths(
+                        scenarioId,
+                        ValOrGerr.val(projectedNetWorths)
                 );
             }
-            resultBuilder.putProjectionsNetWorth(scenarioId, netWorthProjectionsOrErr.getVal());
         }
-        return ValOrGerr.val(resultBuilder.build());
+        return resultBuilder.build();
     }
 
     /**
@@ -159,11 +167,23 @@ public class ProjNetWorthCalculator {
             // First apply any asset value changes
             if (assetChangeDates.contains(date)) {
                 Map<String, AssetChange> assetChanges = assetChangesByDate.get(date);
-                assetChanges.forEach((assetId, change) -> {
+                for (Map.Entry<String, AssetChange> assetChangeEntry : assetChanges.entrySet()) {
+                    String assetId = assetChangeEntry.getKey();
+                    AssetChange change = assetChangeEntry.getValue();
+
                     long oldValue = currentAssetValues.get(assetId);
-                    long updatedValue = change.apply(oldValue);
+                    ValOrGerr<Long> applicationResult = change.apply(oldValue);
+                    if (applicationResult.hasGerr()) {
+                        return ValOrGerr.propGerr(
+                                applicationResult.getGerr(),
+                                "An error occurred applying asset change from {} to asset with ID '{}'",
+                                date,
+                                assetId
+                        );
+                    }
+                    long updatedValue = applicationResult.getVal();
                     currentAssetValues.put(assetId, updatedValue);
-                });
+                }
             }
 
             // Apply monthly growth "interest" only if we're on the month boundary
