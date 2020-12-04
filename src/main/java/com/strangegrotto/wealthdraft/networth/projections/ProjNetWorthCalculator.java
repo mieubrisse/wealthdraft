@@ -32,7 +32,7 @@ public class ProjNetWorthCalculator {
     }
 
     // TODO write tests for this!!
-    public ValOrGerr<ProjNetWorthCalcResults> calculateNetWorthProjections(Map<String, Long> latestHistAssetValues, Projections projections) {
+    public ProjNetWorthCalcResults calculateNetWorthProjections(Map<String, Long> latestHistAssetValues, Projections projections) {
         ImmutableProjNetWorthCalcResults.Builder resultBuilder = ImmutableProjNetWorthCalcResults.builder();
 
         // Convert YoY growth into MoM
@@ -50,15 +50,23 @@ public class ProjNetWorthCalculator {
                     this.projectionDisplayIncrementYears
             );
             if (netWorthProjectionsOrErr.hasGerr()) {
-                return ValOrGerr.propGerr(
-                        netWorthProjectionsOrErr.getGerr(),
-                        "An error occurred calculating the net worth projections for scenario with ID '{}'",
-                        scenarioId
+                resultBuilder.putProjNetWorths(
+                        scenarioId,
+                        ValOrGerr.propGerr(
+                                netWorthProjectionsOrErr.getGerr(),
+                                "An error occurred calculating the net worth projections for scenario with ID '{}'",
+                                scenarioId
+                        )
+                );
+            } else {
+                SortedMap<LocalDate, Long> projectedNetWorths = netWorthProjectionsOrErr.getVal();
+                resultBuilder.putProjNetWorths(
+                        scenarioId,
+                        ValOrGerr.val(projectedNetWorths)
                 );
             }
-            resultBuilder.putProjectionsNetWorth(scenarioId, netWorthProjectionsOrErr.getVal());
         }
-        return ValOrGerr.val(resultBuilder.build());
+        return resultBuilder.build();
     }
 
     /**
@@ -164,16 +172,16 @@ public class ProjNetWorthCalculator {
                     AssetChange change = assetChangeEntry.getValue();
 
                     long oldValue = currentAssetValues.get(assetId);
-                    ValueOrGError<Long> applicationResult = change.apply(oldValue);
-                    if (applicationResult.hasError()) {
-                        return ValueOrGError.ofPropagatedErr(
-                                applicationResult.getError(),
+                    ValOrGerr<Long> applicationResult = change.apply(oldValue);
+                    if (applicationResult.hasGerr()) {
+                        return ValOrGerr.propGerr(
+                                applicationResult.getGerr(),
                                 "An error occurred applying asset change from {} to asset with ID '{}'",
                                 date,
                                 assetId
                         );
                     }
-                    long updatedValue = applicationResult.getValue();
+                    long updatedValue = applicationResult.getVal();
                     currentAssetValues.put(assetId, updatedValue);
                 }
             }
