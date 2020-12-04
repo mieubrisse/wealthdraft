@@ -1,4 +1,4 @@
-## TBD
+## 0.4.0
 * Rename `GError` -> `Gerr` and `ValueOrGError` -> `ValOrGerr` to be easier to write
 * Rename `Gerr.newError` -> `Gerr.newGerr` and `Gerr.propagate` -> `Gerr.propGerr` to take up less space in code
 * Rename the following `ValOrGerr` methods to be easier to write:
