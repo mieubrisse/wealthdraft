@@ -14,7 +14,7 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.base.Strings;
 import com.google.common.collect.Ordering;
-import com.strangegrotto.wealthdraft.errors.ValueOrGError;
+import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.govconstants.RetirementConstants;
 import com.strangegrotto.wealthdraft.networth.historical.Asset;
@@ -261,14 +261,14 @@ public class Main {
             }
 
             // Errors
-            ValueOrGError<List<ValidationWarning>> validationResult = validateTaxScenarioAgainstGovConstants(scenario, govConstantsToUse);
-            if (validationResult.hasError()) {
-                log.error(validationResult.getError().toString());
+            ValOrGerr<List<ValidationWarning>> validationResult = validateTaxScenarioAgainstGovConstants(scenario, govConstantsToUse);
+            if (validationResult.hasGerr()) {
+                log.error(validationResult.getGerr().toString());
                 continue;
             }
 
             // Warnings
-            List<ValidationWarning> validationWarnings = validationResult.getValue();
+            List<ValidationWarning> validationWarnings = validationResult.getVal();
             if (validationWarnings.size() > 0) {
                 for (ValidationWarning warning : validationWarnings) {
                     log.warn(warning.getMessage());
@@ -280,7 +280,7 @@ public class Main {
     }
 
 
-    private static ValueOrGError<List<ValidationWarning>> validateTaxScenarioAgainstGovConstants(TaxScenario scenario, GovConstantsForYear govConstantsForYear) {
+    private static ValOrGerr<List<ValidationWarning>> validateTaxScenarioAgainstGovConstants(TaxScenario scenario, GovConstantsForYear govConstantsForYear) {
         IncomeStreams grossIncomeStreams = scenario.getIncomeStreams();
 
         List<ValidationWarning> warnings = new ArrayList<>();
@@ -288,7 +288,7 @@ public class Main {
         RetirementConstants retirementConstants = govConstantsForYear.getRetirementConstants();
         long totalIraContrib = scenario.getIraContrib().getTrad() + scenario.getIraContrib().getRoth();
         if (totalIraContrib > retirementConstants.getIraContribLimit()) {
-            return ValueOrGError.ofNewErr(
+            return ValOrGerr.newGerr(
                     "The IRA contribution limit is {} but the scenario's total IRA contribution is {}",
                     retirementConstants.getIraContribLimit(),
                     totalIraContrib
@@ -305,7 +305,7 @@ public class Main {
         long trad401kContrib = scenario.get401kContrib().getTrad();
         long total401kContrib = trad401kContrib + scenario.get401kContrib().getRoth();
         if (total401kContrib > govConstantsForYear.getRetirementConstants().getPersonal401kContribLimit()) {
-            return ValueOrGError.ofNewErr(
+            return ValOrGerr.newGerr(
                     "The 401k contribution limit is {} but the scenario's total 401k contribution is {}",
                     retirementConstants.getPersonal401kContribLimit(),
                     total401kContrib
@@ -323,7 +323,7 @@ public class Main {
         //  only be done via an employer (i.e. earned income) so total_ira_contrib + trad_401k_contrib must be
         // See: https://www.investopedia.com/retirement/ira-contribution-limits/
         if (grossIncomeStreams.getEarnedIncome() < totalIraContrib + trad401kContrib) {
-            return ValueOrGError.ofNewErr(
+            return ValOrGerr.newGerr(
                     "IRA contributions are limited to earned income and trad 401k contributions can only be done " +
                             "using earned income so total_ira_contrib + trad_401k_contrib must be < earned_income, but" +
                             "earned_income {} is < total_ira_contrib {} + trad_401k_contrib {}",
@@ -333,7 +333,7 @@ public class Main {
             );
         }
 
-        return ValueOrGError.ofValue(warnings);
+        return ValOrGerr.val(warnings);
     }
 
     private static void renderTaxScenario(
@@ -409,12 +409,12 @@ public class Main {
         log.info("");
         logBannerHeader("Historical Net Worth");
         HistNetWorthCalculator histNetWorthCalculator = new HistNetWorthCalculator(STALE_ASSET_THRESHOLD_DAYS);
-        ValueOrGError<HistNetWorthCalcResults> histNetWorthCalcResultsOrErr = histNetWorthCalculator.calculateHistoricalNetWorth(assets);
-        if (histNetWorthCalcResultsOrErr.hasError()) {
-            log.error(histNetWorthCalcResultsOrErr.getError().toString());
+        ValOrGerr<HistNetWorthCalcResults> histNetWorthCalcResultsOrErr = histNetWorthCalculator.calculateHistoricalNetWorth(assets);
+        if (histNetWorthCalcResultsOrErr.hasGerr()) {
+            log.error(histNetWorthCalcResultsOrErr.getGerr().toString());
             System.exit(FAILURE_EXIT_CODE);
         }
-        HistNetWorthCalcResults histNetWorthCalcResults = histNetWorthCalcResultsOrErr.getValue();
+        HistNetWorthCalcResults histNetWorthCalcResults = histNetWorthCalcResultsOrErr.getVal();
 
         for (ValidationWarning warning : histNetWorthCalcResults.getValidationWarnings()) {
             log.warn(warning.getMessage());
@@ -424,27 +424,30 @@ public class Main {
         }
 
         ProjNetWorthCalculator projNetWorthCalculator = new ProjNetWorthCalculator(PROJECTION_DISPLAY_INCREMENT_YEARS);
-        ValueOrGError<ProjNetWorthCalcResults> projNetWorthCalcResultsOrErr = projNetWorthCalculator.calculateNetWorthProjections(
+        ProjNetWorthCalcResults projNetWorthCalcResults = projNetWorthCalculator.calculateNetWorthProjections(
                 histNetWorthCalcResults.getLatestAssetValues(),
                 projections
         );
-        if (projNetWorthCalcResultsOrErr.hasError()) {
-            log.error(projNetWorthCalcResultsOrErr.getError().toString());
-            System.exit(FAILURE_EXIT_CODE);
-        }
-        ProjNetWorthCalcResults projNetWorthCalcResults = projNetWorthCalcResultsOrErr.getValue();
 
-        projNetWorthCalcResults.projectionsNetWorth().forEach((projScenarioId, netWorthProjections) -> {
+        for (Map.Entry<String, ValOrGerr<SortedMap<LocalDate, Long>>> scenarioCalcEntry
+                : projNetWorthCalcResults.getProjNetWorths().entrySet()) {
+            String projScenarioId = scenarioCalcEntry.getKey();
+            ValOrGerr<SortedMap<LocalDate, Long>> netWorthProjectionsOrErr = scenarioCalcEntry.getValue();
             ProjectionScenario projScenario = projections.getScenarios().get(projScenarioId);
             String projScenarioName = projScenario.getName();
 
             log.info("");
             logBannerHeader("Net Worth Projection: " + projScenarioName);
 
+            if (netWorthProjectionsOrErr.hasGerr()) {
+                log.error(netWorthProjectionsOrErr.getGerr().toString());
+                continue;
+            }
+            Map<LocalDate, Long> netWorthProjections = netWorthProjectionsOrErr.getVal();
             netWorthProjections.forEach((date, netWorth) -> {
                 logCurrencyItem(date.toString(), netWorth);
             });
-        });
+        }
     }
 
     private static void logBannerHeader(String header) {
