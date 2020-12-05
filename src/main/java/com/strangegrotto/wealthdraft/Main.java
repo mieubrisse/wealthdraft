@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.base.Strings;
 import com.google.common.collect.Ordering;
@@ -137,6 +138,7 @@ public class Main {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         mapper.registerModule(new GuavaModule());
         mapper.registerModule(new JavaTimeModule());
+        mapper.registerModule(new Jdk8Module());    // Support deserializing to Optionals
         TypeFactory typeFactory = mapper.getTypeFactory();
 
         String taxScenariosFilepath = parsedArgs.getString(TAX_SCENARIOS_FILEPATH_ARG);
@@ -436,8 +438,10 @@ public class Main {
             ProjectionScenario projScenario = projections.getScenarios().get(projScenarioId);
             String projScenarioName = projScenario.getName();
 
+            log.debug("Processing scenario projection results for ID '{}' and name '{}'", projScenarioId, projScenarioName);
+
             log.info("");
-            logBannerHeader("Net Worth Projection: " + projScenarioName);
+            logBannerHeader("Networth Proj: " + projScenarioName);
 
             if (netWorthProjectionsOrErr.hasGerr()) {
                 log.error(netWorthProjectionsOrErr.getGerr().toString());
@@ -452,7 +456,7 @@ public class Main {
 
     private static void logBannerHeader(String header) {
         log.info(BANNER_HEADER_LINE);
-        int spacesToAdd = (BANNER_HEADER_LINE.length() - header.length()) / 2;
+        int spacesToAdd = Math.max(0, (BANNER_HEADER_LINE.length() - header.length()) / 2);
         log.info(Strings.repeat(" ", spacesToAdd) + header);
         log.info(BANNER_HEADER_LINE);
     }
@@ -461,7 +465,7 @@ public class Main {
         header = header.toUpperCase();
         // We add 2 to account for the ": " that each item entry has
         int totalWidth = 2 * MINIMUM_ITEM_TITLE_WIDTH + 2;
-        int spacesToAdd = (totalWidth - header.length()) / 2;
+        int spacesToAdd = Math.max(0, (totalWidth - header.length()) / 2);
         log.info(
                 "{}{}",
                 Strings.repeat(" ", spacesToAdd),
