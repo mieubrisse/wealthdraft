@@ -1,6 +1,6 @@
 package com.strangegrotto.wealthdraft.networth.projections;
 
-import com.strangegrotto.wealthdraft.errors.ValueOrGError;
+import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +32,7 @@ public class ProjNetWorthCalculator {
     }
 
     // TODO write tests for this!!
-    public ValueOrGError<ProjNetWorthCalcResults> calculateNetWorthProjections(Map<String, Long> latestHistAssetValues, Projections projections) {
+    public ProjNetWorthCalcResults calculateNetWorthProjections(Map<String, Long> latestHistAssetValues, Projections projections) {
         ImmutableProjNetWorthCalcResults.Builder resultBuilder = ImmutableProjNetWorthCalcResults.builder();
 
         // Convert YoY growth into MoM
@@ -43,22 +43,30 @@ public class ProjNetWorthCalculator {
             String scenarioId = projectionScenarioEntry.getKey();
             ProjectionScenario projectionScenario = projectionScenarioEntry.getValue();
 
-            ValueOrGError<SortedMap<LocalDate, Long>> netWorthProjectionsOrErr = calcScenarioNetWorthProjections(
+            ValOrGerr<SortedMap<LocalDate, Long>> netWorthProjectionsOrErr = calcScenarioNetWorthProjections(
                     defaultMonthlyMultiplier,
                     projectionScenario,
                     latestHistAssetValues,
                     this.projectionDisplayIncrementYears
             );
-            if (netWorthProjectionsOrErr.hasError()) {
-                return ValueOrGError.ofPropagatedErr(
-                        netWorthProjectionsOrErr.getError(),
-                        "An error occurred calculating the net worth projections for scenario with ID '{}'",
-                        scenarioId
+            if (netWorthProjectionsOrErr.hasGerr()) {
+                resultBuilder.putProjNetWorths(
+                        scenarioId,
+                        ValOrGerr.propGerr(
+                                netWorthProjectionsOrErr.getGerr(),
+                                "An error occurred calculating the net worth projections for scenario with ID '{}'",
+                                scenarioId
+                        )
+                );
+            } else {
+                SortedMap<LocalDate, Long> projectedNetWorths = netWorthProjectionsOrErr.getVal();
+                resultBuilder.putProjNetWorths(
+                        scenarioId,
+                        ValOrGerr.val(projectedNetWorths)
                 );
             }
-            resultBuilder.putProjectionsNetWorth(scenarioId, netWorthProjectionsOrErr.getValue());
         }
-        return ValueOrGError.ofValue(resultBuilder.build());
+        return resultBuilder.build();
     }
 
     /**
@@ -67,14 +75,14 @@ public class ProjNetWorthCalculator {
      * @param text Text to parse
      * @return The parsed text, or an error if the text couldn't be parsed
      */
-    private static ValueOrGError<LocalDate> parseChangeDateStr(String text) {
+    private static ValOrGerr<LocalDate> parseChangeDateStr(String text) {
         try {
-            return ValueOrGError.ofValue(LocalDate.parse(text));
+            return ValOrGerr.val(LocalDate.parse(text));
         } catch (DateTimeParseException e) {}
 
         Matcher matcher = RELATIVE_DATE_PATTERN.matcher(text);
         if (!matcher.find()) {
-            return ValueOrGError.ofNewErr(
+            return ValOrGerr.newGerr(
                     "Unable to parse relative date string '{}'",
                     text
             );
@@ -93,34 +101,42 @@ public class ProjNetWorthCalculator {
                 result = result.plusMonths(numberOfUnits);
                 break;
             default:
-                return ValueOrGError.ofNewErr(
+                return ValOrGerr.newGerr(
                         "Unrecognized relative date unit '{}'; this likely indicates a code error",
                         units
                 );
         }
-        return ValueOrGError.ofValue(result);
+        return ValOrGerr.val(result);
     }
 
-    private static ValueOrGError<SortedMap<LocalDate, Long>> calcScenarioNetWorthProjections(
+    private static ValOrGerr<SortedMap<LocalDate, Long>> calcScenarioNetWorthProjections(
             double defaultMonthlyMultiplier,
             ProjectionScenario projectionScenario,
             Map<String, Long> latestHistAssetValues,
             int projectionDisplayIncrementYears) {
+        LocalDate today = LocalDate.now();
+
         Set<LocalDate> assetChangeDates = new HashSet<>();
         Map<LocalDate, Map<String, AssetChange>> assetChangesByDate = new HashMap<>();
         for (Map.Entry<String, Map<String, AssetChange>> multiAssetChangesEntry : projectionScenario.getChanges().entrySet()) {
             String changeDateStr = multiAssetChangesEntry.getKey();
             Map<String, AssetChange> assetChanges = multiAssetChangesEntry.getValue();
 
-            ValueOrGError<LocalDate> changeDateParseResult = parseChangeDateStr(changeDateStr);
-            if (changeDateParseResult.hasError()) {
-                return ValueOrGError.ofPropagatedErr(
-                        changeDateParseResult.getError(),
+            ValOrGerr<LocalDate> changeDateParseResult = parseChangeDateStr(changeDateStr);
+            if (changeDateParseResult.hasGerr()) {
+                return ValOrGerr.propGerr(
+                        changeDateParseResult.getGerr(),
                         "An error occurred parsing change date string '{}'",
                         changeDateStr
                 );
             }
-            LocalDate changeDate = changeDateParseResult.getValue();
+            LocalDate changeDate = changeDateParseResult.getVal();
+            if (changeDate.isBefore(today)) {
+                return ValOrGerr.newGerr(
+                        "Encountered asset change date '{}' that was in the past, making this scenario invalid",
+                        changeDate
+                );
+            }
             assetChangeDates.add(changeDate);
 
             Map<String, AssetChange> assetChangesForDate = assetChangesByDate.getOrDefault(changeDate, new HashMap<>());
@@ -136,7 +152,6 @@ public class ProjNetWorthCalculator {
         Set<LocalDate> datesToLogNetWorth = new HashSet<>(assetChangesByDate.keySet());
 
         Set<LocalDate> compoundingDates = new HashSet<>();
-        LocalDate today = LocalDate.now();
         for (int i = 0; i < MONTHS_IN_YEAR * MAX_YEARS_TO_PROJECT; i++) {
             LocalDate futureDate = today.plusMonths(i);
             compoundingDates.add(futureDate);
@@ -159,11 +174,23 @@ public class ProjNetWorthCalculator {
             // First apply any asset value changes
             if (assetChangeDates.contains(date)) {
                 Map<String, AssetChange> assetChanges = assetChangesByDate.get(date);
-                assetChanges.forEach((assetId, change) -> {
+                for (Map.Entry<String, AssetChange> assetChangeEntry : assetChanges.entrySet()) {
+                    String assetId = assetChangeEntry.getKey();
+                    AssetChange change = assetChangeEntry.getValue();
+
                     long oldValue = currentAssetValues.get(assetId);
-                    long updatedValue = change.apply(oldValue);
+                    ValOrGerr<Long> applicationResult = change.apply(oldValue);
+                    if (applicationResult.hasGerr()) {
+                        return ValOrGerr.propGerr(
+                                applicationResult.getGerr(),
+                                "An error occurred applying asset change from {} to asset with ID '{}'",
+                                date,
+                                assetId
+                        );
+                    }
+                    long updatedValue = applicationResult.getVal();
                     currentAssetValues.put(assetId, updatedValue);
-                });
+                }
             }
 
             // Apply monthly growth "interest" only if we're on the month boundary
@@ -184,6 +211,6 @@ public class ProjNetWorthCalculator {
                 netWorthProjections.put(date, netWorth);
             }
         }
-        return ValueOrGError.ofValue(netWorthProjections);
+        return ValOrGerr.val(netWorthProjections);
     }
 }

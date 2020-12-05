@@ -1,6 +1,7 @@
 package com.strangegrotto.wealthdraft.networth.projections;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 
 @JsonDeserialize(using = AssetChangeDeserializer.class)
 public class AssetChange {
@@ -12,7 +13,15 @@ public class AssetChange {
         this.operation = operation;
     }
 
-    public long apply(long oldValue) {
-        return this.operation.apply(oldValue, this.value);
+    public ValOrGerr<Long> apply(long oldValue) {
+        ValOrGerr<Long> result = this.operation.apply(oldValue, this.value);
+        if (result.hasGerr()) {
+            return ValOrGerr.propGerr(
+                    result.getGerr(),
+                    "An error occurred applying operation '{}' to asset",
+                    this.operation
+            );
+        }
+        return result;
     }
 }
