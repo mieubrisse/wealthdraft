@@ -49,8 +49,6 @@ public class ProjNetWorthCalculator {
 
         Map<String, ProjectionScenario> allScenarios = projections.getScenarios();
         for (String scenarioId : allScenarios.keySet()) {
-            ProjectionScenario projectionScenario = allScenarios.get(scenarioId);
-
             ValOrGerr<SortedMap<LocalDate, Long>> netWorthProjectionsOrErr = calcScenarioNetWorthProjections(
                     scenarioId,
                     allScenarios,
@@ -125,8 +123,6 @@ public class ProjNetWorthCalculator {
             double defaultMonthlyMultiplier,
             int projectionDisplayIncrementYears) {
         LocalDate today = LocalDate.now();
-
-        ProjectionScenario projScenario = allScenarios.get(scenarioId);
 
         ValOrGerr<AssetChangesForScenario> assetChangesByDateOrErr = unrollAssetChanges(scenarioId, allScenarios);
         if (assetChangesByDateOrErr.hasGerr()) {

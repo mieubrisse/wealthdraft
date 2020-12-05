@@ -186,4 +186,6 @@ public class ProjNetWorthCalculatorTest {
                 ProjNetWorthCalculator.unrollAssetChanges(scenarioId2, allScenarios);
         Assert.assertTrue("Expected an error due to the scenario cycle but no error was thrown", assetChangesOrErr.hasGerr());
     }
+
+    // TODO Add test for calculating scenario net worth projections!
 }
