@@ -1,5 +1,6 @@
 package com.strangegrotto.wealthdraft.networth.projections;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,13 @@ public class ProjNetWorthCalculator {
 
     private static final Logger log = LoggerFactory.getLogger(ProjNetWorthCalculator.class);
 
+    // Type aliases for making working with these nested maps less cumbersome
+    @VisibleForTesting
+    static class AssetChangesForDate extends HashMap<String, LinkedList<AssetChange>> { }
+
+    @VisibleForTesting
+    static class AssetChangesForScenario extends HashMap<LocalDate, AssetChangesForDate> {}
+
     private final int projectionDisplayIncrementYears;
 
     /**
@@ -39,14 +47,15 @@ public class ProjNetWorthCalculator {
         double defaultMonthlyMultiplier = Math.pow(1 + projections.getDefaultAnnualGrowth(), 1D / 12D);
         log.debug("Default monthly growth: {}", defaultMonthlyMultiplier);
 
-        for (Map.Entry<String, ProjectionScenario> projectionScenarioEntry : projections.getScenarios().entrySet()) {
-            String scenarioId = projectionScenarioEntry.getKey();
-            ProjectionScenario projectionScenario = projectionScenarioEntry.getValue();
+        Map<String, ProjectionScenario> allScenarios = projections.getScenarios();
+        for (String scenarioId : allScenarios.keySet()) {
+            ProjectionScenario projectionScenario = allScenarios.get(scenarioId);
 
             ValOrGerr<SortedMap<LocalDate, Long>> netWorthProjectionsOrErr = calcScenarioNetWorthProjections(
-                    defaultMonthlyMultiplier,
-                    projectionScenario,
+                    scenarioId,
+                    allScenarios,
                     latestHistAssetValues,
+                    defaultMonthlyMultiplier,
                     this.projectionDisplayIncrementYears
             );
             if (netWorthProjectionsOrErr.hasGerr()) {
@@ -110,47 +119,38 @@ public class ProjNetWorthCalculator {
     }
 
     private static ValOrGerr<SortedMap<LocalDate, Long>> calcScenarioNetWorthProjections(
-            double defaultMonthlyMultiplier,
-            ProjectionScenario projectionScenario,
+            String scenarioId,
+            Map<String, ProjectionScenario> allScenarios,
             Map<String, Long> latestHistAssetValues,
+            double defaultMonthlyMultiplier,
             int projectionDisplayIncrementYears) {
         LocalDate today = LocalDate.now();
 
-        Set<LocalDate> assetChangeDates = new HashSet<>();
-        Map<LocalDate, Map<String, AssetChange>> assetChangesByDate = new HashMap<>();
-        for (Map.Entry<String, Map<String, AssetChange>> multiAssetChangesEntry : projectionScenario.getChanges().entrySet()) {
-            String changeDateStr = multiAssetChangesEntry.getKey();
-            Map<String, AssetChange> assetChanges = multiAssetChangesEntry.getValue();
+        ProjectionScenario projScenario = allScenarios.get(scenarioId);
 
-            ValOrGerr<LocalDate> changeDateParseResult = parseChangeDateStr(changeDateStr);
-            if (changeDateParseResult.hasGerr()) {
-                return ValOrGerr.propGerr(
-                        changeDateParseResult.getGerr(),
-                        "An error occurred parsing change date string '{}'",
-                        changeDateStr
-                );
-            }
-            LocalDate changeDate = changeDateParseResult.getVal();
-            if (changeDate.isBefore(today)) {
+        ValOrGerr<AssetChangesForScenario> assetChangesByDateOrErr = unrollAssetChanges(scenarioId, allScenarios);
+        if (assetChangesByDateOrErr.hasGerr()) {
+            return ValOrGerr.propGerr(
+                    assetChangesByDateOrErr.getGerr(),
+                    "An error occurred unrolling the scenario's asset change dependencies for scenario with ID '{}'",
+                    scenarioId
+            );
+        }
+        AssetChangesForScenario assetChangesByDate = assetChangesByDateOrErr.getVal();
+        Set<LocalDate> assetChangeDates = assetChangesByDate.keySet();
+
+        // Validate that no asset change dates are in the past, else the scenario is invalid
+        for (LocalDate changeDate : assetChangesByDate.keySet()) {
+            if (today.isAfter(changeDate)) {
                 return ValOrGerr.newGerr(
-                        "Encountered asset change date '{}' that was in the past, making this scenario invalid",
+                        "Scenario with ID '{}' cannot be calculated because it uses date '{}' which is in the past",
+                        scenarioId,
                         changeDate
                 );
             }
-            assetChangeDates.add(changeDate);
-
-            Map<String, AssetChange> assetChangesForDate = assetChangesByDate.getOrDefault(changeDate, new HashMap<>());
-            for (Map.Entry<String, AssetChange> singleAssetChangeEntry : assetChanges.entrySet()) {
-                String assetId = singleAssetChangeEntry.getKey();
-                AssetChange change = singleAssetChangeEntry.getValue();
-
-                assetChangesForDate.put(assetId, change);
-                assetChangesByDate.put(changeDate, assetChangesForDate);
-            }
         }
 
-        Set<LocalDate> datesToLogNetWorth = new HashSet<>(assetChangesByDate.keySet());
-
+        Set<LocalDate> datesToLogNetWorth = new HashSet<>(assetChangeDates);
         Set<LocalDate> compoundingDates = new HashSet<>();
         for (int i = 0; i < MONTHS_IN_YEAR * MAX_YEARS_TO_PROJECT; i++) {
             LocalDate futureDate = today.plusMonths(i);
@@ -173,23 +173,30 @@ public class ProjNetWorthCalculator {
         for (LocalDate date : orderedDatesOfInterest) {
             // First apply any asset value changes
             if (assetChangeDates.contains(date)) {
-                Map<String, AssetChange> assetChanges = assetChangesByDate.get(date);
-                for (Map.Entry<String, AssetChange> assetChangeEntry : assetChanges.entrySet()) {
+                AssetChangesForDate assetChangesForDate = assetChangesByDate.get(date);
+                for (Map.Entry<String, LinkedList<AssetChange>> assetChangeEntry : assetChangesForDate.entrySet()) {
                     String assetId = assetChangeEntry.getKey();
-                    AssetChange change = assetChangeEntry.getValue();
+                    LinkedList<AssetChange> changes = assetChangeEntry.getValue();
 
-                    long oldValue = currentAssetValues.get(assetId);
-                    ValOrGerr<Long> applicationResult = change.apply(oldValue);
-                    if (applicationResult.hasGerr()) {
-                        return ValOrGerr.propGerr(
-                                applicationResult.getGerr(),
-                                "An error occurred applying asset change from {} to asset with ID '{}'",
-                                date,
-                                assetId
-                        );
+                    // Scenarios can be based on other scenarios. The iteration order here will be the most-upstream
+                    //  dependency scenario asset changes first, followed by changes from any scenarios that depend on it,
+                    //  followed by changes from any scenarios that depend on that, etc.
+                    for (int i = 0; i < changes.size(); i++) {
+                        AssetChange change = changes.get(i);
+                        long oldValue = currentAssetValues.get(assetId);
+                        ValOrGerr<Long> applicationResult = change.apply(oldValue);
+                        if (applicationResult.hasGerr()) {
+                            return ValOrGerr.propGerr(
+                                    applicationResult.getGerr(),
+                                    "An error occurred applying asset change #{} from {} to asset with ID '{}'",
+                                    i,
+                                    date,
+                                    assetId
+                            );
+                        }
+                        long updatedValue = applicationResult.getVal();
+                        currentAssetValues.put(assetId, updatedValue);
                     }
-                    long updatedValue = applicationResult.getVal();
-                    currentAssetValues.put(assetId, updatedValue);
                 }
             }
 
@@ -212,5 +219,62 @@ public class ProjNetWorthCalculator {
             }
         }
         return ValOrGerr.val(netWorthProjections);
+    }
+
+    /**
+     * For scenarios that are based on other scenarios, recursively unrolls the asset changes all the way
+     *  through the dependency tree.
+     */
+    @VisibleForTesting
+    static ValOrGerr<AssetChangesForScenario> unrollAssetChanges(
+            String scenarioId, Map<String,
+            ProjectionScenario> allScenarios) {
+        // For scenarios based on other ones, we need to put those guys in
+        AssetChangesForScenario result = new AssetChangesForScenario();
+        Optional<String> baseIdOpt = Optional.of(scenarioId);
+        Set<String> visitedScenarioIds = new HashSet<>();
+        while (baseIdOpt.isPresent()) {
+            String baseId = baseIdOpt.get();
+            if (visitedScenarioIds.contains(baseId)) {
+                return ValOrGerr.newGerr(
+                        "Scenario '{}' has a dependency cycle, with scenario '{}' visited twice",
+                        scenarioId,
+                        baseId
+                );
+            }
+            visitedScenarioIds.add(baseId);
+
+            ProjectionScenario scenario = allScenarios.get(baseId);
+            for (Map.Entry<String, Map<String, AssetChange>> changesForDateEntry : scenario.getChanges().entrySet()) {
+                String dateStr = changesForDateEntry.getKey();
+                Map<String, AssetChange> changes = changesForDateEntry.getValue();
+
+                ValOrGerr<LocalDate> dateOrErr = parseChangeDateStr(dateStr);
+                if (dateOrErr.hasGerr()) {
+                    return ValOrGerr.propGerr(
+                            dateOrErr.getGerr(),
+                            "An error occurred parsing change date string '{}' for scenario with ID '{}'",
+                            dateStr,
+                            baseId
+                    );
+                }
+                LocalDate date = dateOrErr.getVal();
+
+                AssetChangesForDate resultChangesOnDate = result.getOrDefault(date, new AssetChangesForDate());
+                for (Map.Entry<String, AssetChange> assetChangeEntry : changes.entrySet()) {
+                    String assetId = assetChangeEntry.getKey();
+                    AssetChange change = assetChangeEntry.getValue();
+
+                    // We push the element to the FRONT of the list since we're iterating scenario dependencies in
+                    //  downstream-to-upstream order, but we want the changes to be applied in upstream-to-downstream precedence
+                    LinkedList<AssetChange> resultChangesList = resultChangesOnDate.getOrDefault(assetId, new LinkedList<>());
+                    resultChangesList.push(change);
+                    resultChangesOnDate.put(assetId, resultChangesList);
+                }
+                result.put(date, resultChangesOnDate);
+            }
+            baseIdOpt = scenario.getBase();
+        }
+        return ValOrGerr.val(result);
     }
 }
