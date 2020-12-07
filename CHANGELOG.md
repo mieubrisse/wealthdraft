@@ -1,3 +1,6 @@
+## 0.5.0
+* Allow users to base scenarios on other scenarios
+
 ## 0.4.0
 * Rename `GError` -> `Gerr` and `ValueOrGError` -> `ValOrGerr` to be easier to write
 * Rename `Gerr.newError` -> `Gerr.newGerr` and `Gerr.propagate` -> `Gerr.propGerr` to take up less space in code
