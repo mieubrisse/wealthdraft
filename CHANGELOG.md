@@ -1,4 +1,4 @@
-## TBD
+## 0.5.0
 * Allow users to base scenarios on other scenarios
 
 ## 0.4.0
