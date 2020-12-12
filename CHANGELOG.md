@@ -1,3 +1,6 @@
+## TBD
+* Refactor the data model around assets in preparation for being able to define per-asset growth rates
+
 ## 0.5.0
 * Allow users to base scenarios on other scenarios
 

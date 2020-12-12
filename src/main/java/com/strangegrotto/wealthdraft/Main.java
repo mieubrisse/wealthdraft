@@ -18,9 +18,8 @@ import com.google.common.collect.Ordering;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.govconstants.RetirementConstants;
-import com.strangegrotto.wealthdraft.networth.historical.Asset;
-import com.strangegrotto.wealthdraft.networth.historical.HistNetWorthCalcResults;
-import com.strangegrotto.wealthdraft.networth.historical.HistNetWorthCalculator;
+import com.strangegrotto.wealthdraft.networth.AssetsWithHistory;
+import com.strangegrotto.wealthdraft.networth.BankAccountAssetSnapshot;
 import com.strangegrotto.wealthdraft.networth.projections.ProjNetWorthCalcResults;
 import com.strangegrotto.wealthdraft.networth.projections.ProjNetWorthCalculator;
 import com.strangegrotto.wealthdraft.networth.projections.ProjectionScenario;
@@ -167,10 +166,9 @@ public class Main {
 
         String assetsFilepath = parsedArgs.getString(ASSETS_FILEPATH_ARG);
         log.debug("Assets filepath: {}", assetsFilepath);
-        MapType assetsMapType = typeFactory.constructMapType(HashMap.class, String.class, Asset.class);
-        Map<String, Asset> assets;
+        AssetsWithHistory assetsWithHistory;
         try {
-            assets = mapper.readValue(new File(assetsFilepath), assetsMapType);
+            assetsWithHistory = mapper.readValue(new File(assetsFilepath), AssetsWithHistory.class);
         } catch (IOException e) {
             log.error("An error occurred parsing the assets file '{}'", assetsFilepath, e);
             System.exit(FAILURE_EXIT_CODE);
@@ -195,7 +193,7 @@ public class Main {
         );
 
 
-        renderNetWorthCalculations(assets, projections);
+        renderNetWorthCalculations(assetsWithHistory, projections);
     }
 
     private static void configureRootLoggerPattern(ch.qos.logback.classic.Logger rootLogger) {
@@ -407,27 +405,20 @@ public class Main {
         renderTaxesSection("Scenario Tax", totalTaxes, grossIncome);
     }
 
-    private static void renderNetWorthCalculations(Map<String, Asset> assets, Projections projections) {
+    private static void renderNetWorthCalculations(AssetsWithHistory assetsWithHistory, Projections projections) {
         log.info("");
         logBannerHeader("Historical Net Worth");
-        HistNetWorthCalculator histNetWorthCalculator = new HistNetWorthCalculator(STALE_ASSET_THRESHOLD_DAYS);
-        ValOrGerr<HistNetWorthCalcResults> histNetWorthCalcResultsOrErr = histNetWorthCalculator.calculateHistoricalNetWorth(assets);
-        if (histNetWorthCalcResultsOrErr.hasGerr()) {
-            log.error(histNetWorthCalcResultsOrErr.getGerr().toString());
-            System.exit(FAILURE_EXIT_CODE);
-        }
-        HistNetWorthCalcResults histNetWorthCalcResults = histNetWorthCalcResultsOrErr.getVal();
+        Map<String, Map<LocalDate, BankAccountAssetSnapshot>> history = assetsWithHistory.getHistory();
 
-        for (ValidationWarning warning : histNetWorthCalcResults.getValidationWarnings()) {
-            log.warn(warning.getMessage());
-        }
-        for (Map.Entry<LocalDate, Long> entry : histNetWorthCalcResults.getHistoricalNetWorth().entrySet()) {
-            logCurrencyItem(entry.getKey().toString(), entry.getValue());
-        }
+        Map<String, BankAccountAssetSnapshot> latestAssetSnapshots = calculateAndRenderHistoricalNetWorth(history);
+
+        // TODO Need to upgrade the projection calculator too!
+        Map<String, Long> latestAssetValues = new HashMap<>();
+        latestAssetSnapshots.forEach((assetId, snapshot) -> latestAssetValues.put(assetId, snapshot.getValue()));
 
         ProjNetWorthCalculator projNetWorthCalculator = new ProjNetWorthCalculator(PROJECTION_DISPLAY_INCREMENT_YEARS);
         ProjNetWorthCalcResults projNetWorthCalcResults = projNetWorthCalculator.calculateNetWorthProjections(
-                histNetWorthCalcResults.getLatestAssetValues(),
+                latestAssetValues,
                 projections
         );
 
@@ -452,6 +443,34 @@ public class Main {
                 logCurrencyItem(date.toString(), netWorth);
             });
         }
+    }
+
+    private static Map<String, BankAccountAssetSnapshot> calculateAndRenderHistoricalNetWorth(Map<String, Map<LocalDate, BankAccountAssetSnapshot>> history) {
+        SortedMap<LocalDate, Map<String, BankAccountAssetSnapshot>> assetSnapshotsByDate = new TreeMap<>();
+        for (String assetId : history.keySet()) {
+            Map<LocalDate, BankAccountAssetSnapshot> historyForAsset = history.get(assetId);
+            for (LocalDate date : historyForAsset.keySet()) {
+                BankAccountAssetSnapshot assetSnapshot = historyForAsset.get(date);
+                Map<String, BankAccountAssetSnapshot> snapshotsOnDate = assetSnapshotsByDate.getOrDefault(date, new HashMap<>());
+                snapshotsOnDate.put(assetId, assetSnapshot);
+                assetSnapshotsByDate.put(date, snapshotsOnDate);
+            }
+        }
+
+        // Because history can be declared piecemeal (e.g. asset A and B are declared on date T, asset B and C
+        //  are declared on date T+1) we "fill forward" past snapshots into any slots in the future where
+        //  they're missing. This assumes that asset values don't change over historical time.
+        Map<String, BankAccountAssetSnapshot> latestAssetSnapshots = new HashMap<>();
+        // SortedMap<LocalDate, Long> historicalNetWorth = new TreeMap<>();
+        for (LocalDate date : assetSnapshotsByDate.keySet()) {
+            Map<String, BankAccountAssetSnapshot> assetSnapshotsForDate = assetSnapshotsByDate.get(date);
+            latestAssetSnapshots.putAll(assetSnapshotsForDate);
+            long netWorth = latestAssetSnapshots.values().stream()
+                    .map(snapshot -> snapshot.getValue())
+                    .reduce(0L, (l, r) -> l + r);
+            logCurrencyItem(date.toString(), netWorth);
+        }
+        return latestAssetSnapshots;
     }
 
     private static void logBannerHeader(String header) {
