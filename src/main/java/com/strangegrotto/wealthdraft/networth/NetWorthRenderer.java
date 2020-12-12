@@ -2,22 +2,29 @@ package com.strangegrotto.wealthdraft.networth;
 
 import com.strangegrotto.wealthdraft.Display;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
-import com.strangegrotto.wealthdraft.networth.projections.*;
+import com.strangegrotto.wealthdraft.networth.projections.AssetParameterChange;
+import com.strangegrotto.wealthdraft.networth.projections.ProjectionScenario;
+import com.strangegrotto.wealthdraft.networth.projections.Projections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class NetWorthRenderer {
+    private static final int MONTHS_IN_YEAR = 12;
+
     private static final Logger log = LoggerFactory.getLogger(NetWorthRenderer.class);
 
     private final Display display;
     private final int projectionDisplayIncrementYears;
+    private final int maxYearsToProject;
 
-    public NetWorthRenderer(Display display, int projectionDisplayIncrementYears) {
+    public NetWorthRenderer(Display display, int projectionDisplayIncrementYears, int maxYearsToProject) {
         this.display = display;
         this.projectionDisplayIncrementYears = projectionDisplayIncrementYears;
+        this.maxYearsToProject = maxYearsToProject;
     }
 
     public void renderNetWorthCalculations(AssetsWithHistory assetsWithHistory, Projections projections) {
@@ -33,28 +40,23 @@ public class NetWorthRenderer {
             this.display.printCurrencyItem(date.toString(), netWorth);
         }
 
-
         Map<String, BankAccountAssetSnapshot> latestAssetSnapshots = histAssetSnapshotsByDate.get(histAssetSnapshotsByDate.lastKey());
-        Map<String, ValOrGerr<ProjScenarioParseResult>> projectionsParseResults = ProjNetWorthCalculator.parseManualAssetChanges(projections);
+        Map<String, ValOrGerr<ProjectionScenario>> projectionsParseResults = projections.getScenarios();
         for (String scenarioId : projectionsParseResults.keySet()) {
-            ValOrGerr<ProjScenarioParseResult> scenarioParseResultOrErr = projectionsParseResults.get(scenarioId);
-
-            String projScenarioName = projections.getScenarios().get(scenarioId).getName();
+            ValOrGerr<ProjectionScenario> scenarioParseResultOrErr = projectionsParseResults.get(scenarioId);
 
             display.printEmptyLine();
-            display.printBannerHeader("Networth Proj: " + projScenarioName);
+            display.printBannerHeader("Networth Proj: " + scenarioId);
             if (scenarioParseResultOrErr.hasGerr()) {
                 log.error(scenarioParseResultOrErr.getGerr().toString());
                 continue;
             }
 
-
-
-
-            Map<LocalDate, Long> netWorthProjections = netWorthProjectionsOrErr.getVal();
-            netWorthProjections.forEach((date, netWorth) -> {
-                display.printCurrencyItem(date.toString(), netWorth);
-            });
+            ProjectionScenario scenario = scenarioParseResultOrErr.getVal();
+            SortedMap<LocalDate, Long> netWorths = calculateSingleScenarioNetWorths(scenario);
+            for (LocalDate date : netWorths.keySet()) {
+                display.printCurrencyItem(date.toString(), netWorths.get(date));
+            }
         }
     }
 
@@ -86,7 +88,78 @@ public class NetWorthRenderer {
         return result;
     }
 
-    private static Map<LocalDate, Long> renderProjectionNetWorths()
+    private static SortedMap<LocalDate, Long> calculateSingleScenarioNetWorths(ProjectionScenario scenario) {
+
+        Set<LocalDate> datesToLogNetWorth = new HashSet<>(assetChangeDates);
+        Set<LocalDate> compoundingDates = new HashSet<>();
+        for (int i = 0; i < MONTHS_IN_YEAR * MAX_YEARS_TO_PROJECT; i++) {
+            LocalDate futureDate = today.plusMonths(i);
+            compoundingDates.add(futureDate);
+            if (i % (MONTHS_IN_YEAR * projectionDisplayIncrementYears) == 0) {
+                datesToLogNetWorth.add(futureDate);
+            }
+        }
+
+        Set<LocalDate> allDatesOfInterest = new HashSet<>();
+        allDatesOfInterest.addAll(assetChangeDates);
+        allDatesOfInterest.addAll(compoundingDates);
+
+        List<LocalDate> orderedDatesOfInterest = allDatesOfInterest.stream()
+                .sorted()
+                .collect(Collectors.toList());
+
+        Map<String, Long> currentAssetValues = new HashMap<>(latestHistAssetValues);
+        SortedMap<LocalDate, Long> netWorthProjections = new TreeMap<>();
+        for (LocalDate date : orderedDatesOfInterest) {
+            // First apply any asset value changes
+            if (assetChangeDates.contains(date)) {
+                AssetChangesForDate assetChangesForDate = assetChangesByDate.get(date);
+                for (Map.Entry<String, LinkedList<AssetParameterChange>> assetChangeEntry : assetChangesForDate.entrySet()) {
+                    String assetId = assetChangeEntry.getKey();
+                    LinkedList<AssetParameterChange> changes = assetChangeEntry.getValue();
+
+                    // Scenarios can be based on other scenarios. The iteration order here will be the most-upstream
+                    //  dependency scenario asset changes first, followed by changes from any scenarios that depend on it,
+                    //  followed by changes from any scenarios that depend on that, etc.
+                    for (int i = 0; i < changes.size(); i++) {
+                        AssetParameterChange change = changes.get(i);
+                        long oldValue = currentAssetValues.get(assetId);
+                        ValOrGerr<Long> applicationResult = change.apply(oldValue);
+                        if (applicationResult.hasGerr()) {
+                            return ValOrGerr.propGerr(
+                                    applicationResult.getGerr(),
+                                    "An error occurred applying asset change #{} from {} to asset with ID '{}'",
+                                    i,
+                                    date,
+                                    assetId
+                            );
+                        }
+                        long updatedValue = applicationResult.getVal();
+                        currentAssetValues.put(assetId, updatedValue);
+                    }
+                }
+            }
+
+            // Apply monthly growth "interest" only if we're on the month boundary
+            // This is so that the user defining an asset change doesn't cause a compounding (which would make
+            //  their returns higher than they should be)
+            if (compoundingDates.contains(date)) {
+                for (String assetId : currentAssetValues.keySet()) {
+                    Long currentValue = currentAssetValues.get(assetId);
+                    long newValue = (long)(currentValue * defaultMonthlyMultiplier);
+                    currentAssetValues.put(assetId, newValue);
+                }
+            }
+
+            // Lastly, log the entry if it's a) a user-defined change or b) on our regular interval
+            if (datesToLogNetWorth.contains(date)) {
+                long netWorth = currentAssetValues.values().stream()
+                        .reduce(0L, (l, r) -> l + r);
+                netWorthProjections.put(date, netWorth);
+            }
+        }
+        return ValOrGerr.val(netWorthProjections);
+    }
 
     /*
     // TODO write tests for this!!

@@ -1,5 +1,7 @@
 package com.strangegrotto.wealthdraft.networth;
 
+import com.strangegrotto.wealthdraft.networth.projections.AssetChange;
+
 public enum AssetType {
     BANK_ACCOUNT(BankAccountAssetSnapshot.class, BankAccountAssetChange.class);
 

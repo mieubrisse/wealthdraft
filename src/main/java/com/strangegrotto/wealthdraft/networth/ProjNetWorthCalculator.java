@@ -1,7 +1,8 @@
-package com.strangegrotto.wealthdraft.networth.projections;
+package com.strangegrotto.wealthdraft.networth;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
+import com.strangegrotto.wealthdraft.networth.projections.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

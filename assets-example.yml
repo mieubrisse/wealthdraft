@@ -12,6 +12,7 @@ assets:
     name: BTC holdings
     type: BANK_ACCOUNT
 
+# TODO Switch this to be date -> (assetId -> value)
 history:
   ret:
     2020-06-01:

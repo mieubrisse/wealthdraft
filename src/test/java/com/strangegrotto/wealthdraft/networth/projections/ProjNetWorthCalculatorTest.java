@@ -1,6 +1,7 @@
 package com.strangegrotto.wealthdraft.networth.projections;
 
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
+import com.strangegrotto.wealthdraft.networth.ProjNetWorthCalculator;
 import org.junit.Assert;
 import org.junit.Test;
 

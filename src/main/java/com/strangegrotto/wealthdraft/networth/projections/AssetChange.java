@@ -1,6 +1,7 @@
-package com.strangegrotto.wealthdraft.networth;
+package com.strangegrotto.wealthdraft.networth.projections;
 
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
+import com.strangegrotto.wealthdraft.networth.AssetSnapshot;
 
 /**
  * Represents a change to an asset that yields a new version of the same type of asset
