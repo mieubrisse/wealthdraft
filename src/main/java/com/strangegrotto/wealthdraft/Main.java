@@ -13,7 +13,6 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.google.common.base.Strings;
 import com.google.common.collect.Ordering;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
@@ -64,12 +63,8 @@ public class Main {
 
     private static final int MINIMUM_ITEM_TITLE_WIDTH = 40;
     private static final int MINIMUM_CURRENCY_WIDTH = 10;
-    private static final String SUM_LINE = Strings.repeat(" ", MINIMUM_ITEM_TITLE_WIDTH + 2)
-            + Strings.repeat("-", MINIMUM_CURRENCY_WIDTH);
     private static final DecimalFormat CURRENCY_FORMAT = new DecimalFormat  ("###,##0");
     private static final DecimalFormat PERCENT_FORMAT = new DecimalFormat("#0.0%");
-
-    private static final String BANNER_HEADER_LINE = Strings.repeat("=", 2 * MINIMUM_ITEM_TITLE_WIDTH + 2);
 
     // TODO make this configurable
     // The user will be warned that their historical asset records are out-of-date if the latest entry is greater than
@@ -186,14 +181,20 @@ public class Main {
             return;
         }
 
+        Display display = new Display(
+                log,
+                MINIMUM_ITEM_TITLE_WIDTH,
+                MINIMUM_CURRENCY_WIDTH,
+                CURRENCY_FORMAT);
         renderMultipleTaxScenarios(
+                display,
                 parsedArgs.getBoolean(ALL_SCENARIOS_ARG),
                 taxScenarios,
                 allGovConstants
         );
 
 
-        renderNetWorthCalculations(assetsWithHistory, projections);
+        renderNetWorthCalculations(display, assetsWithHistory, projections);
     }
 
     private static void configureRootLoggerPattern(ch.qos.logback.classic.Logger rootLogger) {
@@ -216,6 +217,7 @@ public class Main {
     }
 
     private static void renderMultipleTaxScenarios(
+            Display display,
             boolean doRenderAllScenarios,
             Map<String, TaxScenario> scenarios,
             Map<Integer, GovConstantsForYear> allGovConstants) {
@@ -237,8 +239,8 @@ public class Main {
                 continue;
             }
 
-            log.info("");
-            logBannerHeader(scenarioName);
+            display.printEmptyLine();
+            display.printBannerHeader(scenarioName);
 
             int scenarioYear = scenario.getYear();
             GovConstantsForYear govConstantsToUse;
@@ -275,7 +277,7 @@ public class Main {
                 }
             }
 
-            renderTaxScenario(scenario, govConstantsToUse);
+            renderTaxScenario(display, scenario, govConstantsToUse);
         }
     }
 
@@ -337,48 +339,49 @@ public class Main {
     }
 
     private static void renderTaxScenario(
+            Display display,
             TaxScenario scenario,
             GovConstantsForYear govConstants) {
-        log.info("");
-        logSectionHeader("RETIREMENT");
-        logCurrencyItem("Trad 401k Contrib", scenario.get401kContrib().getTrad());
-        logCurrencyItem("Roth 401k Contrib", scenario.get401kContrib().getRoth());
-        logCurrencyItem("Trad IRA Contrib", scenario.getIraContrib().getTrad());
-        logCurrencyItem("Roth IRA Contrib", scenario.getIraContrib().getRoth());
+        display.printEmptyLine();
+        display.printSectionHeader("RETIREMENT");
+        display.printCurrencyItem("Trad 401k Contrib", scenario.get401kContrib().getTrad());
+        display.printCurrencyItem("Roth 401k Contrib", scenario.get401kContrib().getRoth());
+        display.printCurrencyItem("Trad IRA Contrib", scenario.getIraContrib().getTrad());
+        display.printCurrencyItem("Roth IRA Contrib", scenario.getIraContrib().getRoth());
 
         IncomeStreams grossIncomeStreams = scenario.getIncomeStreams();
 
-        log.info("");
-        logSectionHeader("GROSS INCOME");
-        logCurrencyItem("Earned Income", grossIncomeStreams.getEarnedIncome());
-        logCurrencyItem("Non-Preferential Unearned Income", grossIncomeStreams.getNonPreferentialUnearnedIncome());
-        logCurrencyItem("Preferential Earned Income", grossIncomeStreams.getPreferentialUnearnedIncome());
-        log.info(SUM_LINE);
+        display.printEmptyLine();
+        display.printSectionHeader("GROSS INCOME");
+        display.printCurrencyItem("Earned Income", grossIncomeStreams.getEarnedIncome());
+        display.printCurrencyItem("Non-Preferential Unearned Income", grossIncomeStreams.getNonPreferentialUnearnedIncome());
+        display.printCurrencyItem("Preferential Earned Income", grossIncomeStreams.getPreferentialUnearnedIncome());
+        display.printSumLine();
         long grossIncome = grossIncomeStreams.getTotal();
-        logCurrencyItem("Gross Income", grossIncome);
+        display.printCurrencyItem("Gross Income", grossIncome);
 
         long totalAmtAdjustments = scenario.getAmtAdjustments().stream()
                 .reduce(0L, (l, r) -> l + r);
-        log.info("");
-        logSectionHeader("ADJUSTMENTS");
-        logCurrencyItem("AMT Adjustments", totalAmtAdjustments);
+        display.printEmptyLine();
+        display.printSectionHeader("ADJUSTMENTS");
+        display.printCurrencyItem("AMT Adjustments", totalAmtAdjustments);
 
         ScenarioTaxes taxes = ScenarioTaxCalculator.calculateScenarioTax(scenario, govConstants);
         Map<Tax, Double> ficaTaxes = taxes.getFicaTaxes();
         Map<Tax, Double> primarySystemTaxes = taxes.getPrimarySystemIncomeTaxes();
         Map<Tax, Double> amtTaxes = taxes.getAmtTaxes();
 
-        log.info("");
-        logSectionHeader("FICA TAX");
-        renderTaxesSection("FICA Tax", ficaTaxes, grossIncome);
+        display.printEmptyLine();
+        display.printSectionHeader("FICA TAX");
+        renderTaxesSection(display, "FICA Tax", ficaTaxes, grossIncome);
 
-        log.info("");
-        logSectionHeader("REG FED INCOME TAX");
-        renderTaxesSection("Reg Fed Income Tax", primarySystemTaxes, grossIncome);
+        display.printEmptyLine();
+        display.printSectionHeader("REG FED INCOME TAX");
+        renderTaxesSection(display, "Reg Fed Income Tax", primarySystemTaxes, grossIncome);
 
-        log.info("");
-        logSectionHeader("AMT");
-        renderTaxesSection("AMT", amtTaxes, grossIncome);
+        display.printEmptyLine();
+        display.printSectionHeader("AMT");
+        renderTaxesSection(display, "AMT", amtTaxes, grossIncome);
 
         Map<Tax, Double> totalTaxes = new HashMap<>();
         totalTaxes.putAll(ficaTaxes);
@@ -394,23 +397,23 @@ public class Main {
             totalTaxes.putAll(amtTaxes);
         }
 
-        log.info("");
-        logSectionHeader("TOTAL TAX");
+        display.printEmptyLine();
+        display.printSectionHeader("TOTAL TAX");
         log.info(
                 "Year's {} tax system was higher than {}; using {} income tax",
                 higherTaxSystem,
                 lowerTaxSystem,
                 higherTaxSystem
         );
-        renderTaxesSection("Scenario Tax", totalTaxes, grossIncome);
+        renderTaxesSection(display, "Scenario Tax", totalTaxes, grossIncome);
     }
 
-    private static void renderNetWorthCalculations(AssetsWithHistory assetsWithHistory, Projections projections) {
-        log.info("");
-        logBannerHeader("Historical Net Worth");
+    private static void renderNetWorthCalculations(Display display, AssetsWithHistory assetsWithHistory, Projections projections) {
+        display.printEmptyLine();
+        display.printBannerHeader("Historical Net Worth");
         Map<String, Map<LocalDate, BankAccountAssetSnapshot>> history = assetsWithHistory.getHistory();
 
-        Map<String, BankAccountAssetSnapshot> latestAssetSnapshots = calculateAndRenderHistoricalNetWorth(history);
+        Map<String, BankAccountAssetSnapshot> latestAssetSnapshots = calculateAndRenderHistoricalNetWorth(display, history);
 
         // TODO Need to upgrade the projection calculator too!
         Map<String, Long> latestAssetValues = new HashMap<>();
@@ -431,8 +434,8 @@ public class Main {
 
             log.debug("Processing scenario projection results for ID '{}' and name '{}'", projScenarioId, projScenarioName);
 
-            log.info("");
-            logBannerHeader("Networth Proj: " + projScenarioName);
+            display.printEmptyLine();
+            display.printBannerHeader("Networth Proj: " + projScenarioName);
 
             if (netWorthProjectionsOrErr.hasGerr()) {
                 log.error(netWorthProjectionsOrErr.getGerr().toString());
@@ -440,12 +443,14 @@ public class Main {
             }
             Map<LocalDate, Long> netWorthProjections = netWorthProjectionsOrErr.getVal();
             netWorthProjections.forEach((date, netWorth) -> {
-                logCurrencyItem(date.toString(), netWorth);
+                display.printCurrencyItem(date.toString(), netWorth);
             });
         }
     }
 
-    private static Map<String, BankAccountAssetSnapshot> calculateAndRenderHistoricalNetWorth(Map<String, Map<LocalDate, BankAccountAssetSnapshot>> history) {
+    private static Map<String, BankAccountAssetSnapshot> calculateAndRenderHistoricalNetWorth(
+            Display display,
+            Map<String, Map<LocalDate,BankAccountAssetSnapshot>> history) {
         SortedMap<LocalDate, Map<String, BankAccountAssetSnapshot>> assetSnapshotsByDate = new TreeMap<>();
         for (String assetId : history.keySet()) {
             Map<LocalDate, BankAccountAssetSnapshot> historyForAsset = history.get(assetId);
@@ -468,42 +473,14 @@ public class Main {
             long netWorth = latestAssetSnapshots.values().stream()
                     .map(snapshot -> snapshot.getValue())
                     .reduce(0L, (l, r) -> l + r);
-            logCurrencyItem(date.toString(), netWorth);
+            // TODO this is an awful spot for this
+            display.printCurrencyItem(date.toString(), netWorth);
         }
         return latestAssetSnapshots;
     }
 
-    private static void logBannerHeader(String header) {
-        log.info(BANNER_HEADER_LINE);
-        int spacesToAdd = Math.max(0, (BANNER_HEADER_LINE.length() - header.length()) / 2);
-        log.info(Strings.repeat(" ", spacesToAdd) + header);
-        log.info(BANNER_HEADER_LINE);
-    }
 
-    private static void logSectionHeader(String header) {
-        header = header.toUpperCase();
-        // We add 2 to account for the ": " that each item entry has
-        int totalWidth = 2 * MINIMUM_ITEM_TITLE_WIDTH + 2;
-        int spacesToAdd = Math.max(0, (totalWidth - header.length()) / 2);
-        log.info(
-                "{}{}",
-                Strings.repeat(" ", spacesToAdd),
-                header
-        );
-    }
-
-    private static void logCurrencyItem(String title, Object value) {
-        log.info(
-                "{}: {}",
-                String.format("%1$" + MINIMUM_ITEM_TITLE_WIDTH + "s", title),
-                String.format(
-                        "%1$" + MINIMUM_CURRENCY_WIDTH + "s",
-                        CURRENCY_FORMAT.format(value)
-                )
-        );
-    }
-
-    private static void renderTaxesSection(String titleCaseSumName, Map<Tax, Double> taxes, long grossIncome) {
+    private static void renderTaxesSection(Display display, String titleCaseSumName, Map<Tax, Double> taxes, long grossIncome) {
         double totalTaxes = 0D;
 
         List<Tax> displayOrder = taxes.keySet().stream()
@@ -514,10 +491,10 @@ public class Main {
             double taxAmount = taxes.get(taxType);
             totalTaxes += taxAmount;
             String prettyName = taxType.getPrettyName();
-            logCurrencyItem(prettyName, taxAmount);
+            display.printCurrencyItem(prettyName, taxAmount);
         }
         double effectiveTaxRate = totalTaxes / (double)grossIncome;
-        log.info(SUM_LINE);
+        display.printSumLine();
         String itemTitle = "Total " + titleCaseSumName;
         log.info(
                 "{}: {} ({} effective tax rate)",
