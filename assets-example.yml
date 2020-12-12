@@ -1,22 +1,38 @@
-ret:
-  name: Retirement account
-  historical:
-    2020-06-01: 120000
-    2020-08-15: 150000
+assets:
+  ret:
+    name: Retirement account
+    type: BANK_ACCOUNT
+  pbrok:
+    name: Personal brokerage account
+    type: BANK_ACCOUNT
+  bank:
+    name: Bank account
+    type: BANK_ACCOUNT
+  btc:
+    name: BTC holdings
+    type: BANK_ACCOUNT
 
-pbrok:
-  name: Personal brokerage account
-  historical:
-    2020-06-01: 20000
-    2020-11-30: 22000
+history:
+  ret:
+    2020-06-01:
+      balance: 150000
+    2020-08-15:
+      balance: 150000
 
-bank:
-  name: Bank account
-  historical:
-    2020-06-01: 4000
-    2020-11-30: 12000
-btc:
-  name: BTC holdings
-  historical:
-    2020-06-01: 13000
-    2020-11-30: 15000
+  pbrok:
+    2020-06-01:
+      balance: 20000
+    2020-11-30:
+      balance: 22000
+
+  bank:
+    2020-06-01:
+      balance: 4000
+    2020-11-30:
+      balance: 12000
+
+  btc:
+    2020-06-01:
+      balance: 13000
+    2020-11-30: 
+      balance: 15000
