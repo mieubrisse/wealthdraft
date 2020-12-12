@@ -4,7 +4,8 @@ import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 
 import java.util.function.BiFunction;
 
-enum AssetChangeValueOperation {
+// TODO this only supports longs right now!!
+enum AssetParameterChangeValueOperation {
     ADD((oldValue, newValue) -> ValOrGerr.val(oldValue + newValue)),
     SUBTRACT((oldValue, newValue) -> {
         if (oldValue < newValue) {
@@ -19,7 +20,7 @@ enum AssetChangeValueOperation {
 
     private final BiFunction<Long, Long, ValOrGerr<Long>> mutator;
 
-    AssetChangeValueOperation(BiFunction<Long, Long, ValOrGerr<Long>> mutator) {
+    AssetParameterChangeValueOperation(BiFunction<Long, Long, ValOrGerr<Long>> mutator) {
         this.mutator = mutator;
     }
 

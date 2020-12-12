@@ -6,17 +6,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+// TODO Rename to parser
 public class ProjNetWorthCalculator {
     private static final int MAX_YEARS_TO_PROJECT = 80;
-
-    // TODO Add support for "w" and "d"????
-    private static final Pattern RELATIVE_DATE_PATTERN = Pattern.compile("^\\+([0-9]+)([ym])$");
 
     private static final int MONTHS_IN_YEAR = 12;
 
@@ -24,38 +19,20 @@ public class ProjNetWorthCalculator {
 
     // Type aliases for making working with these nested maps less cumbersome
     @VisibleForTesting
-    static class AssetChangesForDate extends HashMap<String, LinkedList<AssetChange>> { }
+    static class AssetChangesForDate extends HashMap<String, LinkedList<AssetParameterChange>> { }
 
     @VisibleForTesting
     static class AssetChangesForScenario extends HashMap<LocalDate, AssetChangesForDate> {}
 
-    private final int projectionDisplayIncrementYears;
-
-    /**
-     *
-     * @param projectionDisplayYearIncrement When projecting into the future, new values for net worth will be calculated every N years
-     */
-    public ProjNetWorthCalculator(int projectionDisplayYearIncrement) {
-        this.projectionDisplayIncrementYears = projectionDisplayYearIncrement;
-    }
-
     // TODO write tests for this!!
-    public ProjNetWorthCalcResults calculateNetWorthProjections(Map<String, Long> latestHistAssetValues, Projections projections) {
-        ImmutableProjNetWorthCalcResults.Builder resultBuilder = ImmutableProjNetWorthCalcResults.builder();
-
-        // Convert YoY growth into MoM
-        double defaultMonthlyMultiplier = Math.pow(1 + projections.getDefaultAnnualGrowth(), 1D / 12D);
-        log.debug("Default monthly growth: {}", defaultMonthlyMultiplier);
+    public static Map<String, ValOrGerr<ProjScenarioParseResult>> parseManualAssetChanges(Projections projections) {
+        ImmutableProjScenarioParseResult.Builder resultBuilder = ImmutableProjScenarioParseResult.builder();
 
         Map<String, ProjectionScenario> allScenarios = projections.getScenarios();
         for (String scenarioId : allScenarios.keySet()) {
-            ValOrGerr<SortedMap<LocalDate, Long>> netWorthProjectionsOrErr = calcScenarioNetWorthProjections(
+            ValOrGerr<ProjScenarioParseResult> netWorthProjectionsOrErr = parseSingleScenario(
                     scenarioId,
-                    allScenarios,
-                    latestHistAssetValues,
-                    defaultMonthlyMultiplier,
-                    this.projectionDisplayIncrementYears
-            );
+                    allScenarios);
             if (netWorthProjectionsOrErr.hasGerr()) {
                 resultBuilder.putProjNetWorths(
                         scenarioId,
@@ -76,52 +53,9 @@ public class ProjNetWorthCalculator {
         return resultBuilder.build();
     }
 
-    /**
-     * Parses an asset change date string which may be of the form "yyyy-mm-dd", or relative like
-     *  "+5y", "+5m", etc.
-     * @param text Text to parse
-     * @return The parsed text, or an error if the text couldn't be parsed
-     */
-    private static ValOrGerr<LocalDate> parseChangeDateStr(String text) {
-        try {
-            return ValOrGerr.val(LocalDate.parse(text));
-        } catch (DateTimeParseException e) {}
-
-        Matcher matcher = RELATIVE_DATE_PATTERN.matcher(text);
-        if (!matcher.find()) {
-            return ValOrGerr.newGerr(
-                    "Unable to parse relative date string '{}'",
-                    text
-            );
-        }
-
-        // Group 0 is the whole string
-        long numberOfUnits = Long.parseLong(matcher.group(1));
-        String units = matcher.group(2);
-
-        LocalDate result = LocalDate.now();
-        switch (units) {
-            case "y":
-                result = result.plusYears(numberOfUnits);
-                break;
-            case "m":
-                result = result.plusMonths(numberOfUnits);
-                break;
-            default:
-                return ValOrGerr.newGerr(
-                        "Unrecognized relative date unit '{}'; this likely indicates a code error",
-                        units
-                );
-        }
-        return ValOrGerr.val(result);
-    }
-
-    private static ValOrGerr<SortedMap<LocalDate, Long>> calcScenarioNetWorthProjections(
+    private static ValOrGerr<ProjScenarioParseResult> parseSingleScenario(
             String scenarioId,
-            Map<String, ProjectionScenario> allScenarios,
-            Map<String, Long> latestHistAssetValues,
-            double defaultMonthlyMultiplier,
-            int projectionDisplayIncrementYears) {
+            Map<String, ProjectionScenario> allScenarios) {
         LocalDate today = LocalDate.now();
 
         ValOrGerr<AssetChangesForScenario> assetChangesByDateOrErr = unrollAssetChanges(scenarioId, allScenarios);
@@ -170,15 +104,15 @@ public class ProjNetWorthCalculator {
             // First apply any asset value changes
             if (assetChangeDates.contains(date)) {
                 AssetChangesForDate assetChangesForDate = assetChangesByDate.get(date);
-                for (Map.Entry<String, LinkedList<AssetChange>> assetChangeEntry : assetChangesForDate.entrySet()) {
+                for (Map.Entry<String, LinkedList<AssetParameterChange>> assetChangeEntry : assetChangesForDate.entrySet()) {
                     String assetId = assetChangeEntry.getKey();
-                    LinkedList<AssetChange> changes = assetChangeEntry.getValue();
+                    LinkedList<AssetParameterChange> changes = assetChangeEntry.getValue();
 
                     // Scenarios can be based on other scenarios. The iteration order here will be the most-upstream
                     //  dependency scenario asset changes first, followed by changes from any scenarios that depend on it,
                     //  followed by changes from any scenarios that depend on that, etc.
                     for (int i = 0; i < changes.size(); i++) {
-                        AssetChange change = changes.get(i);
+                        AssetParameterChange change = changes.get(i);
                         long oldValue = currentAssetValues.get(assetId);
                         ValOrGerr<Long> applicationResult = change.apply(oldValue);
                         if (applicationResult.hasGerr()) {
@@ -222,11 +156,11 @@ public class ProjNetWorthCalculator {
      *  through the dependency tree.
      */
     @VisibleForTesting
-    static ValOrGerr<AssetChangesForScenario> unrollAssetChanges(
-            String scenarioId, Map<String,
-            ProjectionScenario> allScenarios) {
+    static ValOrGerr<Map<RelativeLocalDate, AssetParameterChange>> unrollAssetChanges(
+            String scenarioId,
+            Map<String, ProjectionScenario> allScenarios) {
         // For scenarios based on other ones, we need to put those guys in
-        AssetChangesForScenario result = new AssetChangesForScenario();
+        Map<RelativeLocalDate, List<AssetParameterChange>> result = new HashMap<>();
         Optional<String> baseIdOpt = Optional.of(scenarioId);
         Set<String> visitedScenarioIds = new HashSet<>();
         while (baseIdOpt.isPresent()) {
@@ -241,29 +175,19 @@ public class ProjNetWorthCalculator {
             visitedScenarioIds.add(baseId);
 
             ProjectionScenario scenario = allScenarios.get(baseId);
-            for (Map.Entry<String, Map<String, AssetChange>> changesForDateEntry : scenario.getChanges().entrySet()) {
-                String dateStr = changesForDateEntry.getKey();
-                Map<String, AssetChange> changes = changesForDateEntry.getValue();
+            Map<RelativeLocalDate, Map<String, AssetParameterChange>> scenarioAssetChanges = scenario.getRawChanges();
+            for (RelativeLocalDate date : scenarioAssetChanges.keySet()) {
+                Map<String, AssetParameterChange> changes = scenarioAssetChanges.get(date);
 
-                ValOrGerr<LocalDate> dateOrErr = parseChangeDateStr(dateStr);
-                if (dateOrErr.hasGerr()) {
-                    return ValOrGerr.propGerr(
-                            dateOrErr.getGerr(),
-                            "An error occurred parsing change date string '{}' for scenario with ID '{}'",
-                            dateStr,
-                            baseId
-                    );
-                }
-                LocalDate date = dateOrErr.getVal();
-
-                AssetChangesForDate resultChangesOnDate = result.getOrDefault(date, new AssetChangesForDate());
-                for (Map.Entry<String, AssetChange> assetChangeEntry : changes.entrySet()) {
+                Map<RelativeLocalDate, AssetParameterChange> resultChangesOnDate
+                        = result.getOrDefault(date, new HashMap<RelativeLocalDate, AssetParameterChange>());
+                for (Map.Entry<String, AssetParameterChange> assetChangeEntry : changes.entrySet()) {
                     String assetId = assetChangeEntry.getKey();
-                    AssetChange change = assetChangeEntry.getValue();
+                    AssetParameterChange change = assetChangeEntry.getValue();
 
                     // We push the element to the FRONT of the list since we're iterating scenario dependencies in
                     //  downstream-to-upstream order, but we want the changes to be applied in upstream-to-downstream precedence
-                    LinkedList<AssetChange> resultChangesList = resultChangesOnDate.getOrDefault(assetId, new LinkedList<>());
+                    LinkedList<AssetParameterChange> resultChangesList = resultChangesOnDate.getOrDefault(assetId, new LinkedList<>());
                     resultChangesList.push(change);
                     resultChangesOnDate.put(assetId, resultChangesList);
                 }

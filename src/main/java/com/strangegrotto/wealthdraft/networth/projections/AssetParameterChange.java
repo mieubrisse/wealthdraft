@@ -3,12 +3,13 @@ package com.strangegrotto.wealthdraft.networth.projections;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 
-@JsonDeserialize(using = AssetChangeDeserializer.class)
-public class AssetChange {
+// TODO Upgrade this to support BigDecimal
+@JsonDeserialize(using = AssetParameterChangeDeserializer.class)
+public class AssetParameterChange {
     private final long value;
-    private final AssetChangeValueOperation operation;
+    private final AssetParameterChangeValueOperation operation;
 
-    public AssetChange(long value, AssetChangeValueOperation operation) {
+    public AssetParameterChange(long value, AssetParameterChangeValueOperation operation) {
         this.value = value;
         this.operation = operation;
     }

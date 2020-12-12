@@ -8,19 +8,19 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import java.io.IOException;
 
 // TODO Add a test for this!!!
-public class AssetChangeDeserializer extends JsonDeserializer<AssetChange> {
+public class AssetParameterChangeDeserializer extends JsonDeserializer<AssetParameterChange> {
     @Override
-    public AssetChange deserialize(JsonParser parser, DeserializationContext context) throws IOException, JsonProcessingException {
+    public AssetParameterChange deserialize(JsonParser parser, DeserializationContext context) throws IOException, JsonProcessingException {
         RawAssetChange rawAssetChange = parser.readValueAs(RawAssetChange.class);
         String raw = rawAssetChange.value;
 
-        AssetChangeValueOperation operation = AssetChangeValueOperation.SET;
+        AssetParameterChangeValueOperation operation = AssetParameterChangeValueOperation.SET;
         String numericalText = raw;
         if (raw.startsWith("+")) {
-            operation = AssetChangeValueOperation.ADD;
+            operation = AssetParameterChangeValueOperation.ADD;
             numericalText = raw.substring(1);
         } else if (raw.startsWith("-")) {
-            operation = AssetChangeValueOperation.SUBTRACT;
+            operation = AssetParameterChangeValueOperation.SUBTRACT;
             numericalText = raw.substring(1);
         }
 
@@ -31,7 +31,7 @@ public class AssetChangeDeserializer extends JsonDeserializer<AssetChange> {
             throw new IOException("Could not parse asset change string '" + raw + "' to long", e);
         }
 
-        return new AssetChange(value, operation);
+        return new AssetParameterChange(value, operation);
     }
 
     private static class RawAssetChange {

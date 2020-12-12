@@ -27,7 +27,7 @@ public class ProjNetWorthCalculatorTest {
                 .name("Test scenario")
                 .putChanges("+1y", new HashMap<>() {{
                     // Wil
-                    put(assetId, new AssetChange(10 * assetValue, AssetChangeValueOperation.SUBTRACT));
+                    put(assetId, new AssetParameterChange(10 * assetValue, AssetParameterChangeValueOperation.SUBTRACT));
                 }})
                 .build();
 
@@ -37,8 +37,8 @@ public class ProjNetWorthCalculatorTest {
                 .build();
 
         ProjNetWorthCalculator calculator = new ProjNetWorthCalculator(5);
-        ProjNetWorthCalcResults calcResults = calculator.calculateNetWorthProjections(latestAssetValues, projections);
-        ValOrGerr<SortedMap<LocalDate, Long>> netWorthProjsOrErr = calcResults.getProjNetWorths().get(scenarioId);
+        ProjScenarioParseResult calcResults = calculator.parseManualAssetChanges(latestAssetValues, projections);
+        ValOrGerr<SortedMap<LocalDate, Long>> netWorthProjsOrErr = calcResults.getScenarioAssetChanges().get(scenarioId);
         Assert.assertTrue("Expected an error due to subtracting more value from asset than was available", netWorthProjsOrErr.hasGerr());
     }
 
@@ -56,7 +56,7 @@ public class ProjNetWorthCalculatorTest {
                 .name("Test scenario")
                 .putChanges(tenDaysAgo.toString(), new HashMap<>() {{
                     // Wil
-                    put(assetId, new AssetChange(100L, AssetChangeValueOperation.ADD));
+                    put(assetId, new AssetParameterChange(100L, AssetParameterChangeValueOperation.ADD));
                 }})
                 .build();
 
@@ -66,8 +66,8 @@ public class ProjNetWorthCalculatorTest {
                 .build();
 
         ProjNetWorthCalculator calculator = new ProjNetWorthCalculator(5);
-        ProjNetWorthCalcResults calcResults = calculator.calculateNetWorthProjections(latestAssetValues, projections);
-        ValOrGerr<SortedMap<LocalDate, Long>> netWorthProjsOrErr = calcResults.getProjNetWorths().get(scenarioId);
+        ProjScenarioParseResult calcResults = calculator.parseManualAssetChanges(latestAssetValues, projections);
+        ValOrGerr<SortedMap<LocalDate, Long>> netWorthProjsOrErr = calcResults.getScenarioAssetChanges().get(scenarioId);
         Assert.assertTrue("Expected an error due to a scenario with an asset change date in the past", netWorthProjsOrErr.hasGerr());
     }
 
@@ -83,7 +83,7 @@ public class ProjNetWorthCalculatorTest {
                 .name("Test scenario")
                 .putChanges(LocalDate.now().toString(), new HashMap<>() {{
                     // Wil
-                    put(assetId, new AssetChange(100L, AssetChangeValueOperation.ADD));
+                    put(assetId, new AssetParameterChange(100L, AssetParameterChangeValueOperation.ADD));
                 }})
                 .build();
 
@@ -93,8 +93,8 @@ public class ProjNetWorthCalculatorTest {
                 .build();
 
         ProjNetWorthCalculator calculator = new ProjNetWorthCalculator(5);
-        ProjNetWorthCalcResults calcResults = calculator.calculateNetWorthProjections(latestAssetValues, projections);
-        ValOrGerr<SortedMap<LocalDate, Long>> netWorthProjsOrErr = calcResults.getProjNetWorths().get(scenarioId);
+        ProjScenarioParseResult calcResults = calculator.parseManualAssetChanges(latestAssetValues, projections);
+        ValOrGerr<SortedMap<LocalDate, Long>> netWorthProjsOrErr = calcResults.getScenarioAssetChanges().get(scenarioId);
         Assert.assertFalse("Expected no error with a scenario with an asset change date of today", netWorthProjsOrErr.hasGerr());
     }
 
@@ -106,19 +106,19 @@ public class ProjNetWorthCalculatorTest {
         String scenarioId2 = "scenario2";
         LocalDate todayPlus1Year = today.plusYears(1);
 
-        AssetChange firstAssetChange = new AssetChange(100L, AssetChangeValueOperation.ADD);
-        AssetChange secondAssetChange = new AssetChange(200L, AssetChangeValueOperation.ADD);
+        AssetParameterChange firstAssetParameterChange = new AssetParameterChange(100L, AssetParameterChangeValueOperation.ADD);
+        AssetParameterChange secondAssetParameterChange = new AssetParameterChange(200L, AssetParameterChangeValueOperation.ADD);
         ProjectionScenario scenario1 = ImmutableProjectionScenario.builder()
                 .name("Scenario 1")
                 .putChanges(todayPlus1Year.toString(), new HashMap<>() {{
-                    put(assetId, firstAssetChange);
+                    put(assetId, firstAssetParameterChange);
                 }})
                 .build();
         ProjectionScenario scenario2 = ImmutableProjectionScenario.builder()
                 .name("Scenario 2")
                 .base(scenarioId1)
                 .putChanges(todayPlus1Year.toString(), new HashMap<>() {{
-                    put(assetId, secondAssetChange);
+                    put(assetId, secondAssetParameterChange);
                 }})
                 .build();
 
@@ -137,13 +137,13 @@ public class ProjNetWorthCalculatorTest {
 
         ProjNetWorthCalculator.AssetChangesForDate changesIn1Year = assetChanges.get(todayPlus1Year);
         Assert.assertEquals(1, changesIn1Year.size());
-        LinkedList<AssetChange> changesForAssetIn1Year = changesIn1Year.get(assetId);
+        LinkedList<AssetParameterChange> changesForAssetIn1Year = changesIn1Year.get(assetId);
         Assert.assertEquals(2, changesForAssetIn1Year.size());
 
         // The ordering for changes on the same day from different scenarios should be:
         //  most upstream scenario changes first, then the downstream changes
-        Assert.assertEquals(firstAssetChange, changesForAssetIn1Year.get(0));
-        Assert.assertEquals(secondAssetChange, changesForAssetIn1Year.get(1));
+        Assert.assertEquals(firstAssetParameterChange, changesForAssetIn1Year.get(0));
+        Assert.assertEquals(secondAssetParameterChange, changesForAssetIn1Year.get(1));
     }
 
     @Test
@@ -158,21 +158,21 @@ public class ProjNetWorthCalculatorTest {
                 .name("Scenario 1")
                 .base(scenarioId3)
                 .putChanges(today.plusYears(1).toString(), new HashMap<>() {{
-                    put(assetId, new AssetChange(100L, AssetChangeValueOperation.ADD));
+                    put(assetId, new AssetParameterChange(100L, AssetParameterChangeValueOperation.ADD));
                 }})
                 .build();
         ProjectionScenario scenario2 = ImmutableProjectionScenario.builder()
                 .name("Scenario 2")
                 .base(scenarioId1)
                 .putChanges(today.plusYears(2).toString(), new HashMap<>() {{
-                    put(assetId, new AssetChange(100L, AssetChangeValueOperation.ADD));
+                    put(assetId, new AssetParameterChange(100L, AssetParameterChangeValueOperation.ADD));
                 }})
                 .build();
         ProjectionScenario scenario3 = ImmutableProjectionScenario.builder()
                 .name("Scenario 2")
                 .base(scenarioId2)
                 .putChanges(today.plusYears(3).toString(), new HashMap<>() {{
-                    put(assetId, new AssetChange(100L, AssetChangeValueOperation.ADD));
+                    put(assetId, new AssetParameterChange(100L, AssetParameterChangeValueOperation.ADD));
                 }})
                 .build();
 
