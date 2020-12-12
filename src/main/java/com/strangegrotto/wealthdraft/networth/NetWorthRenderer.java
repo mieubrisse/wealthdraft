@@ -30,8 +30,16 @@ public class NetWorthRenderer {
         display.printEmptyLine();
         display.printBannerHeader("Historical Net Worth");
         Map<String, Map<LocalDate, BankAccountAssetSnapshot>> history = assetsWithHistory.getHistory();
+        SortedMap<LocalDate, Map<String, BankAccountAssetSnapshot>> histAssetSnapshotsByDate = getHistAssetSnapshotsByDate(history);
+        for (LocalDate date : histAssetSnapshotsByDate.keySet()) {
+            Map<String, BankAccountAssetSnapshot> assetSnapshotsForDate = histAssetSnapshotsByDate.get(date);
+            long netWorth = assetSnapshotsForDate.values().stream()
+                    .map(AssetSnapshot::getValue)
+                    .reduce(0L, (l, r) -> l + r);
+            this.display.printCurrencyItem(date.toString(), netWorth);
+        }
 
-        Map<String, BankAccountAssetSnapshot> latestAssetSnapshots = calculateAndRenderHistoricalNetWorth(display, history);
+        Map<String, BankAccountAssetSnapshot> latestAssetSnapshots = histAssetSnapshotsByDate.get(histAssetSnapshotsByDate.lastKey());
 
         // TODO Need to upgrade the projection calculator too!
         Map<String, Long> latestAssetValues = new HashMap<>();
@@ -66,9 +74,7 @@ public class NetWorthRenderer {
         }
     }
 
-    private static Map<String, BankAccountAssetSnapshot> calculateAndRenderHistoricalNetWorth(
-            Display display,
-            Map<String, Map<LocalDate,BankAccountAssetSnapshot>> history) {
+    private static SortedMap<LocalDate, Map<String, BankAccountAssetSnapshot>> getHistAssetSnapshotsByDate(Map<String, Map<LocalDate,BankAccountAssetSnapshot>> history) {
         SortedMap<LocalDate, Map<String, BankAccountAssetSnapshot>> assetSnapshotsByDate = new TreeMap<>();
         for (String assetId : history.keySet()) {
             Map<LocalDate, BankAccountAssetSnapshot> historyForAsset = history.get(assetId);
@@ -84,16 +90,15 @@ public class NetWorthRenderer {
         //  are declared on date T+1) we "fill forward" past snapshots into any slots in the future where
         //  they're missing. This assumes that asset values don't change over historical time.
         Map<String, BankAccountAssetSnapshot> latestAssetSnapshots = new HashMap<>();
-        // SortedMap<LocalDate, Long> historicalNetWorth = new TreeMap<>();
+        SortedMap<LocalDate, Map<String, BankAccountAssetSnapshot>> result = new TreeMap<>();
         for (LocalDate date : assetSnapshotsByDate.keySet()) {
             Map<String, BankAccountAssetSnapshot> assetSnapshotsForDate = assetSnapshotsByDate.get(date);
             latestAssetSnapshots.putAll(assetSnapshotsForDate);
-            long netWorth = latestAssetSnapshots.values().stream()
-                    .map(snapshot -> snapshot.getValue())
-                    .reduce(0L, (l, r) -> l + r);
-            // TODO this is an awful spot for this
-            display.printCurrencyItem(date.toString(), netWorth);
+
+            Map<String, BankAccountAssetSnapshot> resultAssetSnapshotsForDate = result.getOrDefault(date, new HashMap<>());
+            resultAssetSnapshotsForDate.putAll(latestAssetSnapshots);
+            result.put(date, resultAssetSnapshotsForDate);
         }
-        return latestAssetSnapshots;
+        return result;
     }
 }
