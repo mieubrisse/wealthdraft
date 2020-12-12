@@ -12,6 +12,7 @@ import java.util.Map;
 public interface AssetsWithHistory {
     Map<String, Asset> getAssets();
 
+    // TODO Change this to generic Asset type
     Map<String, Map<LocalDate, BankAccountAssetSnapshot>> getHistory();
 
     @Value.Check
