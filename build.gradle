@@ -61,16 +61,6 @@ application {
 compileJava {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
-
-    println(classpath)
-    /*
-    configurations.each {
-        println(it)
-        it.allArtifacts.forEach {
-            println(it)
-        }
-    }
-    */
 }
 
 // The 'jar' task will create a fat JAR, with all dependencies inside
@@ -85,23 +75,3 @@ jar {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
-
-/*
-sourceSets.each {
-    println(it)
-    it.allSource.each {
-        println(it)
-    }
-}
-*/
-
-/*
-// IDEA won't pick up our generated source directory, so we need to tell it where it is
-def generatedSourceDirpath = 'build/generated'
-sourceSets.main.java.srcDir(new File(generatedSourceDirpath))
-idea {
-    module {
-        generatedSourceDirs += file(generatedSourceDirpath)
-    }
-}
-*/
