@@ -7,6 +7,7 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.ConsoleAppender;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -18,9 +19,11 @@ import com.google.common.collect.Ordering;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.govconstants.RetirementConstants;
+import com.strangegrotto.wealthdraft.networth.Asset;
 import com.strangegrotto.wealthdraft.networth.AssetsWithHistory;
 import com.strangegrotto.wealthdraft.networth.NetWorthRenderer;
 import com.strangegrotto.wealthdraft.networth.projections.Projections;
+import com.strangegrotto.wealthdraft.networth.projections.ProjectionsDeserializer;
 import com.strangegrotto.wealthdraft.scenarios.IncomeStreams;
 import com.strangegrotto.wealthdraft.scenarios.TaxScenario;
 import com.strangegrotto.wealthdraft.tax.ScenarioTaxCalculator;
@@ -166,6 +169,7 @@ public class Main {
             return;
         }
 
+        addNetWorthProjectionDeserializers(mapper, assetsWithHistory.getAssets());
         String projectionsFilepath = parsedArgs.getString(PROJECTIONS_FILEPATH_ARG);
         log.debug("Projections filepath: {}", assetsFilepath);
         Projections projections;
@@ -200,6 +204,14 @@ public class Main {
         mapper.registerModule(new JavaTimeModule());
         mapper.registerModule(new Jdk8Module());    // Support deserializing to Optionals
         return mapper;
+    }
+
+    @VisibleForTesting
+    public static void addNetWorthProjectionDeserializers(ObjectMapper mapper, Map<String, Asset> assets) {
+        var projectionsDeserializer = new ProjectionsDeserializer(assets);
+        var projectionsDeserializationModule = new SimpleModule();
+        projectionsDeserializationModule.addDeserializer(Projections.class, projectionsDeserializer);
+        mapper.registerModule(projectionsDeserializationModule);
     }
 
     private static void configureRootLoggerPattern(ch.qos.logback.classic.Logger rootLogger) {

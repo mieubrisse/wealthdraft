@@ -1,28 +1,31 @@
 package com.strangegrotto.wealthdraft.networth;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.annotations.VisibleForTesting;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.networth.projections.AssetChange;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @JsonDeserialize(as = ImmutableBankAccountAssetSnapshot.class)
-public interface BankAccountAssetSnapshot extends AssetSnapshot {
-    int MONTHS_IN_YEAR = 12;
+public abstract class BankAccountAssetSnapshot extends AssetSnapshot {
+    private static final int MONTHS_IN_YEAR = 12;
 
-    long getBalance();
+    @VisibleForTesting
+    abstract long getBalance();
 
-    Double getAnnualInterestRate();
+    @VisibleForTesting
+    abstract Double getAnnualInterestRate();
 
     @Override
     @Value.Derived
-    default Long getValue() {
+    public Long getValue() {
         return getBalance();
     }
 
     @Override
     @Value.Derived
-    default BankAccountAssetSnapshot projectOneMonth() {
+    public BankAccountAssetSnapshot projectOneMonth() {
         double monthlyMultiplier = Math.pow(1 + getAnnualInterestRate(), 1 / MONTHS_IN_YEAR);
         long futureBalance = (long)(getBalance() * monthlyMultiplier);
         return ImmutableBankAccountAssetSnapshot.builder()
@@ -32,7 +35,7 @@ public interface BankAccountAssetSnapshot extends AssetSnapshot {
     }
 
     @Override
-    default ValOrGerr<AssetSnapshot> applyChange(AssetChange change) {
+    protected ValOrGerr<AssetSnapshot> applyChangeInner(AssetChange change) {
         AssetType snapshotType = getType();
         AssetType changeApplicableType = change.getApplicableType();
         if (!snapshotType.equals(changeApplicableType)) {

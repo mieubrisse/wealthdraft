@@ -24,7 +24,7 @@ public class ProjectionsDeserializerTest {
 
         var projectionsUrl = classLoader.getResource(TestYmlFile.PROJECTIONS.getFilename());
 
-        addProjDeserializationModule(mapper, assetsWithHistory.getAssets());
+        Main.addNetWorthProjectionDeserializers(mapper, assetsWithHistory.getAssets());
         var projections = mapper.readValue(projectionsUrl, Projections.class);
 
         var projectionScenariosOrErr = projections.getScenarios();
@@ -41,6 +41,25 @@ public class ProjectionsDeserializerTest {
         Assert.assertEquals(ExpectedProjectionsInfo.EXPECTED_SCENARIOS, projectionScenarios);
     }
 
+    @Test(expected = IOException.class)
+    public void testInvalidYmlThrowsException() throws IOException {
+        var mapper = Main.getObjectMapper();
+        ClassLoader classLoader = getClass().getClassLoader();
+        var assetsUrl = classLoader.getResource(TestYmlFile.ASSETS.getFilename());
+        AssetsWithHistory assetsWithHistory;
+        try {
+            assetsWithHistory = mapper.readValue(assetsUrl, AssetsWithHistory.class);
+        } catch (IOException e) {
+            Assert.fail("Deserilaizing the asset file should not have thrown an exception");
+            return;
+        }
+
+        var projectionsUrl = classLoader.getResource("invalid-yaml.yml");
+
+        Main.addNetWorthProjectionDeserializers(mapper, assetsWithHistory.getAssets());
+        mapper.readValue(projectionsUrl, Projections.class);
+    }
+
     @Test
     public void testDeserializationWithNonexistentAssets() throws IOException {
         var mapper = Main.getObjectMapper();
@@ -52,7 +71,7 @@ public class ProjectionsDeserializerTest {
 
         var projectionsUrl = classLoader.getResource(TestYmlFile.PROJECTIONS.getFilename());
 
-        addProjDeserializationModule(mapper, assetsWithHistory.getAssets());
+        Main.addNetWorthProjectionDeserializers(mapper, assetsWithHistory.getAssets());
         var projections = mapper.readValue(projectionsUrl, Projections.class);
 
         var projectionScenariosOrErr = projections.getScenarios();
@@ -74,13 +93,33 @@ public class ProjectionsDeserializerTest {
 
         var projectionsUrl = classLoader.getResource("past-date-in-projection.yml");
 
-        addProjDeserializationModule(mapper, assetsWithHistory.getAssets());
+        Main.addNetWorthProjectionDeserializers(mapper, assetsWithHistory.getAssets());
         var projections = mapper.readValue(projectionsUrl, Projections.class);
 
         var projectionScenariosOrErr = projections.getScenarios();
         var scenarioOrErr = projectionScenariosOrErr.get(ExpectedProjectionsInfo.SELL_ALL_BTC_3Y_ID);
         Assert.assertTrue(
                 "Expected scenario to fail parsing due to a date in the past, but it succeeded",
+                scenarioOrErr.hasGerr()
+        );
+    }
+
+    @Test
+    public void testNoErrorOnToday() throws IOException {
+        var mapper = Main.getObjectMapper();
+        ClassLoader classLoader = getClass().getClassLoader();
+        var assetsUrl = classLoader.getResource(TestYmlFile.ASSETS.getFilename());
+        var assetsWithHistory = mapper.readValue(assetsUrl, AssetsWithHistory.class);
+
+        var projectionsUrl = classLoader.getResource("change-on-today.yml");
+
+        Main.addNetWorthProjectionDeserializers(mapper, assetsWithHistory.getAssets());
+        var projections = mapper.readValue(projectionsUrl, Projections.class);
+
+        var projectionScenariosOrErr = projections.getScenarios();
+        var scenarioOrErr = projectionScenariosOrErr.get(ExpectedProjectionsInfo.SELL_ALL_BTC_3Y_ID);
+        Assert.assertFalse(
+                "Expected scenario to pass parsing, but it failed",
                 scenarioOrErr.hasGerr()
         );
     }
@@ -94,7 +133,7 @@ public class ProjectionsDeserializerTest {
 
         var projectionsUrl = classLoader.getResource("dependency-cycle.yml");
 
-        addProjDeserializationModule(mapper, assetsWithHistory.getAssets());
+        Main.addNetWorthProjectionDeserializers(mapper, assetsWithHistory.getAssets());
         var projections = mapper.readValue(projectionsUrl, Projections.class);
 
         var projectionScenariosOrErr = projections.getScenarios();
@@ -116,7 +155,7 @@ public class ProjectionsDeserializerTest {
 
         var projectionsUrl = classLoader.getResource("two-changes-on-same-date.yml");
 
-        addProjDeserializationModule(mapper, assetsWithHistory.getAssets());
+        Main.addNetWorthProjectionDeserializers(mapper, assetsWithHistory.getAssets());
         var projections = mapper.readValue(projectionsUrl, Projections.class);
 
         var projectionScenariosOrErr = projections.getScenarios();
@@ -136,7 +175,7 @@ public class ProjectionsDeserializerTest {
 
         var projectionsUrl = classLoader.getResource("dependency-has-error.yml");
 
-        addProjDeserializationModule(mapper, assetsWithHistory.getAssets());
+        Main.addNetWorthProjectionDeserializers(mapper, assetsWithHistory.getAssets());
         var projections = mapper.readValue(projectionsUrl, Projections.class);
 
         var projectionScenariosOrErr = projections.getScenarios();
@@ -170,7 +209,7 @@ public class ProjectionsDeserializerTest {
 
         var projectionsUrl = classLoader.getResource("depend-on-nonexistent-scenario.yml");
 
-        addProjDeserializationModule(mapper, assetsWithHistory.getAssets());
+        Main.addNetWorthProjectionDeserializers(mapper, assetsWithHistory.getAssets());
         var projections = mapper.readValue(projectionsUrl, Projections.class);
 
         var projectionScenariosOrErr = projections.getScenarios();
@@ -179,12 +218,5 @@ public class ProjectionsDeserializerTest {
                 "Expected scenario to fail parsing due depending on a nonexistent scenario, but it succeeded",
                 scenarioOrErr.hasGerr()
         );
-    }
-
-    private static void addProjDeserializationModule(ObjectMapper mapper, Map<String, Asset> assets) {
-        var projectionsDeserializer = new ProjectionsDeserializer(assets);
-        var projectionsDeserializationModule = new SimpleModule();
-        projectionsDeserializationModule.addDeserializer(Projections.class, projectionsDeserializer);
-        mapper.registerModule(projectionsDeserializationModule);
     }
 }

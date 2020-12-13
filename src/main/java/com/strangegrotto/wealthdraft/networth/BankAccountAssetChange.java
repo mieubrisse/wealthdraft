@@ -14,5 +14,5 @@ public interface BankAccountAssetChange extends AssetChange {
 
     AssetParameterChange getBalance();
 
-    // TODO add ability to change the interest rate
+    // TODO add ability to change the interest rate, which is a Double
 }
