@@ -1,21 +1,11 @@
 defaultAnnualGrowth: 0.06
 scenarios:
-  btc-3y:
-    name: Sell Bitcoin in 3 years for 15k
-    changes:
-      +3y:
-        btc:
-          balance: 0
-        bank:
-          balance: +15000
   half-btc-1y:
     name: Sell 50% Bitcoin in 1 year, then the other 50% a year later
     changes:
       +1y:
-        btc:
+        thisAssetDoesntExist:
           balance: -7500
-        bank:
-          balance: +7500
   half-btc-2y:
     name: After selling 50% Bitcoin in 1 year, sell other 50% in 2 years
     base: half-btc-1y

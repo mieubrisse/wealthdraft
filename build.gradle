@@ -50,20 +50,48 @@ dependencies {
     testImplementation 'junit:junit:4.12'
 }
 
-
-application {
-    // Define the main class for the application.
-    mainClassName = "${mainClass}"
-}
-
-// println System.properties['java.home']
-
 compileJava {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
 }
 
-// The 'jar' task will create a fat JAR, with all dependencies inside
+// =========================================================================================================
+//                                    IDEA Generated Source Fix
+// =========================================================================================================
+// Super-annoyingly, IntelliJ won't pick up the generated source directory produced by the annotationProcessor
+//  configuration, so we have to do this manual work to get it working
+// See: https://youtrack.jetbrains.com/issue/IDEA-236177
+def annotationProcessorSourceDirpath = "${buildDir.absolutePath}/generated/sources/annotationProcessor/java"
+def mainAnnotationProcessorSourceDirpath = "${annotationProcessorSourceDirpath}/main"
+def testAnnotationProcessorSourceDirpath = "${annotationProcessorSourceDirpath}/test"
+sourceSets {
+    main {
+        java {
+            srcDir mainAnnotationProcessorSourceDirpath
+        }
+    }
+            
+    test {
+        java {
+            srcDir testAnnotationProcessorSourceDirpath
+        }
+    }
+}
+idea {
+    module {
+        generatedSourceDirs += file(mainAnnotationProcessorSourceDirpath)
+        generatedSourceDirs += file(testAnnotationProcessorSourceDirpath)
+    }
+}
+
+// =========================================================================================================
+//                                           Fat JAR Generation
+// =========================================================================================================
+application {
+    // Define the main class for the application.
+    mainClassName = "${mainClass}"
+}
+
 jar {
     
     manifest {

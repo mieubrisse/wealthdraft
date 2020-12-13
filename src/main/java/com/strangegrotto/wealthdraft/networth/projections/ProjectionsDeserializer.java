@@ -247,6 +247,14 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
                 );
             }
 
+            if (!notUnrolledScenarios.containsKey(baseId)) {
+                return ValOrGerr.newGerr(
+                        "Could not get list of dependency scenarios for scenario {} due to a dependency on a nonexistent scenario ID {}",
+                        scenarioId,
+                        baseId
+                );
+            }
+
             ValOrGerr<NotUnrolledParsedScenario> notUnrolledBaseScenarioOrErr = notUnrolledScenarios.get(baseId);
             if (notUnrolledBaseScenarioOrErr.hasGerr()) {
                 return ValOrGerr.newGerr(

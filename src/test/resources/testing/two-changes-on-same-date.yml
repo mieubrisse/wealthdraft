@@ -1,0 +1,11 @@
+defaultAnnualGrowth: 0.06
+scenarios:
+  btc-3y:
+    name: Sell Bitcoin in 3 years for 15k
+    changes:
+      +12m:
+        btc:
+          balance: 0
+      +1y:
+        btc:
+          balance: 1500

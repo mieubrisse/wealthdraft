@@ -31,7 +31,10 @@ public class AssetParameterChangeDeserializer extends JsonDeserializer<AssetPara
             throw new IOException("Could not parse asset change string '" + raw + "' to long", e);
         }
 
-        return new AssetParameterChange(value, operation);
+        return ImmutableAssetParameterChange.builder()
+                .value(value)
+                .operation(operation)
+                .build();
     }
 
     private static class RawAssetChange {
