@@ -67,6 +67,8 @@ public class Main {
     //  this many days ago
     private static final long STALE_ASSET_THRESHOLD_DAYS = 30;
 
+    private static final int MAX_YEARS_TO_PROJECT = 60;
+
     private static final int PROJECTION_DISPLAY_INCREMENT_YEARS = 5;
 
     private static final Logger log = LoggerFactory.getLogger(Main.class);
@@ -189,7 +191,7 @@ public class Main {
                 allGovConstants
         );
 
-        NetWorthRenderer netWorthRenderer = new NetWorthRenderer(display, PROJECTION_DISPLAY_INCREMENT_YEARS);
+        var netWorthRenderer = new NetWorthRenderer(display, PROJECTION_DISPLAY_INCREMENT_YEARS, MAX_YEARS_TO_PROJECT);
         netWorthRenderer.renderNetWorthCalculations(assetsWithHistory, projections);
     }
 

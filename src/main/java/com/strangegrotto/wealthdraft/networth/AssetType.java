@@ -1,9 +1,6 @@
 package com.strangegrotto.wealthdraft.networth;
 
-import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.networth.projections.AssetChange;
-
-import java.util.function.BiFunction;
 
 public enum AssetType {
     BANK_ACCOUNT(BankAccountAssetSnapshot.class, BankAccountAssetChange.class);
@@ -22,7 +19,7 @@ public enum AssetType {
         return this.snapshotType;
     }
 
-    public Class<? extends AssetChange<? extends AssetSnapshot>> getChangeType() {
+    public Class<? extends AssetChange> getChangeType() {
         return changeType;
     }
 }

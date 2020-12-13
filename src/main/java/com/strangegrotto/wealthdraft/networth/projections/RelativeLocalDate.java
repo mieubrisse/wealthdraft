@@ -9,7 +9,7 @@ import java.time.LocalDate;
  * Represents a LocalDate that's specified using relative syntax
  */
 @Value.Immutable
-@JsonDeserialize(using = RelativeLocalDateDeserializer.class)
+@JsonDeserialize(as = ImmutableRelativeLocalDate.class, using = RelativeLocalDateDeserializer.class)
 public interface RelativeLocalDate {
     LocalDate getLocalDate();
 }

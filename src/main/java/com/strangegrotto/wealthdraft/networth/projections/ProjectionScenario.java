@@ -5,6 +5,7 @@ import org.immutables.value.Value;
 
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.Optional;
 import java.util.SortedMap;
 
 @Value.Immutable
@@ -12,11 +13,11 @@ import java.util.SortedMap;
 public interface ProjectionScenario {
     String getName();
 
-    String getBase();
+    Optional<String> getBase();
 
     // Map<String, Asset> getAssets();
 
-    SortedMap<LocalDate, SortedMap<String, AssetChange>> getAssetChanges();
+    SortedMap<LocalDate, Map<String, AssetChange>> getAssetChanges();
 
     /*
     // TODO Remove?? Do we even need this????

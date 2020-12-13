@@ -189,7 +189,7 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
 
         // Now that we have the full list of dependency scenarios to visit, in order, loop through them and build a list
         //  asset changes that we'll return
-        Map<LocalDate, Map<String, AssetChange>> unrolledAssetChanges = new HashMap<>();
+        var unrolledAssetChanges = new TreeMap<LocalDate, Map<String, AssetChange>>();
         for (String scenarioIdToVisit : scenarioIdsToVisit) {
             ValOrGerr<NotUnrolledParsedScenario> scenarioToVisitOrErr = notUnrolledScenarios.get(scenarioIdToVisit);
             Preconditions.checkState(
@@ -228,7 +228,7 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
         ProjectionScenario result = ImmutableProjectionScenario.builder()
                 .name(notUnrolledScenario.name)
                 .base(notUnrolledScenario.base)
-                .changes(unrolledAssetChanges)
+                .assetChanges(unrolledAssetChanges)
                 .build();
         return ValOrGerr.val(result);
     }

@@ -1,7 +1,6 @@
 package com.strangegrotto.wealthdraft.tax;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.strangegrotto.wealthdraft.govconstants.ImmutableGovConstantsForYear;
 import org.immutables.value.Value;
 
 import java.util.Map;
