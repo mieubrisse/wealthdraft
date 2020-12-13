@@ -1,6 +1,5 @@
 package com.strangegrotto.wealthdraft.networth.projections;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
 import java.time.LocalDate;
@@ -9,13 +8,10 @@ import java.util.Optional;
 import java.util.SortedMap;
 
 @Value.Immutable
-@JsonDeserialize(as = ImmutableProjectionScenario.class)
 public interface ProjectionScenario {
     String getName();
 
     Optional<String> getBase();
-
-    // Map<String, Asset> getAssets();
 
     SortedMap<LocalDate, Map<String, AssetChange>> getAssetChanges();
 

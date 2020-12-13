@@ -13,6 +13,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Ordering;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
@@ -127,10 +128,7 @@ public class Main {
         Level logLevel = parsedArgs.get(LOG_LEVEL_ARG);
         logbackRootLogger.setLevel(logLevel);
 
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        mapper.registerModule(new GuavaModule());
-        mapper.registerModule(new JavaTimeModule());
-        mapper.registerModule(new Jdk8Module());    // Support deserializing to Optionals
+        var mapper = getObjectMapper();
         TypeFactory typeFactory = mapper.getTypeFactory();
 
         String taxScenariosFilepath = parsedArgs.getString(TAX_SCENARIOS_FILEPATH_ARG);
@@ -193,6 +191,15 @@ public class Main {
 
         var netWorthRenderer = new NetWorthRenderer(display, PROJECTION_DISPLAY_INCREMENT_YEARS, MAX_YEARS_TO_PROJECT);
         netWorthRenderer.renderNetWorthCalculations(assetsWithHistory, projections);
+    }
+
+    @VisibleForTesting
+    public static ObjectMapper getObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        mapper.registerModule(new GuavaModule());
+        mapper.registerModule(new JavaTimeModule());
+        mapper.registerModule(new Jdk8Module());    // Support deserializing to Optionals
+        return mapper;
     }
 
     private static void configureRootLoggerPattern(ch.qos.logback.classic.Logger rootLogger) {

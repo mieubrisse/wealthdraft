@@ -6,6 +6,9 @@ import java.util.function.BiFunction;
 
 // TODO this only supports longs right now!!
 enum AssetParameterChangeValueOperation {
+    // !!!!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // If you add more change types here, make sure to add tests for them!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ADD((oldValue, newValue) -> ValOrGerr.val(oldValue + newValue)),
     SUBTRACT((oldValue, newValue) -> {
         if (oldValue < newValue) {

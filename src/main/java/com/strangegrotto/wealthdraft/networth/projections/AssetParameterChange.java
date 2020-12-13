@@ -1,13 +1,17 @@
 package com.strangegrotto.wealthdraft.networth.projections;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.annotations.VisibleForTesting;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 
 // TODO Upgrade this to support BigDecimal
 @JsonDeserialize(using = AssetParameterChangeDeserializer.class)
 public class AssetParameterChange {
-    private final long value;
-    private final AssetParameterChangeValueOperation operation;
+    @VisibleForTesting
+    final long value;
+
+    @VisibleForTesting
+    final AssetParameterChangeValueOperation operation;
 
     public AssetParameterChange(long value, AssetParameterChangeValueOperation operation) {
         this.value = value;
