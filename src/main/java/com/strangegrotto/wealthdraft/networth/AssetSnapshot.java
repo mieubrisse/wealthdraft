@@ -1,5 +1,6 @@
 package com.strangegrotto.wealthdraft.networth;
 
+import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.networth.projections.AssetChange;
 
 public interface AssetSnapshot {
@@ -9,5 +10,5 @@ public interface AssetSnapshot {
 
     AssetSnapshot projectOneMonth();
 
-    AssetSnapshot applyChange(AssetChange<? extends AssetSnapshot> change) throws ClassCastException;
+    ValOrGerr<AssetSnapshot> applyChange(AssetChange change);
 }

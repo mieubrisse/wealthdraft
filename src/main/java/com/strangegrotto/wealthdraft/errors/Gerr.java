@@ -5,6 +5,7 @@ import org.slf4j.helpers.MessageFormatter;
 import java.util.Optional;
 import java.util.StringJoiner;
 
+// TODO Rename to "Err"
 /**
  * Class intended to mirror Palantir's 'stacktrace' library in Go, which has a very elegant interface for capturing
  *  the source of errors.
@@ -27,11 +28,13 @@ public class Gerr {
         return new Gerr(formattedMsg, stackTraceElem, cause);
     }
 
+    // TODO Rename to just "new"
     public static Gerr newGerr(String message, Object... args) {
         StackTraceElement stackTraceElem = Thread.currentThread().getStackTrace()[2];
         return build(Optional.empty(), stackTraceElem, message, args);
     }
 
+    // TODO Rename to just "propagate"
     public static Gerr propGerr(Gerr err, String message, Object... args) {
         StackTraceElement stackTraceElem = Thread.currentThread().getStackTrace()[2];
         return build(Optional.of(err), stackTraceElem, message, args);

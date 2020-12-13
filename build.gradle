@@ -56,9 +56,11 @@ application {
     mainClassName = "${mainClass}"
 }
 
+// println System.properties['java.home']
+
 compileJava {
-    sourceCompatibility = '1.8'
-    targetCompatibility = '1.8'
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 // The 'jar' task will create a fat JAR, with all dependencies inside

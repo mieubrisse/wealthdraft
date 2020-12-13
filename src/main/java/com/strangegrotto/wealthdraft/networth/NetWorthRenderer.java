@@ -3,7 +3,6 @@ package com.strangegrotto.wealthdraft.networth;
 import com.strangegrotto.wealthdraft.Display;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.networth.projections.AssetChange;
-import com.strangegrotto.wealthdraft.networth.projections.AssetParameterChange;
 import com.strangegrotto.wealthdraft.networth.projections.ProjectionScenario;
 import com.strangegrotto.wealthdraft.networth.projections.Projections;
 import org.slf4j.Logger;
@@ -28,9 +27,11 @@ public class NetWorthRenderer {
     }
 
     public void renderNetWorthCalculations(AssetsWithHistory assetsWithHistory, Projections projections) {
+        Map<String, Asset> assets = assetsWithHistory.getAssets();
+        Map<String, Map<LocalDate, BankAccountAssetSnapshot>> history = assetsWithHistory.getHistory();
+
         display.printEmptyLine();
         display.printBannerHeader("Historical Net Worth");
-        Map<String, Map<LocalDate, BankAccountAssetSnapshot>> history = assetsWithHistory.getHistory();
         SortedMap<LocalDate, Map<String, BankAccountAssetSnapshot>> histAssetSnapshotsByDate = getHistAssetSnapshotsByDate(history);
         for (LocalDate date : histAssetSnapshotsByDate.keySet()) {
             Map<String, BankAccountAssetSnapshot> assetSnapshotsForDate = histAssetSnapshotsByDate.get(date);
@@ -41,23 +42,25 @@ public class NetWorthRenderer {
         }
 
         Map<String, BankAccountAssetSnapshot> latestAssetSnapshots = histAssetSnapshotsByDate.get(histAssetSnapshotsByDate.lastKey());
-        Map<String, ValOrGerr<ProjectionScenario>> projectionsParseResults = projections.getScenarios();
-        for (String scenarioId : projectionsParseResults.keySet()) {
-            ValOrGerr<ProjectionScenario> scenarioParseResultOrErr = projectionsParseResults.get(scenarioId);
 
-            display.printEmptyLine();
-            display.printBannerHeader("Networth Proj: " + scenarioId);
-            if (scenarioParseResultOrErr.hasGerr()) {
-                log.error(scenarioParseResultOrErr.getGerr().toString());
-                continue;
-            }
-
-            ProjectionScenario scenario = scenarioParseResultOrErr.getVal();
-            SortedMap<LocalDate, Long> netWorths = calculateSingleScenarioAssetSnapshots(scenario);
-            for (LocalDate date : netWorths.keySet()) {
-                display.printCurrencyItem(date.toString(), netWorths.get(date));
-            }
+        // TODO Change to AssetSnapshot (requires writing a deserializer for AssetsWithHistory)
+        Map<String, AssetSnapshot> castedLatestAssetSnapshots = new HashMap<>();
+        for (String assetId : latestAssetSnapshots.keySet()) {
+            BankAccountAssetSnapshot bankAccountAssetSnapshot = latestAssetSnapshots.get(assetId);
+            castedLatestAssetSnapshots.put(assetId, bankAccountAssetSnapshot);
         }
+
+        Map<String, AssetType> assetTypes = new HashMap<>();
+        assets.forEach((assetId, asset) -> assetTypes.put(assetId, asset.getType()));
+
+        renderProjectionNetWorths(
+                this.display,
+                assetTypes,
+                castedLatestAssetSnapshots,
+                projections,
+                this.maxYearsToProject,
+                this.projectionDisplayIncrementYears
+        );
     }
 
     private static SortedMap<LocalDate, Map<String, BankAccountAssetSnapshot>> getHistAssetSnapshotsByDate(Map<String, Map<LocalDate,BankAccountAssetSnapshot>> history) {
@@ -88,17 +91,61 @@ public class NetWorthRenderer {
         return result;
     }
 
-    private static SortedMap<LocalDate, Map<String, AssetSnapshot>> calculateSingleScenarioAssetSnapshots(
+    private static ValOrGerr<Void> renderProjectionNetWorths(
+            Display display,
             Map<String, AssetType> assetTypes,
+            Map<String, AssetSnapshot> latestHistAssetSnapshots,
+            Projections projections,
+            int maxYearsToProject,
+            int projectionDisplayIncrementYears) {
+        var projectionsParseResults = projections.getScenarios();
+        for (var scenarioId : projectionsParseResults.keySet()) {
+            var scenarioParseResultOrErr = projectionsParseResults.get(scenarioId);
+
+            display.printEmptyLine();
+            display.printBannerHeader("Networth Proj: " + scenarioId);
+
+            if (scenarioParseResultOrErr.hasGerr()) {
+                log.error(scenarioParseResultOrErr.getGerr().toString());
+                continue;
+            }
+            var scenario = scenarioParseResultOrErr.getVal();
+
+            var futureNetWorthsOrErr = calculateSingleScenarioAssetSnapshots(
+                    latestHistAssetSnapshots,
+                    scenario,
+                    maxYearsToProject,
+                    projectionDisplayIncrementYears
+            );
+            if (futureNetWorthsOrErr.hasGerr()) {
+                return ValOrGerr.propGerr(
+                        futureNetWorthsOrErr.getGerr(),
+                        "An error occurred calculating the future asset snapshots for the scenario"
+                );
+            }
+            var futureNetWorths = futureNetWorthsOrErr.getVal();
+            for (var date : futureNetWorths.keySet()) {
+                var assetSnapshotsForDate = futureNetWorths.get(date);
+                var netWorthOnDate = assetSnapshotsForDate.values().stream()
+                        .map(snapshot -> snapshot.getValue())
+                        .reduce(0L, (l, r) -> l + r);
+                display.printCurrencyItem(date.toString(), netWorthOnDate);
+            }
+        }
+        return ValOrGerr.val(null);
+    }
+
+    private static ValOrGerr<SortedMap<LocalDate, Map<String, AssetSnapshot>>> calculateSingleScenarioAssetSnapshots(
             Map<String, AssetSnapshot> latestHistAssetSnapshots,
             ProjectionScenario scenario,
             int maxYearsToProject,
             int projectionDisplayIncrementYears) {
-        Map<LocalDate, SortedMap<String, AssetChange<?>>> assetChanges = scenario.getAssetChanges();
-        Set<LocalDate> assetChangeDates = assetChanges.keySet();
+        var assetChanges = scenario.getAssetChanges();
+        var assetChangeDates = assetChanges.keySet();
 
-        Set<LocalDate> datesToLogNetWorth = new HashSet<>(assetChanges.keySet());
+        var datesToLogNetWorth = new HashSet<>(assetChanges.keySet());
 
+        // Add dates to compound for growth
         LocalDate today = LocalDate.now();
         Set<LocalDate> compoundingDates = new HashSet<>();
         for (int i = 1; i < MONTHS_IN_YEAR * maxYearsToProject; i++) {
@@ -113,6 +160,7 @@ public class NetWorthRenderer {
         allDatesOfInterest.addAll(assetChangeDates);
         allDatesOfInterest.addAll(compoundingDates);
 
+        // Loop through all dates of interest and
         Map<String, AssetSnapshot> currentAssetSnapshots = new HashMap<>(latestHistAssetSnapshots);
         SortedMap<LocalDate, Map<String, AssetSnapshot>> projectedSnapshots = new TreeMap<>();
         for (LocalDate date : allDatesOfInterest) {
@@ -124,65 +172,36 @@ public class NetWorthRenderer {
             if (compoundingDates.contains(date)) {
                 for (String assetId : newAssetSnapshots.keySet()) {
                     AssetSnapshot snapshot = newAssetSnapshots.get(assetId);
+                    // TODO to be entirely accurate, this should really be daily compounding (since the user could issue
+                    //  a +15k to their bank account the day before compounding and that would all be counted)
                     AssetSnapshot newSnapshot = snapshot.projectOneMonth();
                     newAssetSnapshots.put(assetId, newSnapshot);
                 }
             }
 
+            // Apply manual asset changes for the date only after compounding
             if (assetChangeDates.contains(date)) {
-                Map<String, AssetChange<?>> assetChangesForDate = assetChanges.get(date);
+                Map<String, AssetChange> assetChangesForDate = assetChanges.get(date);
 
                 for (String assetId : assetChangesForDate.keySet()) {
+                    AssetChange change = assetChangesForDate.get(assetId);
                     AssetSnapshot snapshot = newAssetSnapshots.get(assetId);
-                    AssetChange<?> assetChange
-
-
-                    AssetType assetType = assetTypes.get(assetId);
-                    Class<? extends AssetSnapshot> snapshotType = assetType.getSnapshotType();
-                    AssetSnapshot assetSnapshot = currentAssetSnapshots.get(assetId);
-                    snapshotType.cast(assetSnapshot);
-
-
-
-                    AssetChange<?> assetChange = assetChangesForDate.get(assetId);
-
-
-                    assetChange.apply(assetSnapshot);
-                }
-
-                AssetChangesForDate assetChangesForDate = assetChangesByDate.get(date);
-                for (Map.Entry<String, LinkedList<AssetParameterChange>> assetChangeEntry : assetChangesForDate.entrySet()) {
-                    String assetId = assetChangeEntry.getKey();
-                    LinkedList<AssetParameterChange> changes = assetChangeEntry.getValue();
-
-                    // Scenarios can be based on other scenarios. The iteration order here will be the most-upstream
-                    //  dependency scenario asset changes first, followed by changes from any scenarios that depend on it,
-                    //  followed by changes from any scenarios that depend on that, etc.
-                    for (int i = 0; i < changes.size(); i++) {
-                        AssetParameterChange change = changes.get(i);
-                        long oldValue = currentAssetSnapshots.get(assetId);
-                        ValOrGerr<Long> applicationResult = change.apply(oldValue);
-                        if (applicationResult.hasGerr()) {
-                            return ValOrGerr.propGerr(
-                                    applicationResult.getGerr(),
-                                    "An error occurred applying asset change #{} from {} to asset with ID '{}'",
-                                    i,
-                                    date,
-                                    assetId
-                            );
-                        }
-                        long updatedValue = applicationResult.getVal();
-                        currentAssetSnapshots.put(assetId, updatedValue);
+                    ValOrGerr<AssetSnapshot> newSnapshotOrErr = snapshot.applyChange(change);
+                    if (newSnapshotOrErr.hasGerr()) {
+                        return ValOrGerr.propGerr(
+                                newSnapshotOrErr.getGerr(),
+                                "An error occurred applying change to asset {} on {}",
+                                assetId,
+                                date
+                        );
                     }
+                    AssetSnapshot newSnapshot = newSnapshotOrErr.getVal();
+                    newAssetSnapshots.put(assetId, newSnapshot);
                 }
             }
 
-            // Lastly, log the entry if it's a) a user-defined change or b) on our regular interval
-            if (datesToLogNetWorth.contains(date)) {
-                long netWorth = currentAssetSnapshots.values().stream()
-                        .reduce(0L, (l, r) -> l + r);
-                projectedSnapshots.put(date, netWorth);
-            }
+            projectedSnapshots.put(date, newAssetSnapshots);
+            currentAssetSnapshots = newAssetSnapshots;
         }
         return ValOrGerr.val(projectedSnapshots);
     }

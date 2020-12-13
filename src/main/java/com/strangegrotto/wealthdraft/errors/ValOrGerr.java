@@ -2,6 +2,7 @@ package com.strangegrotto.wealthdraft.errors;
 
 import java.util.Optional;
 
+// TODO Rename to "ValOrErr"
 /**
  * Class intended to replicate Go's excellent error-handling and multiple return types
  * This class can have an optional value and/or an optional error
@@ -75,4 +76,6 @@ public class ValOrGerr<T> {
                 ))
         );
     }
+
+    // Add a "propagate if present" static function
 }

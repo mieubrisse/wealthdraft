@@ -41,9 +41,9 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
         public final String name;
         public final Optional<String> base;
         public final Map<String, Asset> assets;
-        public final Map<LocalDate, Map<String, AssetChange<?>>> assetChanges;
+        public final Map<LocalDate, Map<String, AssetChange>> assetChanges;
 
-        private NotUnrolledParsedScenario(String name, Optional<String> base, Map<String, Asset> assets, Map<LocalDate, Map<String, AssetChange<?>>> assetChanges) {
+        private NotUnrolledParsedScenario(String name, Optional<String> base, Map<String, Asset> assets, Map<LocalDate, Map<String, AssetChange>> assetChanges) {
             this.name = name;
             this.base = base;
             this.assets = assets;
@@ -95,7 +95,7 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
             RawProjectionScenario rawScenario,
             Map<String, Asset> assets,
             ObjectMapper mapper) {
-        Map<LocalDate, Map<String, AssetChange<?>>> parsedAssetChanges = new HashMap<>();
+        Map<LocalDate, Map<String, AssetChange>> parsedAssetChanges = new HashMap<>();
         for (RelativeLocalDate relativeDate : rawScenario.changes.keySet()) {
             Map<String, Map<String, String>> unparsedAssetChangesOnDate = rawScenario.changes.get(relativeDate);
 
@@ -122,7 +122,7 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
 
                 Asset referencedAsset = assets.get(assetId);
                 AssetType referencedAssetType = referencedAsset.getType();
-                AssetChange<?> parsedAssetChange;
+                AssetChange parsedAssetChange;
                 try {
                     parsedAssetChange = mapper.convertValue(unparsedAssetChange, referencedAssetType.getChangeType());
                 } catch (IllegalArgumentException e) {
@@ -132,7 +132,7 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
                     );
                 }
 
-                Map<String, AssetChange<?>> assetChangesForDate = parsedAssetChanges.getOrDefault(
+                Map<String, AssetChange> assetChangesForDate = parsedAssetChanges.getOrDefault(
                         actualDate,
                         new HashMap<>()
                 );
@@ -189,7 +189,7 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
 
         // Now that we have the full list of dependency scenarios to visit, in order, loop through them and build a list
         //  asset changes that we'll return
-        Map<LocalDate, Map<String, AssetChange<?>>> unrolledAssetChanges = new HashMap<>();
+        Map<LocalDate, Map<String, AssetChange>> unrolledAssetChanges = new HashMap<>();
         for (String scenarioIdToVisit : scenarioIdsToVisit) {
             ValOrGerr<NotUnrolledParsedScenario> scenarioToVisitOrErr = notUnrolledScenarios.get(scenarioIdToVisit);
             Preconditions.checkState(
@@ -199,14 +199,14 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
                             "dependency scenarios had parse errors");
             NotUnrolledParsedScenario scenarioToVisit = scenarioToVisitOrErr.getVal();
 
-            Map<LocalDate, Map<String, AssetChange<?>>> scenarioAssetChanges = scenarioToVisit.assetChanges;
+            Map<LocalDate, Map<String, AssetChange>> scenarioAssetChanges = scenarioToVisit.assetChanges;
             for (LocalDate date : scenarioAssetChanges.keySet()) {
-                Map<String, AssetChange<?>> unrolledChangesForDate = unrolledAssetChanges.getOrDefault(
+                Map<String, AssetChange> unrolledChangesForDate = unrolledAssetChanges.getOrDefault(
                         date,
                         new HashMap<>()
                 );
 
-                Map<String, AssetChange<?>> scenarioChangesForDate = scenarioAssetChanges.get(date);
+                Map<String, AssetChange> scenarioChangesForDate = scenarioAssetChanges.get(date);
                 for (String assetId : scenarioChangesForDate.keySet()) {
                     if (unrolledChangesForDate.containsKey(date)) {
                         return ValOrGerr.newGerr(
@@ -217,7 +217,7 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
                                 date
                         );
                     }
-                    AssetChange<?> assetChange = scenarioChangesForDate.get(assetId);
+                    AssetChange assetChange = scenarioChangesForDate.get(assetId);
                     unrolledChangesForDate.put(assetId, assetChange);
                 }
                 unrolledAssetChanges.put(date, unrolledChangesForDate);

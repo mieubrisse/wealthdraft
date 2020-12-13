@@ -16,7 +16,7 @@ public interface ProjectionScenario {
 
     // Map<String, Asset> getAssets();
 
-    SortedMap<LocalDate, SortedMap<String, AssetChange<?>>> getAssetChanges();
+    SortedMap<LocalDate, SortedMap<String, AssetChange>> getAssetChanges();
 
     /*
     // TODO Remove?? Do we even need this????

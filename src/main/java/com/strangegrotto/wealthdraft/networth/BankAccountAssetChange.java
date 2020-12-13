@@ -8,21 +8,12 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @JsonDeserialize(as = ImmutableBankAccountAssetChange.class)
-public interface BankAccountAssetChange extends AssetChange<BankAccountAssetSnapshot> {
+public interface BankAccountAssetChange extends AssetChange {
+    default AssetType getApplicableType() {
+        return AssetType.BANK_ACCOUNT;
+    }
 
     AssetParameterChange getBalance();
 
-    @Override
-    @Value.Derived
-    default ValOrGerr<BankAccountAssetSnapshot> apply(BankAccountAssetSnapshot snapshot) {
-        ValOrGerr<Long> newBalanceOrErr = getBalance().apply(snapshot.getBalance());
-        if (newBalanceOrErr.hasGerr()) {
-            return ValOrGerr.propGerr(
-                    newBalanceOrErr.getGerr(),
-                    "An error occurred applying the balance change");
-        }
-        return ValOrGerr.val(ImmutableBankAccountAssetSnapshot.builder()
-                .balance(newBalanceOrErr.getVal())
-                .build());
-    }
+    // TODO add ability to change the interest rate
 }

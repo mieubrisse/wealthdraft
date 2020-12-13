@@ -32,7 +32,7 @@ public interface BankAccountAssetSnapshot extends AssetSnapshot {
     }
 
     @Override
-    default ValOrGerr<AssetSnapshot> applyChange(AssetChange<?> change) {
+    default ValOrGerr<AssetSnapshot> applyChange(AssetChange change) {
         AssetType snapshotType = getType();
         AssetType changeApplicableType = change.getApplicableType();
         if (!snapshotType.equals(changeApplicableType)) {
@@ -53,11 +53,14 @@ public interface BankAccountAssetSnapshot extends AssetSnapshot {
 
         // TODO Change interest rate!!
 
+        // TODO fix up
+        /*
         return ValOrGerr.val(ImmutableBankAccountAssetSnapshot.builder()
                 .balance(newBalanceOrErr.getVal())
                 .
                 .build());
-    }
+
+         */
         return null;
     }
 }
