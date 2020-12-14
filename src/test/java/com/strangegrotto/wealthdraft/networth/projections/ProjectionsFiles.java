@@ -1,8 +1,11 @@
 package com.strangegrotto.wealthdraft.networth.projections;
 
+import com.strangegrotto.wealthdraft.TestFileProvider;
+import com.strangegrotto.wealthdraft.TestResourceDirnames;
+
 import java.net.URL;
 
-enum ProjectionsFile implements TestFileProvider {
+enum ProjectionsFiles implements TestFileProvider {
     CHANGE_ON_TODAY("change-on-today.yml"),
     DEPEND_ON_NONEXISTENT_SCENARIO("depend-on-nonexistent-scenario.yml"),
     DEPENDENCY_CYLE("dependency-cycle.yml"),
@@ -11,20 +14,18 @@ enum ProjectionsFile implements TestFileProvider {
     PAST_DATE_IN_PROJECTION("past-date-in-projection.yml"),
     TWO_CHNAGES_ON_SAME_DATE("two-changes-on-same-date.yml"),
     TWO_CHANGES_ON_SAME_DATE_FROM_DIFF_SCENARIOS("two-changes-on-same-date-from-diff-scenarios.yml"),
-    EXAMPLE("examples", "projections-example.yml");
-
-    private static final String DESERIALIZATION_TESTS_DIRNAME = "projections-deserialization";
+    EXAMPLE(TestResourceDirnames.EXAMPLES.getDirname(), "projections-example.yml");
 
     private final String containingDirname;
     private final String filename;
 
-    ProjectionsFile(String containingDirname, String filename) {
+    ProjectionsFiles(String containingDirname, String filename) {
         this.containingDirname = containingDirname;
         this.filename = filename;
     }
 
-    ProjectionsFile(String filename) {
-        this(DESERIALIZATION_TESTS_DIRNAME, filename);
+    ProjectionsFiles(String filename) {
+        this(TestResourceDirnames.PROJECTIONS_DESERIALIZATION_TESTS.getDirname(), filename);
     }
 
     @Override

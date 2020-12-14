@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.networth;
+package com.strangegrotto.wealthdraft.networth.assets;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
@@ -10,14 +10,13 @@ import java.util.Map;
 
 @WealthdraftImmutableStyle
 @Value.Immutable
-@JsonDeserialize(as = ImmAssetsWithHistory.class)
+@JsonDeserialize(using = AssetsWithHistoryDeserializer.class)
 public interface AssetsWithHistory {
     @Value.Parameter
     Map<String, Asset> getAssets();
 
-    // TODO Change this to generic Asset type
     @Value.Parameter
-    Map<String, Map<LocalDate, BankAccountAssetSnapshot>> getHistory();
+    Map<String, Map<LocalDate, AssetSnapshot>> getHistory();
 
     @Value.Check
     default void check() {

@@ -2,6 +2,8 @@ package com.strangegrotto.wealthdraft.networth;
 
 import com.strangegrotto.wealthdraft.Display;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
+import com.strangegrotto.wealthdraft.networth.assets.AssetSnapshot;
+import com.strangegrotto.wealthdraft.networth.assets.AssetsWithHistory;
 import com.strangegrotto.wealthdraft.networth.projections.AssetChange;
 import com.strangegrotto.wealthdraft.networth.projections.ProjectionScenario;
 import com.strangegrotto.wealthdraft.networth.projections.Projections;
@@ -27,50 +29,44 @@ public class NetWorthRenderer {
         this.maxYearsToProject = maxYearsToProject;
     }
 
-    public void renderNetWorthCalculations(AssetsWithHistory assetsWithHistory, Projections projections) {
-        Map<String, Asset> assets = assetsWithHistory.getAssets();
-        Map<String, Map<LocalDate, BankAccountAssetSnapshot>> history = assetsWithHistory.getHistory();
+    public ValOrGerr<Void> renderNetWorthCalculations(AssetsWithHistory assetsWithHistory, Projections projections) {
+        Map<String, Map<LocalDate, AssetSnapshot>> history = assetsWithHistory.getHistory();
 
         display.printEmptyLine();
         display.printBannerHeader("Historical Net Worth");
-        SortedMap<LocalDate, Map<String, BankAccountAssetSnapshot>> histAssetSnapshotsByDate = getHistAssetSnapshotsByDate(history);
+        SortedMap<LocalDate, Map<String, AssetSnapshot>> histAssetSnapshotsByDate = getHistAssetSnapshotsByDate(history);
         for (LocalDate date : histAssetSnapshotsByDate.keySet()) {
-            Map<String, BankAccountAssetSnapshot> assetSnapshotsForDate = histAssetSnapshotsByDate.get(date);
+            var assetSnapshotsForDate = histAssetSnapshotsByDate.get(date);
             var netWorth = assetSnapshotsForDate.values().stream()
                     .map(AssetSnapshot::getValue)
-                    .reduce(BigDecimal.ZERO, (l, r) -> l.add(r));
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
             this.display.printCurrencyItem(date.toString(), netWorth);
         }
 
-        Map<String, BankAccountAssetSnapshot> latestAssetSnapshots = histAssetSnapshotsByDate.get(histAssetSnapshotsByDate.lastKey());
-
-        // TODO Change to AssetSnapshot (requires writing a deserializer for AssetsWithHistory)
-        Map<String, AssetSnapshot> castedLatestAssetSnapshots = new HashMap<>();
-        for (String assetId : latestAssetSnapshots.keySet()) {
-            BankAccountAssetSnapshot bankAccountAssetSnapshot = latestAssetSnapshots.get(assetId);
-            castedLatestAssetSnapshots.put(assetId, bankAccountAssetSnapshot);
-        }
-
-        Map<String, AssetType> assetTypes = new HashMap<>();
-        assets.forEach((assetId, asset) -> assetTypes.put(assetId, asset.getType()));
-
-        renderProjectionNetWorths(
+        var latestAssetSnapshots = histAssetSnapshotsByDate.get(histAssetSnapshotsByDate.lastKey());
+        var emptyOrErr = renderProjectionNetWorths(
                 this.display,
-                assetTypes,
-                castedLatestAssetSnapshots,
+                latestAssetSnapshots,
                 projections,
                 this.maxYearsToProject,
                 this.projectionDisplayIncrementYears
         );
+        if (emptyOrErr.hasGerr()) {
+            return ValOrGerr.propGerr(
+                    emptyOrErr.getGerr(),
+                    "An error occurred rendering the net worth projection scenarios"
+            );
+        }
+        return ValOrGerr.val(null);
     }
 
-    private static SortedMap<LocalDate, Map<String, BankAccountAssetSnapshot>> getHistAssetSnapshotsByDate(Map<String, Map<LocalDate,BankAccountAssetSnapshot>> history) {
-        SortedMap<LocalDate, Map<String, BankAccountAssetSnapshot>> assetSnapshotsByDate = new TreeMap<>();
+    private static SortedMap<LocalDate, Map<String, AssetSnapshot>> getHistAssetSnapshotsByDate(Map<String, Map<LocalDate, AssetSnapshot>> history) {
+        var assetSnapshotsByDate = new TreeMap<LocalDate, Map<String, AssetSnapshot>>();
         for (String assetId : history.keySet()) {
-            Map<LocalDate, BankAccountAssetSnapshot> historyForAsset = history.get(assetId);
+            var historyForAsset = history.get(assetId);
             for (LocalDate date : historyForAsset.keySet()) {
-                BankAccountAssetSnapshot assetSnapshot = historyForAsset.get(date);
-                Map<String, BankAccountAssetSnapshot> snapshotsOnDate = assetSnapshotsByDate.getOrDefault(date, new HashMap<>());
+                var assetSnapshot = historyForAsset.get(date);
+                var snapshotsOnDate = assetSnapshotsByDate.getOrDefault(date, new HashMap<>());
                 snapshotsOnDate.put(assetId, assetSnapshot);
                 assetSnapshotsByDate.put(date, snapshotsOnDate);
             }
@@ -79,13 +75,13 @@ public class NetWorthRenderer {
         // Because history can be declared piecemeal (e.g. asset A and B are declared on date T, asset B and C
         //  are declared on date T+1) we "fill forward" past snapshots into any slots in the future where
         //  they're missing. This assumes that asset values don't change over historical time.
-        Map<String, BankAccountAssetSnapshot> latestAssetSnapshots = new HashMap<>();
-        SortedMap<LocalDate, Map<String, BankAccountAssetSnapshot>> result = new TreeMap<>();
+        var latestAssetSnapshots = new HashMap<String, AssetSnapshot>();
+        var result = new TreeMap<LocalDate, Map<String, AssetSnapshot>>();
         for (LocalDate date : assetSnapshotsByDate.keySet()) {
-            Map<String, BankAccountAssetSnapshot> assetSnapshotsForDate = assetSnapshotsByDate.get(date);
+            var assetSnapshotsForDate = assetSnapshotsByDate.get(date);
             latestAssetSnapshots.putAll(assetSnapshotsForDate);
 
-            Map<String, BankAccountAssetSnapshot> resultAssetSnapshotsForDate = result.getOrDefault(date, new HashMap<>());
+            var resultAssetSnapshotsForDate = result.getOrDefault(date, new HashMap<>());
             resultAssetSnapshotsForDate.putAll(latestAssetSnapshots);
             result.put(date, resultAssetSnapshotsForDate);
         }
@@ -94,7 +90,6 @@ public class NetWorthRenderer {
 
     private static ValOrGerr<Void> renderProjectionNetWorths(
             Display display,
-            Map<String, AssetType> assetTypes,
             Map<String, AssetSnapshot> latestHistAssetSnapshots,
             Projections projections,
             int maxYearsToProject,
