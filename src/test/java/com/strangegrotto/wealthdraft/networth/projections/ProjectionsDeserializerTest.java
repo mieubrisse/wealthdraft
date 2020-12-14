@@ -1,32 +1,48 @@
 package com.strangegrotto.wealthdraft.networth.projections;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.strangegrotto.wealthdraft.Main;
-import com.strangegrotto.wealthdraft.networth.Asset;
 import com.strangegrotto.wealthdraft.networth.AssetsWithHistory;
-import com.strangegrotto.wealthdraft.networth.ImmutableAsset;
 import com.strangegrotto.wealthdraft.networth.ImmutableAssetsWithHistory;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.*;
 
 public class ProjectionsDeserializerTest {
+    @Test
+    public void testPinnedDate() {
+        var parsedDateOrErr = ProjectionsDeserializer.parseRelativeDateStr("2020-10-31");
+        Assert.assertFalse("Relative date parsing should not have thrown an error", parsedDateOrErr.hasGerr());
+        Assert.assertEquals(LocalDate.of(2020, 10, 31), parsedDateOrErr.getVal());
+    }
+
+    @Test
+    public void testRelativeMonths() throws IOException {
+        var today = LocalDate.now();
+        var parsedDateOrErr = ProjectionsDeserializer.parseRelativeDateStr("+3m");
+        Assert.assertFalse("Relative date parsing should not have thrown an error", parsedDateOrErr.hasGerr());
+        Assert.assertEquals(today.plusMonths(3), parsedDateOrErr.getVal());
+    }
+
+    @Test
+    public void testRelativeYears() throws IOException {
+        var today = LocalDate.now();
+        var parsedDateOrErr = ProjectionsDeserializer.parseRelativeDateStr("+3y");
+        Assert.assertFalse("Relative date parsing should not have thrown an error", parsedDateOrErr.hasGerr());
+        Assert.assertEquals(today.plusYears(3), parsedDateOrErr.getVal());
+    }
+
+    @Test
+    public void testInvalidStr() throws IOException {
+        var parsedDateOrErr = ProjectionsDeserializer.parseRelativeDateStr("3y");
+        Assert.assertTrue("Parsing of invalid string should have failed", parsedDateOrErr.hasGerr());
+    }
 
     @Test
     public void testValidDeserialization() throws IOException {
-        var mapper = Main.getObjectMapper();
-        ClassLoader classLoader = getClass().getClassLoader();
-        var assetsUrl = classLoader.getResource(TestYmlFile.ASSETS.getFilename());
-        var assetsWithHistory = mapper.readValue(assetsUrl, AssetsWithHistory.class);
-
-        var projectionsUrl = classLoader.getResource(TestYmlFile.PROJECTIONS.getFilename());
-
-        Main.addNetWorthProjectionDeserializers(mapper, assetsWithHistory.getAssets());
-        var projections = mapper.readValue(projectionsUrl, Projections.class);
-
+        var projections = parseProjectionsFile(ProjectionsFile.EXAMPLE);
         var projectionScenariosOrErr = projections.getScenarios();
         var projectionScenarios = new HashMap<String, ProjectionScenario>();
         for (var scenarioId : projectionScenariosOrErr.keySet()) {
@@ -41,23 +57,19 @@ public class ProjectionsDeserializerTest {
         Assert.assertEquals(ExpectedProjectionsInfo.EXPECTED_SCENARIOS, projectionScenarios);
     }
 
-    @Test(expected = IOException.class)
     public void testInvalidYmlThrowsException() throws IOException {
         var mapper = Main.getObjectMapper();
         ClassLoader classLoader = getClass().getClassLoader();
-        var assetsUrl = classLoader.getResource(TestYmlFile.ASSETS.getFilename());
+        var assetsUrl = ExampleInputFile.ASSETS.getResource();
         AssetsWithHistory assetsWithHistory;
+        assetsWithHistory = mapper.readValue(assetsUrl, AssetsWithHistory.class);
+
+        var projectionsUrl = ProjectionsFile.INVALID_YML.getResource();
+        Main.addDeserializersNeedingAssets(mapper, assetsWithHistory.getAssets());
         try {
-            assetsWithHistory = mapper.readValue(assetsUrl, AssetsWithHistory.class);
-        } catch (IOException e) {
-            Assert.fail("Deserilaizing the asset file should not have thrown an exception");
-            return;
-        }
-
-        var projectionsUrl = classLoader.getResource("invalid-yaml.yml");
-
-        Main.addNetWorthProjectionDeserializers(mapper, assetsWithHistory.getAssets());
-        mapper.readValue(projectionsUrl, Projections.class);
+            mapper.readValue(projectionsUrl, Projections.class);
+            Assert.fail("Deserialization of projections should have failed due to invalid YAML but didn't");
+        } catch (IOException e) {}
     }
 
     @Test
@@ -69,9 +81,9 @@ public class ProjectionsDeserializerTest {
         var assetsWithHistory = ImmutableAssetsWithHistory.builder()
                 .build();
 
-        var projectionsUrl = classLoader.getResource(TestYmlFile.PROJECTIONS.getFilename());
+        var projectionsUrl = ProjectionsFile.EXAMPLE.getResource();
 
-        Main.addNetWorthProjectionDeserializers(mapper, assetsWithHistory.getAssets());
+        Main.addDeserializersNeedingAssets(mapper, assetsWithHistory.getAssets());
         var projections = mapper.readValue(projectionsUrl, Projections.class);
 
         var projectionScenariosOrErr = projections.getScenarios();
@@ -86,15 +98,7 @@ public class ProjectionsDeserializerTest {
 
     @Test
     public void testErrorOnPastDate() throws IOException {
-        var mapper = Main.getObjectMapper();
-        ClassLoader classLoader = getClass().getClassLoader();
-        var assetsUrl = classLoader.getResource(TestYmlFile.ASSETS.getFilename());
-        var assetsWithHistory = mapper.readValue(assetsUrl, AssetsWithHistory.class);
-
-        var projectionsUrl = classLoader.getResource("past-date-in-projection.yml");
-
-        Main.addNetWorthProjectionDeserializers(mapper, assetsWithHistory.getAssets());
-        var projections = mapper.readValue(projectionsUrl, Projections.class);
+        var projections = parseProjectionsFile(ProjectionsFile.PAST_DATE_IN_PROJECTION);
 
         var projectionScenariosOrErr = projections.getScenarios();
         var scenarioOrErr = projectionScenariosOrErr.get(ExpectedProjectionsInfo.SELL_ALL_BTC_3Y_ID);
@@ -106,16 +110,7 @@ public class ProjectionsDeserializerTest {
 
     @Test
     public void testNoErrorOnToday() throws IOException {
-        var mapper = Main.getObjectMapper();
-        ClassLoader classLoader = getClass().getClassLoader();
-        var assetsUrl = classLoader.getResource(TestYmlFile.ASSETS.getFilename());
-        var assetsWithHistory = mapper.readValue(assetsUrl, AssetsWithHistory.class);
-
-        var projectionsUrl = classLoader.getResource("change-on-today.yml");
-
-        Main.addNetWorthProjectionDeserializers(mapper, assetsWithHistory.getAssets());
-        var projections = mapper.readValue(projectionsUrl, Projections.class);
-
+        var projections = parseProjectionsFile(ProjectionsFile.CHANGE_ON_TODAY);
         var projectionScenariosOrErr = projections.getScenarios();
         var scenarioOrErr = projectionScenariosOrErr.get(ExpectedProjectionsInfo.SELL_ALL_BTC_3Y_ID);
         Assert.assertFalse(
@@ -126,16 +121,7 @@ public class ProjectionsDeserializerTest {
 
     @Test
     public void testErrorOnDependencyCycle() throws IOException {
-        var mapper = Main.getObjectMapper();
-        ClassLoader classLoader = getClass().getClassLoader();
-        var assetsUrl = classLoader.getResource(TestYmlFile.ASSETS.getFilename());
-        var assetsWithHistory = mapper.readValue(assetsUrl, AssetsWithHistory.class);
-
-        var projectionsUrl = classLoader.getResource("dependency-cycle.yml");
-
-        Main.addNetWorthProjectionDeserializers(mapper, assetsWithHistory.getAssets());
-        var projections = mapper.readValue(projectionsUrl, Projections.class);
-
+        var projections = parseProjectionsFile(ProjectionsFile.DEPENDENCY_CYLE);
         var projectionScenariosOrErr = projections.getScenarios();
         for (String scenarioId : projectionScenariosOrErr.keySet()) {
             var scenarioOrErr = projectionScenariosOrErr.get(scenarioId);
@@ -148,16 +134,7 @@ public class ProjectionsDeserializerTest {
 
     @Test
     public void testErrorOnTwoChangesOnSameDate() throws IOException {
-        var mapper = Main.getObjectMapper();
-        ClassLoader classLoader = getClass().getClassLoader();
-        var assetsUrl = classLoader.getResource(TestYmlFile.ASSETS.getFilename());
-        var assetsWithHistory = mapper.readValue(assetsUrl, AssetsWithHistory.class);
-
-        var projectionsUrl = classLoader.getResource("two-changes-on-same-date.yml");
-
-        Main.addNetWorthProjectionDeserializers(mapper, assetsWithHistory.getAssets());
-        var projections = mapper.readValue(projectionsUrl, Projections.class);
-
+        var projections = parseProjectionsFile(ProjectionsFile.TWO_CHNAGES_ON_SAME_DATE);
         var projectionScenariosOrErr = projections.getScenarios();
         var scenarioOrErr = projectionScenariosOrErr.get(ExpectedProjectionsInfo.SELL_ALL_BTC_3Y_ID);
         Assert.assertTrue(
@@ -168,16 +145,7 @@ public class ProjectionsDeserializerTest {
 
     @Test
     public void testErrorWhenDependencyHasError() throws IOException {
-        var mapper = Main.getObjectMapper();
-        ClassLoader classLoader = getClass().getClassLoader();
-        var assetsUrl = classLoader.getResource(TestYmlFile.ASSETS.getFilename());
-        var assetsWithHistory = mapper.readValue(assetsUrl, AssetsWithHistory.class);
-
-        var projectionsUrl = classLoader.getResource("dependency-has-error.yml");
-
-        Main.addNetWorthProjectionDeserializers(mapper, assetsWithHistory.getAssets());
-        var projections = mapper.readValue(projectionsUrl, Projections.class);
-
+        var projections = parseProjectionsFile(ProjectionsFile.DEPENDENCY_HAS_ERROR);
         var projectionScenariosOrErr = projections.getScenarios();
         for (String scenarioId : projectionScenariosOrErr.keySet()) {
             var scenarioOrErr = projectionScenariosOrErr.get(scenarioId);
@@ -202,21 +170,22 @@ public class ProjectionsDeserializerTest {
 
     @Test
     public void testErrorWhenDependingOnNonexistentScenario() throws IOException {
-        var mapper = Main.getObjectMapper();
-        ClassLoader classLoader = getClass().getClassLoader();
-        var assetsUrl = classLoader.getResource(TestYmlFile.ASSETS.getFilename());
-        var assetsWithHistory = mapper.readValue(assetsUrl, AssetsWithHistory.class);
-
-        var projectionsUrl = classLoader.getResource("depend-on-nonexistent-scenario.yml");
-
-        Main.addNetWorthProjectionDeserializers(mapper, assetsWithHistory.getAssets());
-        var projections = mapper.readValue(projectionsUrl, Projections.class);
-
+        var projections = parseProjectionsFile(ProjectionsFile.DEPEND_ON_NONEXISTENT_SCENARIO);
         var projectionScenariosOrErr = projections.getScenarios();
         var scenarioOrErr = projectionScenariosOrErr.get(ExpectedProjectionsInfo.SELL_ALL_BTC_3Y_ID);
         Assert.assertTrue(
                 "Expected scenario to fail parsing due depending on a nonexistent scenario, but it succeeded",
                 scenarioOrErr.hasGerr()
         );
+    }
+
+    private static Projections parseProjectionsFile(ProjectionsFile testFile) throws IOException {
+        var mapper = Main.getObjectMapper();
+        var assetsUrl = ExampleInputFile.ASSETS.getResource();
+        var assetsWithHistory = mapper.readValue(assetsUrl, AssetsWithHistory.class);
+        Main.addDeserializersNeedingAssets(mapper, assetsWithHistory.getAssets());
+
+        var projectionsUrl = testFile.getResource();
+        return mapper.readValue(projectionsUrl, Projections.class);
     }
 }

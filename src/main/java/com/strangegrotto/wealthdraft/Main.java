@@ -22,6 +22,8 @@ import com.strangegrotto.wealthdraft.govconstants.RetirementConstants;
 import com.strangegrotto.wealthdraft.networth.Asset;
 import com.strangegrotto.wealthdraft.networth.AssetsWithHistory;
 import com.strangegrotto.wealthdraft.networth.NetWorthRenderer;
+import com.strangegrotto.wealthdraft.networth.projections.AssetParameterChange;
+import com.strangegrotto.wealthdraft.networth.projections.AssetParameterChangeDeserializer;
 import com.strangegrotto.wealthdraft.networth.projections.Projections;
 import com.strangegrotto.wealthdraft.networth.projections.ProjectionsDeserializer;
 import com.strangegrotto.wealthdraft.scenarios.IncomeStreams;
@@ -169,7 +171,7 @@ public class Main {
             return;
         }
 
-        addNetWorthProjectionDeserializers(mapper, assetsWithHistory.getAssets());
+        addDeserializersNeedingAssets(mapper, assetsWithHistory.getAssets());
         String projectionsFilepath = parsedArgs.getString(PROJECTIONS_FILEPATH_ARG);
         log.debug("Projections filepath: {}", assetsFilepath);
         Projections projections;
@@ -203,11 +205,16 @@ public class Main {
         mapper.registerModule(new GuavaModule());
         mapper.registerModule(new JavaTimeModule());
         mapper.registerModule(new Jdk8Module());    // Support deserializing to Optionals
+
+        var deserializerModule = new SimpleModule();
+        deserializerModule.addDeserializer(AssetParameterChange.class, new AssetParameterChangeDeserializer());
+        mapper.registerModule(deserializerModule);
+
         return mapper;
     }
 
     @VisibleForTesting
-    public static void addNetWorthProjectionDeserializers(ObjectMapper mapper, Map<String, Asset> assets) {
+    public static void addDeserializersNeedingAssets(ObjectMapper mapper, Map<String, Asset> assets) {
         var projectionsDeserializer = new ProjectionsDeserializer(assets);
         var projectionsDeserializationModule = new SimpleModule();
         projectionsDeserializationModule.addDeserializer(Projections.class, projectionsDeserializer);

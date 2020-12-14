@@ -6,13 +6,12 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 
-// TODO Add a test for this!!!
 public class AssetParameterChangeDeserializer extends JsonDeserializer<AssetParameterChange> {
     @Override
     public AssetParameterChange deserialize(JsonParser parser, DeserializationContext context) throws IOException, JsonProcessingException {
-        RawAssetChange rawAssetChange = parser.readValueAs(RawAssetChange.class);
-        String raw = rawAssetChange.value;
+        String raw = parser.readValueAs(String.class);
 
         AssetParameterChangeValueOperation operation = AssetParameterChangeValueOperation.SET;
         String numericalText = raw;
@@ -24,20 +23,16 @@ public class AssetParameterChangeDeserializer extends JsonDeserializer<AssetPara
             numericalText = raw.substring(1);
         }
 
-        long value;
+        BigDecimal value;
         try {
-            value = Long.parseLong(numericalText);
+            value = new BigDecimal(numericalText);
         } catch (NumberFormatException e) {
-            throw new IOException("Could not parse asset change string '" + raw + "' to long", e);
+            throw new IOException("Could not parse asset change string '" + raw + "' to BigDecimal", e);
         }
 
         return ImmutableAssetParameterChange.builder()
                 .value(value)
                 .operation(operation)
                 .build();
-    }
-
-    private static class RawAssetChange {
-        public String value;
     }
 }

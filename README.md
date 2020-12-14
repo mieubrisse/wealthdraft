@@ -19,7 +19,7 @@ Usage
 4. Run `java -jar wealthdraft-X.Y.Z.jar --help` to view which flags to pass in
 
 ### Development
-For easy development, the CLI can be run with the `scripts/build_and_run.sh` script, where any arguments to the script are passed to the CLI. With no arguments, the files in the `src/test/resources` directory will be used. To use your own files, run `build_and_run.sh --help` to see the flags you'll need for overriding these test files with your own.
+For easy development, the CLI can be run with the `scripts/build_and_run.sh` script, where any arguments to the script are passed to the CLI. With no arguments, the files in the `src/test/resources/examples` directory will be used. To use your own files, run `build_and_run.sh --help` to see the flags you'll need for overriding these test files with your own.
 
 ### Building a binary
 `./gradlew jar` will create a standalone JAR in the `build/libs` directory that can be transferred and used on other machines. This fat JAR can be executed with `java -jar wealthdraft.jar --help` to see usage information.

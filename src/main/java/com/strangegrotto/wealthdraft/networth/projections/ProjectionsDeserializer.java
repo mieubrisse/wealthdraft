@@ -13,25 +13,35 @@ import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.networth.Asset;
 import com.strangegrotto.wealthdraft.networth.AssetType;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
+    // TODO Add support for "w" and "d"????
+    private static final Pattern RELATIVE_DATE_PATTERN = Pattern.compile("^\\+([0-9]+)([ym])$");
+
     private static class RawProjectionScenario {
         @JsonProperty
         public String name;
 
+        // This property is optional, but we can't use Optional because Jackson will set it to null regardless
         @JsonProperty
-        public Optional<String> base;
+        public @Nullable String base;
 
+        // relativeDateStr -> (assetId -> (key-vals representing change))
         @JsonProperty
-        public Map<RelativeLocalDate, Map<String, Map<String, String>>> changes;
+        public Map<String, Map<String, Map<String, String>>> changes;
     }
 
     private static class RawjProjections {
         @JsonProperty
-        public double defaultAnnualGrowth;
+        public BigDecimal defaultAnnualGrowth;
 
         @JsonProperty
         public Map<String, RawProjectionScenario> scenarios;
@@ -96,10 +106,18 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
             Map<String, Asset> assets,
             ObjectMapper mapper) {
         Map<LocalDate, Map<String, AssetChange>> parsedAssetChanges = new HashMap<>();
-        for (RelativeLocalDate relativeDate : rawScenario.changes.keySet()) {
-            Map<String, Map<String, String>> unparsedAssetChangesOnDate = rawScenario.changes.get(relativeDate);
+        for (String relativeDateStr : rawScenario.changes.keySet()) {
+            Map<String, Map<String, String>> unparsedAssetChangesOnDate = rawScenario.changes.get(relativeDateStr);
 
-            LocalDate actualDate = relativeDate.getLocalDate();
+            var actualDateOrErr = parseRelativeDateStr(relativeDateStr);
+            if (actualDateOrErr.hasGerr()) {
+                return ValOrGerr.newGerr(
+                        "An error occurred parsing relative date string '{}' for scenario {}",
+                        relativeDateStr,
+                        scenarioId
+                );
+            }
+            LocalDate actualDate = actualDateOrErr.getVal();
 
             if (actualDate.isBefore(LocalDate.now())) {
                 return ValOrGerr.newGerr(
@@ -152,19 +170,17 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
 
         return ValOrGerr.val(new NotUnrolledParsedScenario(
                 rawScenario.name,
-                rawScenario.base,
+                Optional.ofNullable(rawScenario.base),
                 assets,
                 parsedAssetChanges
         ));
     }
 
-    // TODO Write tests for this!!
     /**
      * For scenarios that are based on other scenarios, recursively unrolls the asset changes all the way
      *  through the dependency tree.
      */
-    @VisibleForTesting
-    static ValOrGerr<ProjectionScenario> unrollScenarioAssetChanges(
+    private static ValOrGerr<ProjectionScenario> unrollScenarioAssetChanges(
             String scenarioId,
             Map<String, ValOrGerr<NotUnrolledParsedScenario>> notUnrolledScenarios) {
         // We can't unroll a scenario if an error occurred trying to parse it
@@ -270,5 +286,39 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
             baseIdOpt = notUnrolledBaseScenario.base;
         }
         return ValOrGerr.val(scenarioIdsToVisit);
+    }
+
+    @VisibleForTesting
+    static ValOrGerr<LocalDate> parseRelativeDateStr(String rawStr) {
+        try {
+            LocalDate asLocalDate = LocalDate.parse(rawStr);
+            return ValOrGerr.val(asLocalDate);
+        } catch (DateTimeParseException e) {}
+
+        Matcher matcher = RELATIVE_DATE_PATTERN.matcher(rawStr);
+        if (!matcher.find()) {
+            return ValOrGerr.newGerr(
+                    "Relative date str '{}' does not match expected pattern {}",
+                    rawStr,
+                    RELATIVE_DATE_PATTERN.toString()
+            );
+        }
+
+        // Group 0 is the whole string, which is why we start with index 1
+        long numberOfUnits = Long.parseLong(matcher.group(1));
+        String units = matcher.group(2);
+
+        LocalDate result = LocalDate.now();
+        switch (units) {
+            case "y":
+                result = result.plusYears(numberOfUnits);
+                break;
+            case "m":
+                result = result.plusMonths(numberOfUnits);
+                break;
+            default:
+                return ValOrGerr.newGerr("Unrecognized unit number '" + units + "'");
+        }
+        return ValOrGerr.val(result);
     }
 }

@@ -3,10 +3,12 @@ package com.strangegrotto.wealthdraft.networth;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.networth.projections.AssetChange;
 
+import java.math.BigDecimal;
+
 public abstract class AssetSnapshot {
     protected abstract AssetType getType();
 
-    public abstract Long getValue();
+    public abstract BigDecimal getValue();
 
     public abstract AssetSnapshot projectOneMonth();
 

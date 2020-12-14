@@ -5,6 +5,8 @@ import com.strangegrotto.wealthdraft.networth.projections.AssetChange;
 import com.strangegrotto.wealthdraft.networth.projections.AssetParameterChange;
 import org.immutables.value.Value;
 
+import java.util.Optional;
+
 @Value.Immutable
 @JsonDeserialize(as = ImmutableBankAccountAssetChange.class)
 public interface BankAccountAssetChange extends AssetChange {
@@ -12,7 +14,7 @@ public interface BankAccountAssetChange extends AssetChange {
         return AssetType.BANK_ACCOUNT;
     }
 
-    AssetParameterChange getBalance();
+    Optional<AssetParameterChange> getBalance();
 
-    // TODO add ability to change the interest rate, which is a Double
+    Optional<AssetParameterChange> getAnnualInterestRate();
 }

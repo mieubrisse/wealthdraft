@@ -4,7 +4,7 @@ root_dirpath="$(dirname "${script_dirpath}")"
 build_dirpath="${root_dirpath}/build"
 cli_filepath="${build_dirpath}/cli"
 
-test_resources_dirpath="${root_dirpath}/src/test/resources"
+test_resources_dirpath="${root_dirpath}/src/test/resources/examples"
 
 extra_args="${1+"${@}"}"
 "${root_dirpath}/gradlew" build run --args="

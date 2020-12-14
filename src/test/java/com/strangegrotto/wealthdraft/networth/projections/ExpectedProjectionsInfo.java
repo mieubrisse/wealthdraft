@@ -4,6 +4,7 @@ import com.strangegrotto.wealthdraft.networth.BankAccountAssetChange;
 import com.strangegrotto.wealthdraft.networth.ExpectedAssetsWithHistoryInfo;
 import com.strangegrotto.wealthdraft.networth.ImmutableBankAccountAssetChange;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Optional;
@@ -31,14 +32,14 @@ public class ExpectedProjectionsInfo {
         var allBtc3yBtcChange = ImmutableBankAccountAssetChange.builder()
                 .balance(ImmutableAssetParameterChange.builder()
                         .operation(AssetParameterChangeValueOperation.SET)
-                        .value(0)
+                        .value(new BigDecimal(0))
                         .build()
                 )
                 .build();
         var allBtc3yBankChange = ImmutableBankAccountAssetChange.builder()
                 .balance(ImmutableAssetParameterChange.builder()
                         .operation(AssetParameterChangeValueOperation.ADD)
-                        .value(15000)
+                        .value(new BigDecimal(15000))
                         .build()
                 )
                 .build();
@@ -58,14 +59,14 @@ public class ExpectedProjectionsInfo {
         var halfBtc1yBtcChange = ImmutableBankAccountAssetChange.builder()
                 .balance(ImmutableAssetParameterChange.builder()
                         .operation(AssetParameterChangeValueOperation.SUBTRACT)
-                        .value(7500)
+                        .value(new BigDecimal(7500))
                         .build()
                 )
                 .build();
         var halfBtc1yBankChange = ImmutableBankAccountAssetChange.builder()
                 .balance(ImmutableAssetParameterChange.builder()
                         .operation(AssetParameterChangeValueOperation.ADD)
-                        .value(7500)
+                        .value(new BigDecimal(7500))
                         .build()
                 )
                 .build();
@@ -85,14 +86,14 @@ public class ExpectedProjectionsInfo {
         var otherHalfBtc2yBtcChange = ImmutableBankAccountAssetChange.builder()
                 .balance(ImmutableAssetParameterChange.builder()
                         .operation(AssetParameterChangeValueOperation.SUBTRACT)
-                        .value(7500)
+                        .value(new BigDecimal(7500))
                         .build()
                 )
                 .build();
         var otherHalfBtc2yBankChange = ImmutableBankAccountAssetChange.builder()
                 .balance(ImmutableAssetParameterChange.builder()
                         .operation(AssetParameterChangeValueOperation.ADD)
-                        .value(7500)
+                        .value(new BigDecimal(7500))
                         .build()
                 )
                 .build();

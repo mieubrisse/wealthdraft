@@ -8,6 +8,7 @@ import com.strangegrotto.wealthdraft.networth.projections.Projections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -35,9 +36,9 @@ public class NetWorthRenderer {
         SortedMap<LocalDate, Map<String, BankAccountAssetSnapshot>> histAssetSnapshotsByDate = getHistAssetSnapshotsByDate(history);
         for (LocalDate date : histAssetSnapshotsByDate.keySet()) {
             Map<String, BankAccountAssetSnapshot> assetSnapshotsForDate = histAssetSnapshotsByDate.get(date);
-            long netWorth = assetSnapshotsForDate.values().stream()
+            var netWorth = assetSnapshotsForDate.values().stream()
                     .map(AssetSnapshot::getValue)
-                    .reduce(0L, (l, r) -> l + r);
+                    .reduce(BigDecimal.ZERO, (l, r) -> l.add(r));
             this.display.printCurrencyItem(date.toString(), netWorth);
         }
 
@@ -128,7 +129,7 @@ public class NetWorthRenderer {
                 var assetSnapshotsForDate = futureNetWorths.get(date);
                 var netWorthOnDate = assetSnapshotsForDate.values().stream()
                         .map(snapshot -> snapshot.getValue())
-                        .reduce(0L, (l, r) -> l + r);
+                        .reduce(BigDecimal.ZERO, (l, r) -> l.add(r));
                 display.printCurrencyItem(date.toString(), netWorthOnDate);
             }
         }
