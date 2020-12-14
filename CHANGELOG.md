@@ -1,4 +1,4 @@
-## TBD
+## 0.6.0
 * Refactor the data model around assets in preparation for being able to define per-asset growth rates
 * Split net worth rendering into its own class to control complexity
 * Refactor the projections calculator to use the new asset datamodel
