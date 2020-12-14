@@ -89,16 +89,17 @@ idea {
 // =========================================================================================================
 application {
     // Define the main class for the application.
-    mainClassName = "${mainClass}"
+    mainClass = "${fullyQualifiedMainClass}"
 }
 
 jar {
     
     manifest {
         attributes(
-            'Main-Class': "${mainClass}"
+            'Main-Class': "${fullyQualifiedMainClass}"
         )
     }
+
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
