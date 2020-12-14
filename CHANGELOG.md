@@ -4,6 +4,7 @@
 * Refactor the projections calculator to use the new asset datamodel
 * Update to Java 11 to get the lovely `var` keyword
 * Switch to using BigDecimal for all networth calculations
+* Add custom `Immutables` style, and switch all networth calculation code over to it
 
 ## 0.5.0
 * Allow users to base scenarios on other scenarios
