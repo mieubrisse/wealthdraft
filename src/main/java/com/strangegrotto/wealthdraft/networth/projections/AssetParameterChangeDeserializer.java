@@ -30,9 +30,6 @@ public class AssetParameterChangeDeserializer extends JsonDeserializer<AssetPara
             throw new IOException("Could not parse asset change string '" + raw + "' to BigDecimal", e);
         }
 
-        return ImmutableAssetParameterChange.builder()
-                .value(value)
-                .operation(operation)
-                .build();
+        return ImmAssetParameterChange.of(value, operation);
     }
 }

@@ -2,69 +2,55 @@ package com.strangegrotto.wealthdraft.networth;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.annotations.VisibleForTesting;
+import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.networth.projections.AssetChange;
+import org.immutables.value.Value;
 
 import java.math.BigDecimal;
 
-public final class BankAccountAssetSnapshot extends AssetSnapshot {
-    private static final int MONTHS_IN_YEAR = 12;
+@WealthdraftImmutableStyle
+@Value.Immutable
+@JsonDeserialize(as = ImmBankAccountAssetSnapshot.class)
+public interface BankAccountAssetSnapshot extends AssetSnapshot {
+    int MONTHS_IN_YEAR = 12;
 
     @VisibleForTesting
-    final BigDecimal balance;
+    BigDecimal getBalance();
 
     @VisibleForTesting
-    final BigDecimal annualInterestRate;
-
-    @JsonCreator
-    public BankAccountAssetSnapshot(
-            @JsonProperty("balance") BigDecimal balance,
-            @JsonProperty("annualInterestRate") BigDecimal annualInterestRate) {
-        this.balance = balance;
-        this.annualInterestRate = annualInterestRate;
-    }
+    BigDecimal getAnnualInterestRate();
 
     @Override
-    protected final AssetType getType() {
-        return AssetType.BANK_ACCOUNT;
+    @Value.Derived
+    default BigDecimal getValue() {
+        return getBalance();
     }
 
-    @Override
-    public BigDecimal getValue() {
-        return balance;
-    }
 
     @Override
-    public final BankAccountAssetSnapshot projectOneMonth() {
+    default BankAccountAssetSnapshot projectOneMonth() {
         // BigDecimal doesn't allow fractional exponents, so we drop down to Double (the loss of
         //  precision will be okay here)
-        double balanceDouble = this.balance.doubleValue();
-        double annualInterestRateDouble = this.annualInterestRate.doubleValue();
+        double balanceDouble = getBalance().doubleValue();
+        double annualInterestRateDouble = getAnnualInterestRate().doubleValue();
         double exponent = 1.0 / (double) MONTHS_IN_YEAR;
         double monthlyMultiplier = Math.pow(1 + annualInterestRateDouble, exponent);
         double newBalanceDouble = balanceDouble * monthlyMultiplier;
         BigDecimal newBalance = BigDecimal.valueOf(newBalanceDouble);
-        return new BankAccountAssetSnapshot(newBalance, this.annualInterestRate);
+        return ImmBankAccountAssetSnapshot.of(newBalance, getAnnualInterestRate());
     }
 
     @Override
-    protected final ValOrGerr<AssetSnapshot> applyChangeInner(AssetChange change) {
-        AssetType snapshotType = getType();
-        AssetType changeApplicableType = change.getApplicableType();
-        if (!snapshotType.equals(changeApplicableType)) {
-            return ValOrGerr.newGerr(
-                    "Snapshot is of type {} but change is applicable to snapshots of type {}",
-                    snapshotType,
-                    changeApplicableType
-            );
-        }
+    default ValOrGerr<AssetSnapshot> applyChange(AssetChange change) {
         BankAccountAssetChange castedChange = (BankAccountAssetChange)change;
 
         var balanceModificationOpt = castedChange.getBalance();
-        var newBalance = this.balance;
+        var newBalance = getBalance();
         if (balanceModificationOpt.isPresent()) {
-            ValOrGerr<BigDecimal> newBalanceOrErr = balanceModificationOpt.get().apply(this.balance);
+            ValOrGerr<BigDecimal> newBalanceOrErr = balanceModificationOpt.get().apply(getBalance());
             if (newBalanceOrErr.hasGerr()) {
                 return ValOrGerr.propGerr(
                         newBalanceOrErr.getGerr(),
@@ -74,9 +60,9 @@ public final class BankAccountAssetSnapshot extends AssetSnapshot {
         }
 
         var interestRateModificationOpt = castedChange.getAnnualInterestRate();
-        var newInterestRate = this.annualInterestRate;
+        var newInterestRate = getAnnualInterestRate();
         if (interestRateModificationOpt.isPresent()) {
-            ValOrGerr<BigDecimal> newInterestRateOrErr = interestRateModificationOpt.get().apply(this.annualInterestRate);
+            ValOrGerr<BigDecimal> newInterestRateOrErr = interestRateModificationOpt.get().apply(getAnnualInterestRate());
             if (newInterestRateOrErr.hasGerr()) {
                 return ValOrGerr.propGerr(
                         newInterestRateOrErr.getGerr(),
@@ -85,7 +71,7 @@ public final class BankAccountAssetSnapshot extends AssetSnapshot {
             newInterestRate = newInterestRateOrErr.getVal();
         }
 
-
-        return ValOrGerr.val(new BankAccountAssetSnapshot(newBalance, newInterestRate));
+        var newSnapshot = ImmBankAccountAssetSnapshot.of(newBalance, newInterestRate);
+        return ValOrGerr.val(newSnapshot);
     }
 }

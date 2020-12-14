@@ -2,7 +2,6 @@ package com.strangegrotto.wealthdraft.networth.projections;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,11 +48,16 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
 
     private static class NotUnrolledParsedScenario {
         public final String name;
+        @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
         public final Optional<String> base;
         public final Map<String, Asset> assets;
         public final Map<LocalDate, Map<String, AssetChange>> assetChanges;
 
-        private NotUnrolledParsedScenario(String name, Optional<String> base, Map<String, Asset> assets, Map<LocalDate, Map<String, AssetChange>> assetChanges) {
+        private NotUnrolledParsedScenario(
+                String name,
+                @SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<String> base,
+                Map<String, Asset> assets,
+                Map<LocalDate, Map<String, AssetChange>> assetChanges) {
             this.name = name;
             this.base = base;
             this.assets = assets;
@@ -68,7 +72,7 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
     }
 
     @Override
-    public Projections deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+    public Projections deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         RawjProjections rawjProjections = p.readValueAs(RawjProjections.class);
 
         // It's VERY unclear to me how to call the needed convertValue function without doing
@@ -86,15 +90,11 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
 
         Map<String, ValOrGerr<ProjectionScenario>> unrolledParsedScenarios = new HashMap<>();
         for (String scenarioId : notUnrolledParsedScenarios.keySet()) {
-            ValOrGerr<ProjectionScenario> unrolledScenarioOrErr = unrollScenarioAssetChanges(scenarioId, notUnrolledParsedScenarios);
+            var unrolledScenarioOrErr = unrollScenarioAssetChanges(scenarioId, notUnrolledParsedScenarios);
             unrolledParsedScenarios.put(scenarioId, unrolledScenarioOrErr);
         }
 
-        Projections result = ImmutableProjections.builder()
-                .defaultAnnualGrowth(rawjProjections.defaultAnnualGrowth)
-                .putAllScenarios(unrolledParsedScenarios)
-                .build();
-        return result;
+        return ImmProjections.of(rawjProjections.defaultAnnualGrowth, unrolledParsedScenarios);
     }
 
     /**
@@ -224,7 +224,7 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
 
                 Map<String, AssetChange> scenarioChangesForDate = scenarioAssetChanges.get(date);
                 for (String assetId : scenarioChangesForDate.keySet()) {
-                    if (unrolledChangesForDate.containsKey(date)) {
+                    if (unrolledChangesForDate.containsKey(assetId)) {
                         return ValOrGerr.newGerr(
                                 "Scenario {} depends on scenario {}, which results in a duplicate change for {} on date {}",
                                 scenarioId,
@@ -241,11 +241,10 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
         }
 
         NotUnrolledParsedScenario notUnrolledScenario = notUnrolledScenarioOrErr.getVal();
-        ProjectionScenario result = ImmutableProjectionScenario.builder()
-                .name(notUnrolledScenario.name)
-                .base(notUnrolledScenario.base)
-                .assetChanges(unrolledAssetChanges)
-                .build();
+        ProjectionScenario result = ImmProjectionScenario.of(
+                notUnrolledScenario.name,
+                unrolledAssetChanges
+        ).withBase(notUnrolledScenario.base);
         return ValOrGerr.val(result);
     }
 
@@ -293,7 +292,7 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
         try {
             LocalDate asLocalDate = LocalDate.parse(rawStr);
             return ValOrGerr.val(asLocalDate);
-        } catch (DateTimeParseException e) {}
+        } catch (DateTimeParseException ignored) {}
 
         Matcher matcher = RELATIVE_DATE_PATTERN.matcher(rawStr);
         if (!matcher.find()) {

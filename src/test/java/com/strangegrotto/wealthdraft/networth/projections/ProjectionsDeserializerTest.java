@@ -2,7 +2,7 @@ package com.strangegrotto.wealthdraft.networth.projections;
 
 import com.strangegrotto.wealthdraft.Main;
 import com.strangegrotto.wealthdraft.networth.AssetsWithHistory;
-import com.strangegrotto.wealthdraft.networth.ImmutableAssetsWithHistory;
+import com.strangegrotto.wealthdraft.networth.ImmAssetsWithHistory;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -19,7 +19,7 @@ public class ProjectionsDeserializerTest {
     }
 
     @Test
-    public void testRelativeMonths() throws IOException {
+    public void testRelativeMonths() {
         var today = LocalDate.now();
         var parsedDateOrErr = ProjectionsDeserializer.parseRelativeDateStr("+3m");
         Assert.assertFalse("Relative date parsing should not have thrown an error", parsedDateOrErr.hasGerr());
@@ -27,7 +27,7 @@ public class ProjectionsDeserializerTest {
     }
 
     @Test
-    public void testRelativeYears() throws IOException {
+    public void testRelativeYears() {
         var today = LocalDate.now();
         var parsedDateOrErr = ProjectionsDeserializer.parseRelativeDateStr("+3y");
         Assert.assertFalse("Relative date parsing should not have thrown an error", parsedDateOrErr.hasGerr());
@@ -35,7 +35,7 @@ public class ProjectionsDeserializerTest {
     }
 
     @Test
-    public void testInvalidStr() throws IOException {
+    public void testInvalidStr() {
         var parsedDateOrErr = ProjectionsDeserializer.parseRelativeDateStr("3y");
         Assert.assertTrue("Parsing of invalid string should have failed", parsedDateOrErr.hasGerr());
     }
@@ -57,9 +57,9 @@ public class ProjectionsDeserializerTest {
         Assert.assertEquals(ExpectedProjectionsInfo.EXPECTED_SCENARIOS, projectionScenarios);
     }
 
+    @Test
     public void testInvalidYmlThrowsException() throws IOException {
         var mapper = Main.getObjectMapper();
-        ClassLoader classLoader = getClass().getClassLoader();
         var assetsUrl = ExampleInputFile.ASSETS.getResource();
         AssetsWithHistory assetsWithHistory;
         assetsWithHistory = mapper.readValue(assetsUrl, AssetsWithHistory.class);
@@ -69,17 +69,15 @@ public class ProjectionsDeserializerTest {
         try {
             mapper.readValue(projectionsUrl, Projections.class);
             Assert.fail("Deserialization of projections should have failed due to invalid YAML but didn't");
-        } catch (IOException e) {}
+        } catch (IOException ignored) {}
     }
 
     @Test
     public void testDeserializationWithNonexistentAssets() throws IOException {
         var mapper = Main.getObjectMapper();
-        ClassLoader classLoader = getClass().getClassLoader();
 
         // Empty assets this time, so all projections will correspond to nonexistent assets
-        var assetsWithHistory = ImmutableAssetsWithHistory.builder()
-                .build();
+        var assetsWithHistory = ImmAssetsWithHistory.builder().build();
 
         var projectionsUrl = ProjectionsFile.EXAMPLE.getResource();
 
@@ -139,6 +137,17 @@ public class ProjectionsDeserializerTest {
         var scenarioOrErr = projectionScenariosOrErr.get(ExpectedProjectionsInfo.SELL_ALL_BTC_3Y_ID);
         Assert.assertTrue(
                 "Expected scenario to fail parsing due to two changes on the same date, but it succeeded",
+                scenarioOrErr.hasGerr()
+        );
+    }
+
+    @Test
+    public void testErrorOnTwoChangesOnSameDateFromDiffScenarios() throws IOException {
+        var projections = parseProjectionsFile(ProjectionsFile.TWO_CHANGES_ON_SAME_DATE_FROM_DIFF_SCENARIOS);
+        var projectionScenariosOrErr = projections.getScenarios();
+        var scenarioOrErr = projectionScenariosOrErr.get(ExpectedProjectionsInfo.SELL_OTHER_HALF_BTC_2Y_ID);
+        Assert.assertTrue(
+                "Expected scenario to fail parsing due to two changes on the same date from different scenarios, but it succeeded",
                 scenarioOrErr.hasGerr()
         );
     }

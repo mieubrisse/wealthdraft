@@ -2,6 +2,7 @@ defaultAnnualGrowth: 0.06
 scenarios:
   btc-3y:
     name: Sell Bitcoin in 3 years for 15k
+    # Nonexistent scenario
     base: this-scenario-doesnt-exist
     changes:
       +3y:

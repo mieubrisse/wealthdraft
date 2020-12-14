@@ -2,7 +2,6 @@ defaultAnnualGrowth: 0.06
 scenarios:
   half-btc-1y:
     name: Sell 50% Bitcoin in 1 year
-    base: half-btc-2y
     changes:
       +1y:
         btc:
@@ -13,7 +12,8 @@ scenarios:
     name: After selling 50% Bitcoin in 1 year, sell other 50% in 2 years
     base: half-btc-1y
     changes:
-      +2y:
+      # Modified this to 1y to trigger the behaviour
+      +1y:
         btc:
           balance: -7500
         bank:

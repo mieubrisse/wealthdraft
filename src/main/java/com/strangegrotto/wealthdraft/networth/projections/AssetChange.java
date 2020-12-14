@@ -1,7 +1,5 @@
 package com.strangegrotto.wealthdraft.networth.projections;
 
-import com.strangegrotto.wealthdraft.errors.ValOrGerr;
-import com.strangegrotto.wealthdraft.networth.Asset;
 import com.strangegrotto.wealthdraft.networth.AssetType;
 
 /**

@@ -10,6 +10,7 @@ enum ProjectionsFile implements TestFileProvider {
     INVALID_YML("invalid-yaml.yml"),
     PAST_DATE_IN_PROJECTION("past-date-in-projection.yml"),
     TWO_CHNAGES_ON_SAME_DATE("two-changes-on-same-date.yml"),
+    TWO_CHANGES_ON_SAME_DATE_FROM_DIFF_SCENARIOS("two-changes-on-same-date-from-diff-scenarios.yml"),
     EXAMPLE("examples", "projections-example.yml");
 
     private static final String DESERIALIZATION_TESTS_DIRNAME = "projections-deserialization";

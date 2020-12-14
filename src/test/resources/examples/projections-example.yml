@@ -9,7 +9,7 @@ scenarios:
         bank:
           balance: +15000
   half-btc-1y:
-    name: Sell 50% Bitcoin in 1 year, then the other 50% a year later
+    name: Sell 50% Bitcoin in 1 year
     changes:
       +1y:
         btc:

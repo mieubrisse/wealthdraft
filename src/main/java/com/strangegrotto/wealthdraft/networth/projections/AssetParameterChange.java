@@ -1,11 +1,12 @@
 package com.strangegrotto.wealthdraft.networth.projections;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import org.immutables.value.Value;
 
 import java.math.BigDecimal;
 
+@WealthdraftImmutableStyle
 @Value.Immutable
 public interface AssetParameterChange {
     BigDecimal getValue();

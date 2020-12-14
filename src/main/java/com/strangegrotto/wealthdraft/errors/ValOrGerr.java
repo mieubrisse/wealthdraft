@@ -32,9 +32,10 @@ public class ValOrGerr<T> {
         return this.error.get();
     }
 
-    public static <T> ValOrGerr val(T value) {
+    public static <T> ValOrGerr<T> val(T value) {
         return new ValOrGerr(
-                Optional.of(value),
+                // Use ofNullable to support Void
+                Optional.ofNullable(value),
                 Optional.empty()
         );
     }
@@ -42,7 +43,7 @@ public class ValOrGerr<T> {
     /**
      * Creates a new {@link ValOrGerr} with the given message and optional formatting arguments
      */
-    public static ValOrGerr newGerr(String message, Object... args) {
+    public static <T> ValOrGerr<T> newGerr(String message, Object... args) {
         // This is a nice convenience so we don't have to call `ValueOrGError.ofError(GError.newError(.....` and can
         //  do directly to `ValueOrGError.ofNewErr(...` BUT it means that we have to grab the stacktrace element and
         //  call the package-private GError.buildError method
@@ -61,7 +62,7 @@ public class ValOrGerr<T> {
     /**
      * Propagates an existing {@link Gerr}, wrapping it with a new message and args
      */
-    public static ValOrGerr propGerr(Gerr err, String message, Object... args) {
+    public static <T> ValOrGerr<T> propGerr(Gerr err, String message, Object... args) {
         // This is a nice convenience so we don't have to call `ValueOrGError.ofError(GError.propagateError(.....` and can
         //  do directly to `ValueOrGError.ofPropagatedError(...` BUT it means that we have to grab the stacktrace element and
         //  call the package-private GError.buildError method
