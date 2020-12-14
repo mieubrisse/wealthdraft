@@ -5,23 +5,23 @@ scenarios:
     changes:
       +3y:
         btc:
-          value: 0
+          balance: 0
         bank:
-          value: +15000
+          balance: +15000
   half-btc-1y:
-    name: Sell 50% Bitcoin in 1 year, then the other 50% a year later
+    name: Sell 50% Bitcoin in 1 year
     changes:
       +1y:
         btc:
-          value: -7500
+          balance: -7500
         bank:
-          value: +7500
+          balance: +7500
   half-btc-2y:
     name: After selling 50% Bitcoin in 1 year, sell other 50% in 2 years
     base: half-btc-1y
     changes:
       +2y:
         btc:
-          value: -7500
+          balance: -7500
         bank:
-          value: +7500
+          balance: +7500

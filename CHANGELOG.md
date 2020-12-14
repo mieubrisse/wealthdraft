@@ -1,3 +1,12 @@
+## 0.6.0
+* Refactor the data model around assets in preparation for being able to define per-asset growth rates
+* Split net worth rendering into its own class to control complexity
+* Refactor the projections calculator to use the new asset datamodel
+* Update to Java 11 to get the lovely `var` keyword
+* Switch to using BigDecimal for all networth calculations
+* Add custom `Immutables` style, and switch all networth calculation code over to it
+* Add a deserializer with tests to `AssetsWithHistory`, so arbitrary asset history can be added
+
 ## 0.5.0
 * Allow users to base scenarios on other scenarios
 
