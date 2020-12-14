@@ -19,9 +19,9 @@ import com.google.common.collect.Ordering;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.govconstants.RetirementConstants;
-import com.strangegrotto.wealthdraft.networth.Asset;
-import com.strangegrotto.wealthdraft.networth.AssetsWithHistory;
 import com.strangegrotto.wealthdraft.networth.NetWorthRenderer;
+import com.strangegrotto.wealthdraft.networth.assets.Asset;
+import com.strangegrotto.wealthdraft.networth.assets.AssetsWithHistory;
 import com.strangegrotto.wealthdraft.networth.projections.AssetParameterChange;
 import com.strangegrotto.wealthdraft.networth.projections.AssetParameterChangeDeserializer;
 import com.strangegrotto.wealthdraft.networth.projections.Projections;
@@ -68,14 +68,10 @@ public class Main {
     private static final DecimalFormat CURRENCY_FORMAT = new DecimalFormat  ("###,##0");
     private static final DecimalFormat PERCENT_FORMAT = new DecimalFormat("#0.0%");
 
-    // TODO make this configurable
-    // The user will be warned that their historical asset records are out-of-date if the latest entry is greater than
-    //  this many days ago
-    private static final long STALE_ASSET_THRESHOLD_DAYS = 30;
+    private static final int MAX_YEARS_TO_PROJECT = 30;
 
-    private static final int MAX_YEARS_TO_PROJECT = 60;
-
-    private static final int PROJECTION_DISPLAY_INCREMENT_YEARS = 5;
+    // TODO Make this months instead
+    private static final int PROJECTION_DISPLAY_INCREMENT_YEARS = 1;
 
     private static final Logger log = LoggerFactory.getLogger(Main.class);
 
@@ -196,7 +192,11 @@ public class Main {
         );
 
         var netWorthRenderer = new NetWorthRenderer(display, PROJECTION_DISPLAY_INCREMENT_YEARS, MAX_YEARS_TO_PROJECT);
-        netWorthRenderer.renderNetWorthCalculations(assetsWithHistory, projections);
+        var emptyOrErr =netWorthRenderer.renderNetWorthCalculations(assetsWithHistory, projections);
+        if (emptyOrErr.hasGerr()) {
+            log.error("An error occurred rendering net worth: {}", emptyOrErr.getGerr());
+            System.exit(FAILURE_EXIT_CODE);
+        }
     }
 
     @VisibleForTesting
@@ -385,7 +385,7 @@ public class Main {
         display.printCurrencyItem("Gross Income", grossIncome);
 
         long totalAmtAdjustments = scenario.getAmtAdjustments().stream()
-                .reduce(0L, (l, r) -> l + r);
+                .reduce(0L, Long::sum);
         display.printEmptyLine();
         display.printSectionHeader("ADJUSTMENTS");
         display.printCurrencyItem("AMT Adjustments", totalAmtAdjustments);
@@ -407,8 +407,7 @@ public class Main {
         display.printSectionHeader("AMT");
         renderTaxesSection(display, "AMT", amtTaxes, grossIncome);
 
-        Map<Tax, Double> totalTaxes = new HashMap<>();
-        totalTaxes.putAll(ficaTaxes);
+        Map<Tax, Double> totalTaxes = new HashMap<>(ficaTaxes);
         String higherTaxSystem;
         String lowerTaxSystem;
         if (taxes.isPrimarySystemHigher()) {

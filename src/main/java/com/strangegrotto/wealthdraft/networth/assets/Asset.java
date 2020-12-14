@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.networth;
+package com.strangegrotto.wealthdraft.networth.assets;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;

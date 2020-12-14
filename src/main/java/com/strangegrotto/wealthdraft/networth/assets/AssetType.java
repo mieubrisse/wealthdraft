@@ -1,5 +1,7 @@
-package com.strangegrotto.wealthdraft.networth;
+package com.strangegrotto.wealthdraft.networth.assets;
 
+import com.strangegrotto.wealthdraft.networth.BankAccountAssetChange;
+import com.strangegrotto.wealthdraft.networth.BankAccountAssetSnapshot;
 import com.strangegrotto.wealthdraft.networth.projections.AssetChange;
 
 public enum AssetType {
