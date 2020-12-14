@@ -1,14 +1,17 @@
 package com.strangegrotto.wealthdraft.networth.projections;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
+import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import org.immutables.value.Value;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
+@WealthdraftImmutableStyle
 @Value.Immutable
-@JsonDeserialize(as = ImmutableProjections.class)
 public interface Projections {
-    Double getDefaultAnnualGrowth();
+    BigDecimal getDefaultAnnualGrowth();
 
-    Map<String, ProjectionScenario> getScenarios();
+    @Value.Parameter
+    Map<String, ValOrGerr<ProjectionScenario>> getScenarios();
 }

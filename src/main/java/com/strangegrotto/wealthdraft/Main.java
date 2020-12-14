@@ -7,19 +7,25 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.ConsoleAppender;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Ordering;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.govconstants.RetirementConstants;
+import com.strangegrotto.wealthdraft.networth.Asset;
 import com.strangegrotto.wealthdraft.networth.AssetsWithHistory;
 import com.strangegrotto.wealthdraft.networth.NetWorthRenderer;
+import com.strangegrotto.wealthdraft.networth.projections.AssetParameterChange;
+import com.strangegrotto.wealthdraft.networth.projections.AssetParameterChangeDeserializer;
 import com.strangegrotto.wealthdraft.networth.projections.Projections;
+import com.strangegrotto.wealthdraft.networth.projections.ProjectionsDeserializer;
 import com.strangegrotto.wealthdraft.scenarios.IncomeStreams;
 import com.strangegrotto.wealthdraft.scenarios.TaxScenario;
 import com.strangegrotto.wealthdraft.tax.ScenarioTaxCalculator;
@@ -66,6 +72,8 @@ public class Main {
     // The user will be warned that their historical asset records are out-of-date if the latest entry is greater than
     //  this many days ago
     private static final long STALE_ASSET_THRESHOLD_DAYS = 30;
+
+    private static final int MAX_YEARS_TO_PROJECT = 60;
 
     private static final int PROJECTION_DISPLAY_INCREMENT_YEARS = 5;
 
@@ -125,10 +133,7 @@ public class Main {
         Level logLevel = parsedArgs.get(LOG_LEVEL_ARG);
         logbackRootLogger.setLevel(logLevel);
 
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        mapper.registerModule(new GuavaModule());
-        mapper.registerModule(new JavaTimeModule());
-        mapper.registerModule(new Jdk8Module());    // Support deserializing to Optionals
+        var mapper = getObjectMapper();
         TypeFactory typeFactory = mapper.getTypeFactory();
 
         String taxScenariosFilepath = parsedArgs.getString(TAX_SCENARIOS_FILEPATH_ARG);
@@ -166,6 +171,7 @@ public class Main {
             return;
         }
 
+        addDeserializersNeedingAssets(mapper, assetsWithHistory.getAssets());
         String projectionsFilepath = parsedArgs.getString(PROJECTIONS_FILEPATH_ARG);
         log.debug("Projections filepath: {}", assetsFilepath);
         Projections projections;
@@ -189,8 +195,30 @@ public class Main {
                 allGovConstants
         );
 
-        NetWorthRenderer netWorthRenderer = new NetWorthRenderer(display, PROJECTION_DISPLAY_INCREMENT_YEARS);
+        var netWorthRenderer = new NetWorthRenderer(display, PROJECTION_DISPLAY_INCREMENT_YEARS, MAX_YEARS_TO_PROJECT);
         netWorthRenderer.renderNetWorthCalculations(assetsWithHistory, projections);
+    }
+
+    @VisibleForTesting
+    public static ObjectMapper getObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        mapper.registerModule(new GuavaModule());
+        mapper.registerModule(new JavaTimeModule());
+        mapper.registerModule(new Jdk8Module());    // Support deserializing to Optionals
+
+        var deserializerModule = new SimpleModule();
+        deserializerModule.addDeserializer(AssetParameterChange.class, new AssetParameterChangeDeserializer());
+        mapper.registerModule(deserializerModule);
+
+        return mapper;
+    }
+
+    @VisibleForTesting
+    public static void addDeserializersNeedingAssets(ObjectMapper mapper, Map<String, Asset> assets) {
+        var projectionsDeserializer = new ProjectionsDeserializer(assets);
+        var projectionsDeserializationModule = new SimpleModule();
+        projectionsDeserializationModule.addDeserializer(Projections.class, projectionsDeserializer);
+        mapper.registerModule(projectionsDeserializationModule);
     }
 
     private static void configureRootLoggerPattern(ch.qos.logback.classic.Logger rootLogger) {

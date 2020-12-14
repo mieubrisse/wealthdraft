@@ -1,7 +1,5 @@
 package com.strangegrotto.wealthdraft.tax;
 
-import org.slf4j.Logger;
-
 public enum Tax {
     // On earned income + non-capgains unearned income + STCG
     FED_NON_PREF_INCOME("Fed Non-Preferential Income Tax"),

@@ -1,19 +1,19 @@
 package com.strangegrotto.wealthdraft.networth.projections;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
 import org.immutables.value.Value;
 
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.Optional;
+import java.util.SortedMap;
 
+@WealthdraftImmutableStyle
 @Value.Immutable
-@JsonDeserialize(as = ImmutableProjectionScenario.class)
 public interface ProjectionScenario {
     String getName();
 
-    // The ID of a scenario to base the scenario on
     Optional<String> getBase();
 
-    // Mapping of change_date -> (asset_id -> asset_change)
-    Map<String, Map<String, AssetChange>> getChanges();
+    SortedMap<LocalDate, Map<String, AssetChange>> getAssetChanges();
 }

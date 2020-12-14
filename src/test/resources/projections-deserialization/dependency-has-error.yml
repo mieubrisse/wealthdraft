@@ -1,0 +1,17 @@
+defaultAnnualGrowth: 0.06
+scenarios:
+  half-btc-1y:
+    name: Sell 50% Bitcoin in 1 year
+    changes:
+      +1y:
+        thisAssetDoesntExist:
+          balance: -7500
+  half-btc-2y:
+    name: After selling 50% Bitcoin in 1 year, sell other 50% in 2 years
+    base: half-btc-1y
+    changes:
+      +2y:
+        btc:
+          balance: -7500
+        bank:
+          balance: +7500
