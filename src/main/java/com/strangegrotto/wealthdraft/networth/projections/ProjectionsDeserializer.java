@@ -9,7 +9,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.strangegrotto.wealthdraft.errors.Gerr;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
-import com.strangegrotto.wealthdraft.networth.assets.Asset;
+import com.strangegrotto.wealthdraft.assets.Asset;
+import com.strangegrotto.wealthdraft.assets.AssetChange;
 
 import javax.annotation.Nullable;
 import java.io.IOException;

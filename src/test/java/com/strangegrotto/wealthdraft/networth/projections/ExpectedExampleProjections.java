@@ -1,7 +1,10 @@
 package com.strangegrotto.wealthdraft.networth.projections;
 
-import com.strangegrotto.wealthdraft.networth.ImmBankAccountAssetChange;
-import com.strangegrotto.wealthdraft.networth.assets.ExpectedExampleAssetsWithHistory;
+import com.strangegrotto.wealthdraft.assets.ImmAssetParameterChange;
+import com.strangegrotto.wealthdraft.assets.AssetChange;
+import com.strangegrotto.wealthdraft.assets.AssetParameterChangeValueOperation;
+import com.strangegrotto.wealthdraft.assets.bankaccount.ImmBankAccountAssetChange;
+import com.strangegrotto.wealthdraft.networth.history.ExpectedExampleAssetsWithHistory;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

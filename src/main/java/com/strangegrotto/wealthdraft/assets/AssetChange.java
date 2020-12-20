@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.networth.projections;
+package com.strangegrotto.wealthdraft.assets;
 
 
 /**

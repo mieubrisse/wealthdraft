@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.networth.projections;
+package com.strangegrotto.wealthdraft.assets;
 
 import com.strangegrotto.wealthdraft.Main;
 import org.junit.Assert;

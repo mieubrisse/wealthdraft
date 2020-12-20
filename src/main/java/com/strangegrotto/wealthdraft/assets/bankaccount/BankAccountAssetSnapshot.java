@@ -1,11 +1,11 @@
-package com.strangegrotto.wealthdraft.networth;
+package com.strangegrotto.wealthdraft.assets.bankaccount;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.annotations.VisibleForTesting;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
-import com.strangegrotto.wealthdraft.networth.assets.AssetSnapshot;
-import com.strangegrotto.wealthdraft.networth.projections.AssetChange;
+import com.strangegrotto.wealthdraft.assets.AssetSnapshot;
+import com.strangegrotto.wealthdraft.assets.AssetChange;
 import org.immutables.value.Value;
 
 import java.math.BigDecimal;

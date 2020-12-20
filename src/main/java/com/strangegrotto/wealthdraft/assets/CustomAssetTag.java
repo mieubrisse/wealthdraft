@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.networth.assets;
+package com.strangegrotto.wealthdraft.assets;
 
 class CustomAssetTag implements AssetTag {
     private final String name;

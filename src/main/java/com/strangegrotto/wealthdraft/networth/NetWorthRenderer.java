@@ -2,9 +2,9 @@ package com.strangegrotto.wealthdraft.networth;
 
 import com.strangegrotto.wealthdraft.Display;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
-import com.strangegrotto.wealthdraft.networth.assets.AssetSnapshot;
-import com.strangegrotto.wealthdraft.networth.assets.AssetsWithHistory;
-import com.strangegrotto.wealthdraft.networth.projections.AssetChange;
+import com.strangegrotto.wealthdraft.assets.AssetSnapshot;
+import com.strangegrotto.wealthdraft.assets.AssetChange;
+import com.strangegrotto.wealthdraft.networth.history.AssetsWithHistory;
 import com.strangegrotto.wealthdraft.networth.projections.ProjectionScenario;
 import com.strangegrotto.wealthdraft.networth.projections.Projections;
 import org.slf4j.Logger;

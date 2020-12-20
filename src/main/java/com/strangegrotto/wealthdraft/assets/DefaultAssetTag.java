@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.networth.assets;
+package com.strangegrotto.wealthdraft.assets;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 

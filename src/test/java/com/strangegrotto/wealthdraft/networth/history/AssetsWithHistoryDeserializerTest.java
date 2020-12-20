@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.networth.assets;
+package com.strangegrotto.wealthdraft.networth.history;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.strangegrotto.wealthdraft.Main;

@@ -1,7 +1,6 @@
-package com.strangegrotto.wealthdraft.networth.assets;
+package com.strangegrotto.wealthdraft.assets;
 
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
-import com.strangegrotto.wealthdraft.networth.projections.AssetChange;
 
 import java.math.BigDecimal;
 

@@ -1,7 +1,9 @@
-package com.strangegrotto.wealthdraft.networth.assets;
+package com.strangegrotto.wealthdraft.networth.history;
 
-import com.strangegrotto.wealthdraft.networth.ImmBankAccountAsset;
-import com.strangegrotto.wealthdraft.networth.ImmBankAccountAssetSnapshot;
+import com.strangegrotto.wealthdraft.assets.Asset;
+import com.strangegrotto.wealthdraft.assets.AssetSnapshot;
+import com.strangegrotto.wealthdraft.assets.bankaccount.ImmBankAccountAsset;
+import com.strangegrotto.wealthdraft.assets.bankaccount.ImmBankAccountAssetSnapshot;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
