@@ -36,11 +36,6 @@ public class AssetsWithHistoryDeserializerTest {
         parseAssetsFile(AssetsFiles.DISALLOWED_TAG_VALUE);
     }
 
-    @Test(expected = JsonParseException.class)
-    public void testErrorOnDisallowedDefaultTagValue() throws IOException {
-        parseAssetsFile(AssetsFiles.DISALLOWED_DEFAULT_TAG_VALUE);
-    }
-
     private static AssetsWithHistory parseAssetsFile(AssetsFiles testFile) throws IOException {
         var mapper = Main.getObjectMapper();
         var assetsUrl = testFile.getResource();

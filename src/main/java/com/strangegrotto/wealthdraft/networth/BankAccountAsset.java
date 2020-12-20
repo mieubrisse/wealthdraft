@@ -1,5 +1,6 @@
 package com.strangegrotto.wealthdraft.networth;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
 import com.strangegrotto.wealthdraft.networth.assets.AbstractAsset;
@@ -18,20 +19,20 @@ public abstract class BankAccountAsset extends AbstractAsset {
     private static final String assetType = "Bank Account";
 
     @Override
-    @Value.Derived
+    @JsonIgnore
     public Class<? extends AssetChange> getChangeType() {
         return BankAccountAssetChange.class;
     }
 
     @Override
-    @Value.Derived
-    public final Class<? extends AssetSnapshot> getSnapshotType() {
+    @JsonIgnore
+    public Class<? extends AssetSnapshot> getSnapshotType() {
         return BankAccountAssetSnapshot.class;
     }
 
     @Override
-    @Value.Derived
-    protected final Map<DefaultAssetTag, String> getDefaultTags() {
+    @JsonIgnore
+    protected Map<DefaultAssetTag, String> getDefaultTags() {
         return Map.of(
                 DefaultAssetTag.ASSET_TYPE, assetType
         );

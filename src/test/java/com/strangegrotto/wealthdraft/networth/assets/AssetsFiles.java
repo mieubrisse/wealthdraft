@@ -9,7 +9,6 @@ public enum AssetsFiles implements TestFileProvider {
     NONEXISTENT_ASSET("nonexistent-asset.yml"),
     FUTURE_DATE("future-date.yml"),
     DISALLOWED_TAG_VALUE("disallowed-tag-value.yml"),
-    DISALLOWED_DEFAULT_TAG_VALUE("disallowed-default-tag-value.yml"),
     EXAMPLE(TestResourceDirnames.EXAMPLES.getDirname(), "assets-example.yml");
 
     private final String containingDirname;

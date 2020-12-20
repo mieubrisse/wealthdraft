@@ -1,5 +1,7 @@
 package com.strangegrotto.wealthdraft.networth.assets;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 )
 public abstract class AbstractAsset implements Asset {
     @Override
+    @JsonIgnore
     public final ValOrGerr<Map<AssetTag, String>> getTags() {
         var customTagStrs = getCustomTags();
         var defaultTags = getDefaultTags();
@@ -42,8 +45,12 @@ public abstract class AbstractAsset implements Asset {
         return ValOrGerr.val(result);
     }
 
-    // Visible for the JSON deserializer to verify that all the custom tags are good
-    abstract Map<String, String> getCustomTags();
+    // TODO This is public only because:
+    //  1) the deserializer needs to be able to read this to validate
+    //  2) Immutables won't generate the method on the immutable class if it's package-private (unknown why)
+    //  The fix is to make the deserializer not deserialize directly to this class!
+    @JsonProperty("tags")
+    public abstract Map<String, String> getCustomTags();
 
     protected abstract Map<DefaultAssetTag, String> getDefaultTags();
 }
