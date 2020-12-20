@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class AssetsWithHistoryDeserializer extends JsonDeserializer<AssetsWithHistory> {
     @WealthdraftImmutableStyle
@@ -24,7 +23,7 @@ public class AssetsWithHistoryDeserializer extends JsonDeserializer<AssetsWithHi
         Map<String, CustomTagDefinition> getCustomTags();
 
         @Value.Parameter
-        Map<String, Asset> getAssets();
+        Map<String, AbstractAsset> getAssets();
 
         @Value.Parameter
         Map<String, Map<LocalDate, Map<String, String>>> getHistory();
@@ -74,8 +73,8 @@ public class AssetsWithHistoryDeserializer extends JsonDeserializer<AssetsWithHi
             if (!assets.containsKey(assetId)) {
                 throw new JsonParseException(parser, "Asset ID '" + assetId + "' doesn't correspond to any known asset");
             }
-            var assetType = assets.get(assetId).getType();
-            var snapshotType = assetType.getSnapshotType();
+            var asset = assets.get(assetId);
+            var snapshotType = asset.getSnapshotType();
 
             var parsedSnapshotsForAsset = new HashMap<LocalDate, AssetSnapshot>();
             for (LocalDate date : unparsedSnapshotsForAsset.keySet()) {

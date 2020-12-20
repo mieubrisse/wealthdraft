@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.HashMap;
 
 public class ProjectionsDeserializerTest {
     @Test

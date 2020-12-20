@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
 import org.immutables.value.Value;
 
-import java.util.Optional;
 import java.util.Set;
 
 @WealthdraftImmutableStyle

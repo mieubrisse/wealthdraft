@@ -10,8 +10,6 @@ plugins {
     // Apply the java plugin to add support for Java
     id 'java'
 
-    id 'idea'
-
     // Apply the application plugin to add support for building a CLI application.
     id 'application'
 
@@ -55,6 +53,7 @@ compileJava {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
+/*
 // =========================================================================================================
 //                                    IDEA Generated Source Fix
 // =========================================================================================================
@@ -77,12 +76,14 @@ sourceSets {
         }
     }
 }
+
 idea {
     module {
         generatedSourceDirs += file(mainAnnotationProcessorSourceDirpath)
         generatedSourceDirs += file(testAnnotationProcessorSourceDirpath)
     }
 }
+*/
 
 // =========================================================================================================
 //                                           Fat JAR Generation
