@@ -1,9 +1,7 @@
 package com.strangegrotto.wealthdraft.networth.assets;
 
+import com.strangegrotto.wealthdraft.networth.ImmBankAccountAsset;
 import com.strangegrotto.wealthdraft.networth.ImmBankAccountAssetSnapshot;
-import com.strangegrotto.wealthdraft.networth.assets.Asset;
-import com.strangegrotto.wealthdraft.networth.assets.AssetSnapshot;
-import com.strangegrotto.wealthdraft.networth.assets.AssetType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -17,10 +15,26 @@ public class ExpectedExampleAssetsWithHistory {
     public static final String BANK_ACCOUNT_ID = "bank";
     public static final String BITCOIN_HOLDING_ID = "btc";
 
-    public static final Asset RETIREMENT_ASSET = ImmAsset.of("Retirement account", AssetType.BANK_ACCOUNT);
-    public static final Asset BROKERAGE_ACCOUNT_ASSET = ImmAsset.of("Personal brokerage account", AssetType.BANK_ACCOUNT);
-    public static final Asset BANK_ACCOUNT_ASSET = ImmAsset.of("Bank account", AssetType.BANK_ACCOUNT);
-    public static final Asset BITCOIN_ASSET = ImmAsset.of("BTC holdings", AssetType.BANK_ACCOUNT);
+    // Custom tags
+    private static final String DOM_OR_INTL_TAG = "domOrIntl";
+    private static final String DOMESTIC_ASSET_TAG_VALUE = "domestic";
+    private static final String INTERNATIONAL_ASSET_TAG_VALUE = "international";
+    private static final String BROKER_TAG = "broker";
+
+
+    public static final Asset RETIREMENT_ASSET = ImmBankAccountAsset.of("Retirement account").withCustomTags(Map.of(
+            BROKER_TAG, "Fidelity",
+            DOM_OR_INTL_TAG, DOMESTIC_ASSET_TAG_VALUE
+    ));
+    public static final Asset BROKERAGE_ACCOUNT_ASSET = ImmBankAccountAsset.of("Personal brokerage account").withCustomTags(Map.of(
+            BROKER_TAG, "Vanguard",
+            DOM_OR_INTL_TAG, DOMESTIC_ASSET_TAG_VALUE
+    ));
+    public static final Asset BANK_ACCOUNT_ASSET = ImmBankAccountAsset.of("Bank account").withCustomTags(Map.of(
+            BROKER_TAG, "Chase",
+            DOM_OR_INTL_TAG, INTERNATIONAL_ASSET_TAG_VALUE
+    ));
+    public static final Asset BITCOIN_ASSET = ImmBankAccountAsset.of("BTC holdings");
 
     public static final Map<String, Asset> EXPECTED_ASSETS = Map.of(
             RETIREMENT_ACCOUNT_ID, RETIREMENT_ASSET,

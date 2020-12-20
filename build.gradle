@@ -10,8 +10,6 @@ plugins {
     // Apply the java plugin to add support for Java
     id 'java'
 
-    id 'idea'
-
     // Apply the application plugin to add support for building a CLI application.
     id 'application'
 
@@ -53,35 +51,6 @@ dependencies {
 compileJava {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
-}
-
-// =========================================================================================================
-//                                    IDEA Generated Source Fix
-// =========================================================================================================
-// Super-annoyingly, IntelliJ won't pick up the generated source directory produced by the annotationProcessor
-//  configuration, so we have to do this manual work to get it working
-// See: https://youtrack.jetbrains.com/issue/IDEA-236177
-def annotationProcessorSourceDirpath = "${buildDir.absolutePath}/generated/sources/annotationProcessor/java"
-def mainAnnotationProcessorSourceDirpath = "${annotationProcessorSourceDirpath}/main"
-def testAnnotationProcessorSourceDirpath = "${annotationProcessorSourceDirpath}/test"
-sourceSets {
-    main {
-        java {
-            srcDir mainAnnotationProcessorSourceDirpath
-        }
-    }
-            
-    test {
-        java {
-            srcDir testAnnotationProcessorSourceDirpath
-        }
-    }
-}
-idea {
-    module {
-        generatedSourceDirs += file(mainAnnotationProcessorSourceDirpath)
-        generatedSourceDirs += file(testAnnotationProcessorSourceDirpath)
-    }
 }
 
 // =========================================================================================================

@@ -1,3 +1,7 @@
+## TBD
+* Add asset tags, for classifying assets when doing asset allocation calculations
+* Remove `idea` plugin from `build.gradle`, as it's no longer needed per https://youtrack.jetbrains.com/issue/IDEA-257670
+
 ## 0.6.0
 * Refactor the data model around assets in preparation for being able to define per-asset growth rates
 * Split net worth rendering into its own class to control complexity

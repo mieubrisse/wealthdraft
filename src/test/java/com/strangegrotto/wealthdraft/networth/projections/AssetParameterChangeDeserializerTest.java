@@ -1,7 +1,5 @@
 package com.strangegrotto.wealthdraft.networth.projections;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.strangegrotto.wealthdraft.Main;
 import org.junit.Assert;
 import org.junit.Test;

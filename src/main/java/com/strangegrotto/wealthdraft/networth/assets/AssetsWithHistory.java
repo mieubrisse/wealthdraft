@@ -15,6 +15,9 @@ public interface AssetsWithHistory {
     @Value.Parameter
     Map<String, Asset> getAssets();
 
+    // The user will need to declare the custom tags they want to use, along with default values
+    Map<String, CustomTagDefinition> getCustomTags();
+
     @Value.Parameter
     Map<String, Map<LocalDate, AssetSnapshot>> getHistory();
 

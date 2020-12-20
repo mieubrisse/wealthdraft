@@ -1,13 +1,34 @@
+# These are custom tags, which can be applied to assets
+# All custom tags used by assets must be declared here
+customTags:
+  # This custom tag doesn't have any restrictions
+  broker: {}
+
+  # This tag is restricted to only certain values
+  domOrIntl:
+    allowedValues:
+      - international
+      - domestic
+
 assets:
   ret:
     name: Retirement account
     type: BANK_ACCOUNT
+    tags:
+      broker: Fidelity
+      domOrIntl: domestic
   pbrok:
     name: Personal brokerage account
     type: BANK_ACCOUNT
+    tags:
+      broker: Vanguard
+      domOrIntl: domestic
   bank:
     name: Bank account
     type: BANK_ACCOUNT
+    tags:
+      broker: Chase
+      domOrIntl: international
   btc:
     name: BTC holdings
     type: BANK_ACCOUNT
