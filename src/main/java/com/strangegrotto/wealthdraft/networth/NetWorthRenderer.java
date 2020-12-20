@@ -3,8 +3,11 @@ package com.strangegrotto.wealthdraft.networth;
 import com.strangegrotto.wealthdraft.Display;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.networth.assets.AssetSnapshot;
+import com.strangegrotto.wealthdraft.networth.assets.AssetType;
 import com.strangegrotto.wealthdraft.networth.assets.AssetsWithHistory;
+import com.strangegrotto.wealthdraft.networth.assets.TestAssetType;
 import com.strangegrotto.wealthdraft.networth.projections.AssetChange;
+import com.strangegrotto.wealthdraft.networth.projections.AssetSnapshotTransformer;
 import com.strangegrotto.wealthdraft.networth.projections.ProjectionScenario;
 import com.strangegrotto.wealthdraft.networth.projections.Projections;
 import org.slf4j.Logger;
@@ -123,8 +126,8 @@ public class NetWorthRenderer {
             for (var date : futureNetWorths.keySet()) {
                 var assetSnapshotsForDate = futureNetWorths.get(date);
                 var netWorthOnDate = assetSnapshotsForDate.values().stream()
-                        .map(snapshot -> snapshot.getValue())
-                        .reduce(BigDecimal.ZERO, (l, r) -> l.add(r));
+                        .map(AssetSnapshot::getValue)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
                 display.printCurrencyItem(date.toString(), netWorthOnDate);
             }
         }
@@ -132,6 +135,8 @@ public class NetWorthRenderer {
     }
 
     private static ValOrGerr<SortedMap<LocalDate, Map<String, AssetSnapshot>>> calculateSingleScenarioAssetSnapshots(
+            // TODO Debugging
+            Map<String, TestAssetType<?>> assetTypes,
             Map<String, AssetSnapshot> latestHistAssetSnapshots,
             ProjectionScenario scenario,
             int maxYearsToProject,
@@ -169,6 +174,15 @@ public class NetWorthRenderer {
                     AssetSnapshot snapshot = newAssetSnapshots.get(assetId);
                     // TODO to be entirely accurate, this should really be daily compounding (since the user could issue
                     //  a +15k to their bank account the day before compounding and that would all be counted)
+
+
+                    // TODO Debugging
+                    var snapshotTransformer = assetTypes.get(assetId).getTransformer(Ass);
+                    snapshotTransformer.projectOneMonth(snapshot);
+
+
+
+
                     AssetSnapshot newSnapshot = snapshot.projectOneMonth();
                     newAssetSnapshots.put(assetId, newSnapshot);
                 }
@@ -179,7 +193,7 @@ public class NetWorthRenderer {
                 Map<String, AssetChange> assetChangesForDate = assetChanges.get(date);
 
                 for (String assetId : assetChangesForDate.keySet()) {
-                    AssetChange change = assetChangesForDate.get(assetId);
+                    AssetChange<?> change = assetChangesForDate.get(assetId);
                     AssetSnapshot snapshot = newAssetSnapshots.get(assetId);
                     ValOrGerr<AssetSnapshot> newSnapshotOrErr = snapshot.applyChange(change);
                     if (newSnapshotOrErr.hasGerr()) {
