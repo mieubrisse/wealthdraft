@@ -1,17 +1,52 @@
 package com.strangegrotto.wealthdraft.networth.assets;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
-import org.immutables.value.Value;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.google.common.collect.Maps;
+import com.strangegrotto.wealthdraft.errors.ValOrGerr;
+import com.strangegrotto.wealthdraft.networth.BankAccountAsset;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Contains metadata about an asset
  */
-@WealthdraftImmutableStyle
-@Value.Immutable
-@JsonDeserialize(as = ImmAsset.class)
-public interface Asset {
-    String getName();
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "type"
+)
+@JsonSubTypes(
+    @JsonSubTypes.Type(name = "BANK_ACCOUNT", value = BankAccountAsset.class)
+)
+public abstract class Asset {
+    public abstract String getName();
 
-    AssetType getType();
+    public abstract AssetType getType();
+
+    public final ValOrGerr<Map<AssetTag, String>> getTags() {
+        var customTagStrs = getCustomTags();
+        var defaultTags = getDefaultTags();
+        var defaultTagNames = defaultTags.keySet().stream()
+                .map(AssetTag::getName)
+                .collect(Collectors.toSet());
+
+        var result = new HashMap<AssetTag, String>(defaultTags);
+        for (String customTagName : customTagStrs.keySet()) {
+            if (defaultTagNames.contains(customTagName)) {
+                return ValOrGerr.newGerr(
+                        "Custom tag '{}' collides with default tag of the same name",
+                        customTagName
+                );
+            }
+            var customTagObj = new CustomAssetTag(customTagName);
+            result.put(customTagObj, customTagStrs.get(customTagName));
+        }
+        return ValOrGerr.val(result);
+    }
+
+    protected abstract Map<String, String> getCustomTags();
+
+    protected abstract Map<DefaultAssetTag, String> getDefaultTags();
 }
