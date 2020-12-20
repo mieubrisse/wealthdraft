@@ -36,23 +36,7 @@ public class AssetsWithHistoryDeserializer extends JsonDeserializer<AssetsWithHi
         ObjectMapper mapper = (ObjectMapper) parser.getCodec();
         RawAssetsWithHistory raw = parser.readValueAs(RawAssetsWithHistory.class);
         var assets = raw.getAssets();
-
-        // Validate that the custom tag definitions are valid
         var customTagDefinitions = raw.getCustomTags();
-        for (String customTagName : customTagDefinitions.keySet()) {
-            var definition = customTagDefinitions.get(customTagName);
-            var allowedValues = definition.getAllowedValues();
-            var defaultValueOpt = definition.getDefaultValue();
-            if (allowedValues.size() > 0 && defaultValueOpt.isPresent()) {
-                String defaultValue = definition.getDefaultValue().get();
-                if (!allowedValues.contains(defaultValue)) {
-                    throw new JsonParseException(parser, "Custom tag '" + customTagName + "' has default value '" +
-                            defaultValue + "' defined, but that value isn't in the allowed values list");
-                }
-            }
-        }
-
-        // Build default tags
 
         // Validate that all the custom tags being used by the assets are predeclared, and have the values
         //  expected
@@ -68,8 +52,15 @@ public class AssetsWithHistoryDeserializer extends JsonDeserializer<AssetsWithHi
                     );
                 }
                 var customTagDefinition = customTagDefinitions.get(tagName);
+                var allowedTagValues = customTagDefinition.getAllowedValues();
                 var tagValue = customTagsForAsset.get(tagName);
-                if
+                if (allowedTagValues.size() > 0 && !allowedTagValues.contains(tagValue)) {
+                    throw new JsonParseException(
+                            parser,
+                            "Asset '" + assetId + "' has value '" + tagValue + "' for custom tag '" + tagName + ", which" +
+                                    " isn't in the set of allowed values"
+                    );
+                }
             }
         }
 

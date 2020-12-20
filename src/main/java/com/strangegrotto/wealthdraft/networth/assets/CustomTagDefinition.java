@@ -11,8 +11,7 @@ import java.util.Set;
 @Value.Immutable
 @JsonDeserialize(as = ImmCustomTagDefinition.class)
 public interface CustomTagDefinition {
-    // A missing value means no default value
-    Optional<String> getDefaultValue();
+    // TODO Implement default values
 
     // An empty set means all values are allowed
     Set<String> getAllowedValues();
