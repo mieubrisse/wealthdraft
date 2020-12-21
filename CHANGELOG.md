@@ -1,3 +1,6 @@
+## 0.7.6
+* Use personal access token for pushing to repo
+
 ## 0.7.5
 * Actually fix syntax error :|
 

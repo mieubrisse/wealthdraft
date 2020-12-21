@@ -56,6 +56,7 @@ jobs:
           name: "Publish Release on GitHub"
           command: |
             go get github.com/tcnksm/ghr
+            echo ghr -t TOKEN -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} <<pipeline.git.tag>> ./workspace/
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} <<pipeline.git.tag>> ./workspace/
 
 workflows:
@@ -72,6 +73,8 @@ workflows:
             tags: 
               only: /^[0-9]+\.[0-9]+\.[0-9]+$/
       - publish-github-release:
+          context:
+            - github-public-repo-access
           requires:
             - build
           filters:
