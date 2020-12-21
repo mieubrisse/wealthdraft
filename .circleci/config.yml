@@ -44,7 +44,7 @@ jobs:
       - run: mv build/libs/*.jar workspace/
       - persist_to_workspace:
           root: workspace
-          paths: *
+          paths: wealthdraft-<<pipeline.git.tag>>.jar
 
   publish-github-release:
     docker:
@@ -56,8 +56,7 @@ jobs:
           name: "Publish Release on GitHub"
           command: |
             go get github.com/tcnksm/ghr
-            VERSION="<<pipeline.git.tag>>"
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} ${VERSION} ./workspace/
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} <<pipeline.git.tag>> ./workspace/
 
 workflows:
   main:

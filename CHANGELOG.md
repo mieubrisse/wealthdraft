@@ -1,3 +1,9 @@
+## 0.7.5
+* Actually fix syntax error :|
+
+## 0.7.4
+* Fix syntax error in CircleCI config file
+
 ## 0.7.3
 * Try using workspaces to pass artifacts between jobs
 
