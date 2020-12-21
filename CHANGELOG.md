@@ -1,3 +1,6 @@
+## TBD
+* Trying again to publish artifacts on only X.Y.Z tags
+
 ## 0.7.0
 * Add asset tags, for classifying assets when doing asset allocation calculations
 * Remove `idea` plugin from `build.gradle`, as it's no longer needed per https://youtrack.jetbrains.com/issue/IDEA-257670
