@@ -1,0 +1,7 @@
+customTags:
+  # This collides with an intrinsic tag; we should get an error
+  assetType: {}
+assets:
+  ret:
+    name: Retirement account
+    type: BANK_ACCOUNT
