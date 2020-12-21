@@ -1,3 +1,6 @@
+## 0.7.2
+* More CircleCI debugging
+
 ## 0.7.1
 * Trying again to publish artifacts on only X.Y.Z tags
 

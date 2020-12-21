@@ -58,7 +58,16 @@ jobs:
 workflows:
   main:
     jobs:
-      - build
+      - build:
+          filters:
+            branches:
+              # No need to build these - we only care about PR (non-master/develop) and tag builds
+              ignore:
+                - master
+                - develop
+            # Build tags in preparation for publishing a Github release
+            tags: 
+              only: /^[0-9]+\.[0-9]+\.[0-9]+$/
       - publish-github-release:
           requires:
             - build
