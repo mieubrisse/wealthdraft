@@ -6,8 +6,8 @@ import java.net.URL;
 
 // TODO Split these up into AssetsFile, GovConstantsFile, etc. like we've done with ProjectionsFile enum
 public enum ExampleInputFile implements TestFileProvider {
-    SCENARIOS("scenarios-example.yml"),
-    GOV_CONSTANTS("gov-constants-example.yml");
+    SCENARIOS("scenarios.yml"),
+    GOV_CONSTANTS("gov-constants.yml");
 
     private static final String CONTAINING_DIRNAME = "examples";
 

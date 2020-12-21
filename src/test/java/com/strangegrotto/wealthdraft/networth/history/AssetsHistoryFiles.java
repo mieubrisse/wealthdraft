@@ -8,7 +8,7 @@ import java.net.URL;
 public enum AssetsHistoryFiles implements TestFileProvider {
     NONEXISTENT_ASSET("nonexistent-asset.yml"),
     FUTURE_DATE("future-date.yml"),
-    EXAMPLE(TestResourceDirnames.EXAMPLES.getDirname(), "assets-history-example.yml");
+    EXAMPLE(TestResourceDirnames.EXAMPLES.getDirname(), "assets-history.yml");
 
     private final String containingDirname;
     private final String filename;

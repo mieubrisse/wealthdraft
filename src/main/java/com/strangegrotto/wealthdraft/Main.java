@@ -176,7 +176,7 @@ public class Main {
 
         addDeserializersNeedingAssets(mapper, assetDefinitions.getAssets());
 
-        String assetsHistoryFilepath = parsedArgs.getString(ASSETS_FILEPATH_ARG);
+        String assetsHistoryFilepath = parsedArgs.getString(ASSETS_HISTORY_FILEPATH_ARG);
         log.debug("Assets history filepath: {}", assetsHistoryFilepath);
         AssetsHistory assetsHistory;
         try {

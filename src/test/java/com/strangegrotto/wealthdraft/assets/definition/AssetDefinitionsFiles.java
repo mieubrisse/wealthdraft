@@ -9,7 +9,7 @@ public enum AssetDefinitionsFiles implements TestFileProvider  {
     DISALLOWED_TAG_VALUES("disallowed-tag-value.yml"),
     INTRINSIC_TAG_COLLISION("intrinsic-tag-collision.yml"),
     UNRECOGNIZED_TAG("unrecognized-tag.yml"),
-    EXAMPLE(TestResourceDirnames.EXAMPLES.getDirname(), "assets-example.yml");
+    EXAMPLE(TestResourceDirnames.EXAMPLES.getDirname(), "assets.yml");
 
     private final String containingDirname;
     private final String filename;
