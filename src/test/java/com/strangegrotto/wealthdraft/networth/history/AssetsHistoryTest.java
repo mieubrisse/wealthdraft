@@ -1,6 +1,7 @@
 package com.strangegrotto.wealthdraft.networth.history;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import com.strangegrotto.wealthdraft.Main;
 import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitions;
 import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitionsFiles;

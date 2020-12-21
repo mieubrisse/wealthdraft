@@ -1,5 +1,6 @@
 package com.strangegrotto.wealthdraft.assets.definition;
 
+import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import com.strangegrotto.wealthdraft.Main;
 import com.strangegrotto.wealthdraft.networth.history.AssetsHistoryFiles;
 import org.junit.Assert;
@@ -21,9 +22,19 @@ public class AssetDefinitionsTest {
         );
     }
 
-    @Test(expected = IOException.class)
+    @Test(expected = ValueInstantiationException.class)
     public void testErrorOnInvalidTagValue() throws IOException {
         parseAssetsFile(AssetDefinitionsFiles.DISALLOWED_TAG_VALUES);
+    }
+
+    @Test(expected = ValueInstantiationException.class)
+    public void testErrorOnCollisionWithIntrinsicTag() throws IOException {
+        parseAssetsFile(AssetDefinitionsFiles.INTRINSIC_TAG_COLLISION);
+    }
+
+    @Test(expected = ValueInstantiationException.class)
+    public void testErrorOnUnrecognizedTag() throws IOException {
+        parseAssetsFile(AssetDefinitionsFiles.UNRECOGNIZED_TAG);
     }
 
     private static AssetDefinitions parseAssetsFile(AssetDefinitionsFiles testFile) throws IOException {
