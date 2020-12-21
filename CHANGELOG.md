@@ -1,3 +1,6 @@
+## 0.7.7
+* Upgrade CircleCI Go Docker image to 1.15
+
 ## 0.7.6
 * Use personal access token for pushing to repo
 
