@@ -1,3 +1,6 @@
+## 0.7.3
+* Try using workspaces to pass artifacts between jobs
+
 ## 0.7.2
 * More CircleCI debugging
 
