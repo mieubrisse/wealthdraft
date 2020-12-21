@@ -1,3 +1,12 @@
+## 0.7.0
+* Add asset tags, for classifying assets when doing asset allocation calculations
+* Remove `idea` plugin from `build.gradle`, as it's no longer needed per https://youtrack.jetbrains.com/issue/IDEA-257670
+* Removed `AssetType` in favor of classes that implement `Asset` directly (e.g. `BankAccountAsset`)
+* Reordered package structure to be more sensible
+* Split deserialization & error-checking for `AssetsHistory` and `AssetDefinitions` to make code easier to manage
+* Drop the `-example` suffix to all the example files
+* Update CircleCI config to publish releases automatically
+
 ## 0.6.0
 * Refactor the data model around assets in preparation for being able to define per-asset growth rates
 * Split net worth rendering into its own class to control complexity

@@ -1,15 +1,18 @@
 package com.strangegrotto.wealthdraft.networth.projections;
 
 import com.strangegrotto.wealthdraft.Main;
-import com.strangegrotto.wealthdraft.networth.assets.AssetsFiles;
-import com.strangegrotto.wealthdraft.networth.assets.AssetsWithHistory;
-import com.strangegrotto.wealthdraft.networth.assets.ImmAssetsWithHistory;
+import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitions;
+import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitionsFiles;
+import com.strangegrotto.wealthdraft.assets.definition.ImmAssetDefinitions;
+import com.strangegrotto.wealthdraft.networth.history.AssetsHistory;
+import com.strangegrotto.wealthdraft.networth.history.AssetsHistoryFiles;
+import com.strangegrotto.wealthdraft.networth.history.ImmAssetsHistory;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.HashMap;
 
 public class ProjectionsDeserializerTest {
     @Test
@@ -61,12 +64,12 @@ public class ProjectionsDeserializerTest {
     @Test
     public void testInvalidYmlThrowsException() throws IOException {
         var mapper = Main.getObjectMapper();
-        var assetsUrl = AssetsFiles.EXAMPLE.getResource();
-        AssetsWithHistory assetsWithHistory;
-        assetsWithHistory = mapper.readValue(assetsUrl, AssetsWithHistory.class);
+        var assetsUrl = AssetDefinitionsFiles.EXAMPLE.getResource();
+        var assetDefinitions = mapper.readValue(assetsUrl, AssetDefinitions.class);
+        Main.addDeserializersNeedingAssets(mapper, assetDefinitions.getAssets());
 
         var projectionsUrl = ProjectionsFiles.INVALID_YML.getResource();
-        Main.addDeserializersNeedingAssets(mapper, assetsWithHistory.getAssets());
+        Main.addDeserializersNeedingAssets(mapper, assetDefinitions.getAssets());
         try {
             mapper.readValue(projectionsUrl, Projections.class);
             Assert.fail("Deserialization of projections should have failed due to invalid YAML but didn't");
@@ -78,11 +81,11 @@ public class ProjectionsDeserializerTest {
         var mapper = Main.getObjectMapper();
 
         // Empty assets this time, so all projections will correspond to nonexistent assets
-        var assetsWithHistory = ImmAssetsWithHistory.builder().build();
+        var assetDefinitions = ImmAssetDefinitions.builder().build();
 
         var projectionsUrl = ProjectionsFiles.EXAMPLE.getResource();
 
-        Main.addDeserializersNeedingAssets(mapper, assetsWithHistory.getAssets());
+        Main.addDeserializersNeedingAssets(mapper, assetDefinitions.getAssets());
         var projections = mapper.readValue(projectionsUrl, Projections.class);
 
         var projectionScenariosOrErr = projections.getScenarios();
@@ -191,9 +194,9 @@ public class ProjectionsDeserializerTest {
 
     private static Projections parseProjectionsFile(ProjectionsFiles testFile) throws IOException {
         var mapper = Main.getObjectMapper();
-        var assetsUrl = AssetsFiles.EXAMPLE.getResource();
-        var assetsWithHistory = mapper.readValue(assetsUrl, AssetsWithHistory.class);
-        Main.addDeserializersNeedingAssets(mapper, assetsWithHistory.getAssets());
+        var assetsUrl = AssetDefinitionsFiles.EXAMPLE.getResource();
+        var assetDefinitions = mapper.readValue(assetsUrl, AssetDefinitions.class);
+        Main.addDeserializersNeedingAssets(mapper, assetDefinitions.getAssets());
 
         var projectionsUrl = testFile.getResource();
         return mapper.readValue(projectionsUrl, Projections.class);

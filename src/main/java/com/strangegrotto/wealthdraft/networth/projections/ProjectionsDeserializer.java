@@ -9,8 +9,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.strangegrotto.wealthdraft.errors.Gerr;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
-import com.strangegrotto.wealthdraft.networth.assets.Asset;
-import com.strangegrotto.wealthdraft.networth.assets.AssetType;
+import com.strangegrotto.wealthdraft.assets.definition.Asset;
+import com.strangegrotto.wealthdraft.assets.temporal.AssetChange;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -139,10 +139,9 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
                 }
 
                 Asset referencedAsset = assets.get(assetId);
-                AssetType referencedAssetType = referencedAsset.getType();
                 AssetChange parsedAssetChange;
                 try {
-                    parsedAssetChange = mapper.convertValue(unparsedAssetChange, referencedAssetType.getChangeType());
+                    parsedAssetChange = mapper.convertValue(unparsedAssetChange, referencedAsset.getChangeType());
                 } catch (IllegalArgumentException e) {
                     return ValOrGerr.propGerr(
                             Gerr.newGerr(e.getMessage()),

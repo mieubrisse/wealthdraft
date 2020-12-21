@@ -16,14 +16,16 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Ordering;
+import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitions;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.govconstants.RetirementConstants;
 import com.strangegrotto.wealthdraft.networth.NetWorthRenderer;
-import com.strangegrotto.wealthdraft.networth.assets.Asset;
-import com.strangegrotto.wealthdraft.networth.assets.AssetsWithHistory;
-import com.strangegrotto.wealthdraft.networth.projections.AssetParameterChange;
-import com.strangegrotto.wealthdraft.networth.projections.AssetParameterChangeDeserializer;
+import com.strangegrotto.wealthdraft.assets.definition.Asset;
+import com.strangegrotto.wealthdraft.networth.history.AssetsHistory;
+import com.strangegrotto.wealthdraft.assets.temporal.AssetParameterChange;
+import com.strangegrotto.wealthdraft.assets.temporal.AssetParameterChangeDeserializer;
+import com.strangegrotto.wealthdraft.networth.history.AssetsHistoryDeserializer;
 import com.strangegrotto.wealthdraft.networth.projections.Projections;
 import com.strangegrotto.wealthdraft.networth.projections.ProjectionsDeserializer;
 import com.strangegrotto.wealthdraft.scenarios.IncomeStreams;
@@ -57,6 +59,7 @@ public class Main {
     private static final String TAX_SCENARIOS_FILEPATH_ARG = "scenarios";
     private static final String GOV_CONSTANTS_FILEPATH_ARG = "gov-constants";
     private static final String ASSETS_FILEPATH_ARG = "assets";
+    private static final String ASSETS_HISTORY_FILEPATH_ARG = "assets-history";
     private static final String PROJECTIONS_FILEPATH_ARG = "projections";
     private static final String LOG_LEVEL_ARG = "log-level";
     private static final String ALL_SCENARIOS_ARG = "all";
@@ -101,7 +104,11 @@ public class Main {
         parser.addArgument("--" + ASSETS_FILEPATH_ARG)
                 .dest(ASSETS_FILEPATH_ARG)
                 .required(true)
-                .help("YAML file of asset values");
+                .help("YAML file of asset definitions");
+        parser.addArgument("--" + ASSETS_HISTORY_FILEPATH_ARG)
+                .dest(ASSETS_HISTORY_FILEPATH_ARG)
+                .required(true)
+                .help("YAML file of historical asset values over time");
         parser.addArgument("--" + PROJECTIONS_FILEPATH_ARG)
                 .dest(PROJECTIONS_FILEPATH_ARG)
                 .required(true)
@@ -158,16 +165,28 @@ public class Main {
 
         String assetsFilepath = parsedArgs.getString(ASSETS_FILEPATH_ARG);
         log.debug("Assets filepath: {}", assetsFilepath);
-        AssetsWithHistory assetsWithHistory;
+        AssetDefinitions assetDefinitions;
         try {
-            assetsWithHistory = mapper.readValue(new File(assetsFilepath), AssetsWithHistory.class);
+            assetDefinitions = mapper.readValue(new File(assetsFilepath), AssetDefinitions.class);
         } catch (IOException e) {
             log.error("An error occurred parsing the assets file '{}'", assetsFilepath, e);
             System.exit(FAILURE_EXIT_CODE);
             return;
         }
 
-        addDeserializersNeedingAssets(mapper, assetsWithHistory.getAssets());
+        addDeserializersNeedingAssets(mapper, assetDefinitions.getAssets());
+
+        String assetsHistoryFilepath = parsedArgs.getString(ASSETS_HISTORY_FILEPATH_ARG);
+        log.debug("Assets history filepath: {}", assetsHistoryFilepath);
+        AssetsHistory assetsHistory;
+        try {
+            assetsHistory = mapper.readValue(new File(assetsHistoryFilepath), AssetsHistory.class);
+        } catch (IOException e) {
+            log.error("An error occurred parsing the assets history file '{}'", assetsHistoryFilepath, e);
+            System.exit(FAILURE_EXIT_CODE);
+            return;
+        }
+
         String projectionsFilepath = parsedArgs.getString(PROJECTIONS_FILEPATH_ARG);
         log.debug("Projections filepath: {}", assetsFilepath);
         Projections projections;
@@ -192,7 +211,7 @@ public class Main {
         );
 
         var netWorthRenderer = new NetWorthRenderer(display, PROJECTION_DISPLAY_INCREMENT_YEARS, MAX_YEARS_TO_PROJECT);
-        var emptyOrErr =netWorthRenderer.renderNetWorthCalculations(assetsWithHistory, projections);
+        var emptyOrErr =netWorthRenderer.renderNetWorthCalculations(assetsHistory, projections);
         if (emptyOrErr.hasGerr()) {
             log.error("An error occurred rendering net worth: {}", emptyOrErr.getGerr());
             System.exit(FAILURE_EXIT_CODE);
@@ -215,10 +234,10 @@ public class Main {
 
     @VisibleForTesting
     public static void addDeserializersNeedingAssets(ObjectMapper mapper, Map<String, Asset> assets) {
-        var projectionsDeserializer = new ProjectionsDeserializer(assets);
-        var projectionsDeserializationModule = new SimpleModule();
-        projectionsDeserializationModule.addDeserializer(Projections.class, projectionsDeserializer);
-        mapper.registerModule(projectionsDeserializationModule);
+        var deserializerModule = new SimpleModule();
+        deserializerModule.addDeserializer(Projections.class, new ProjectionsDeserializer(assets));
+        deserializerModule.addDeserializer(AssetsHistory.class, new AssetsHistoryDeserializer(assets));
+        mapper.registerModule(deserializerModule);
     }
 
     private static void configureRootLoggerPattern(ch.qos.logback.classic.Logger rootLogger) {

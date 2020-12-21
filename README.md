@@ -14,7 +14,7 @@ Usage
 -----
 ### Quickstart
 1. Download the latest version of the binary from [the releases page](https://github.com/mieubrisse/wealthdraft/releases)
-2. Copy the `gov-constants-example` and `scenarios-example` files to your machine
+2. Copy all the files in `src/test/resources/examples` to your local machine
 3. Modify them as you please
 4. Run `java -jar wealthdraft-X.Y.Z.jar --help` to view which flags to pass in
 

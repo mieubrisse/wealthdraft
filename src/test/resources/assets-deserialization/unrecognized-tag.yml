@@ -1,0 +1,7 @@
+customTags: {}
+assets:
+  ret:
+    name: Retirement account
+    type: BANK_ACCOUNT
+    tags:
+      nonexistentTag: foo

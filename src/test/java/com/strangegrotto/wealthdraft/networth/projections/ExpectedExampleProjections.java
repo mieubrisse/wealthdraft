@@ -1,7 +1,10 @@
 package com.strangegrotto.wealthdraft.networth.projections;
 
-import com.strangegrotto.wealthdraft.networth.assets.ExpectedExampleAssetsWithHistory;
-import com.strangegrotto.wealthdraft.networth.ImmBankAccountAssetChange;
+import com.strangegrotto.wealthdraft.assets.definition.ExpectedExampleAssetDefinitions;
+import com.strangegrotto.wealthdraft.assets.temporal.AssetChange;
+import com.strangegrotto.wealthdraft.assets.temporal.AssetParameterChangeValueOperation;
+import com.strangegrotto.wealthdraft.assetimpls.bankaccount.ImmBankAccountAssetChange;
+import com.strangegrotto.wealthdraft.assets.temporal.ImmAssetParameterChange;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -38,8 +41,8 @@ public class ExpectedExampleProjections {
                 .build();
         var allBtc3yAllChanges = new TreeMap<LocalDate, Map<String, AssetChange>>(Map.of(
                 today.plusYears(3), Map.of(
-                        ExpectedExampleAssetsWithHistory.BITCOIN_HOLDING_ID, allBtc3yBtcChange,
-                        ExpectedExampleAssetsWithHistory.BANK_ACCOUNT_ID, allBtc3yBankChange
+                        ExpectedExampleAssetDefinitions.BITCOIN_HOLDING_ID, allBtc3yBtcChange,
+                        ExpectedExampleAssetDefinitions.BANK_ACCOUNT_ID, allBtc3yBankChange
                 )
         ));
         SELL_ALL_BTC_3Y_SCENARIO = ImmProjectionScenario.of(
@@ -60,8 +63,8 @@ public class ExpectedExampleProjections {
                 .build();
         var halfBtc1yAllChanges = new TreeMap<LocalDate, Map<String, AssetChange>>(Map.of(
                 today.plusYears(1), Map.of(
-                        ExpectedExampleAssetsWithHistory.BITCOIN_HOLDING_ID, halfBtc1yBtcChange,
-                        ExpectedExampleAssetsWithHistory.BANK_ACCOUNT_ID, halfBtc1yBankChange
+                        ExpectedExampleAssetDefinitions.BITCOIN_HOLDING_ID, halfBtc1yBtcChange,
+                        ExpectedExampleAssetDefinitions.BANK_ACCOUNT_ID, halfBtc1yBankChange
                 )
         ));
         SELL_HALF_BTC_1Y_SCENARIO = ImmProjectionScenario.of(
@@ -82,8 +85,8 @@ public class ExpectedExampleProjections {
                 .build();
         var otherHalfBtc2yAllChanges = new TreeMap<LocalDate, Map<String, AssetChange>>(Map.of(
                 today.plusYears(2), Map.of(
-                        ExpectedExampleAssetsWithHistory.BITCOIN_HOLDING_ID, otherHalfBtc2yBtcChange,
-                        ExpectedExampleAssetsWithHistory.BANK_ACCOUNT_ID, otherHalfBtc2yBankChange
+                        ExpectedExampleAssetDefinitions.BITCOIN_HOLDING_ID, otherHalfBtc2yBtcChange,
+                        ExpectedExampleAssetDefinitions.BANK_ACCOUNT_ID, otherHalfBtc2yBankChange
                 )
         ));
         otherHalfBtc2yAllChanges.putAll(halfBtc1yAllChanges);
