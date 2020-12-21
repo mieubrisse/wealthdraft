@@ -1,3 +1,6 @@
+## 0.7.8
+* Remove debugging line in CircleCI config now that publishing works!
+
 ## 0.7.7
 * Upgrade CircleCI Go Docker image to 1.15
 

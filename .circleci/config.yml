@@ -53,10 +53,9 @@ jobs:
       - attach_workspace:
           at: ./workspace
       - run:
-          name: "Publish Release on GitHub"
+          name: "Publish JAR to release on GitHub"
           command: |
             go get github.com/tcnksm/ghr
-            echo ghr -t TOKEN -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} <<pipeline.git.tag>> ./workspace/
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} <<pipeline.git.tag>> ./workspace/
 
 workflows:
