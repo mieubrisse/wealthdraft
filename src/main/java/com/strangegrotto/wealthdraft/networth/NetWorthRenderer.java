@@ -4,7 +4,7 @@ import com.strangegrotto.wealthdraft.Display;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.assets.temporal.AssetSnapshot;
 import com.strangegrotto.wealthdraft.assets.temporal.AssetChange;
-import com.strangegrotto.wealthdraft.networth.history.AssetsWithHistory;
+import com.strangegrotto.wealthdraft.networth.history.AssetsHistory;
 import com.strangegrotto.wealthdraft.networth.projections.ProjectionScenario;
 import com.strangegrotto.wealthdraft.networth.projections.Projections;
 import org.slf4j.Logger;
@@ -29,8 +29,8 @@ public class NetWorthRenderer {
         this.maxYearsToProject = maxYearsToProject;
     }
 
-    public ValOrGerr<Void> renderNetWorthCalculations(AssetsWithHistory assetsWithHistory, Projections projections) {
-        Map<String, Map<LocalDate, AssetSnapshot>> history = assetsWithHistory.getHistory();
+    public ValOrGerr<Void> renderNetWorthCalculations(AssetsHistory assetsHistory, Projections projections) {
+        Map<String, Map<LocalDate, AssetSnapshot>> history = assetsHistory.getHistory();
 
         display.printEmptyLine();
         display.printBannerHeader("Historical Net Worth");

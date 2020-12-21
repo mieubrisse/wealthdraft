@@ -1,26 +1,27 @@
-package com.strangegrotto.wealthdraft.networth.history;
+package com.strangegrotto.wealthdraft.assets.definition;
 
 import com.strangegrotto.wealthdraft.TestFileProvider;
 import com.strangegrotto.wealthdraft.TestResourceDirnames;
 
 import java.net.URL;
 
-public enum AssetsFiles implements TestFileProvider {
-    NONEXISTENT_ASSET("nonexistent-asset.yml"),
-    FUTURE_DATE("future-date.yml"),
-    DISALLOWED_TAG_VALUE("disallowed-tag-value.yml"),
+public enum AssetDefinitionsFiles implements TestFileProvider  {
+    DISALLOWED_TAG_VALUES("disallowed-tag-value.yml"),
     EXAMPLE(TestResourceDirnames.EXAMPLES.getDirname(), "assets-example.yml");
 
     private final String containingDirname;
     private final String filename;
 
-    AssetsFiles(String containingDirname, String filename) {
+    AssetDefinitionsFiles(String containingDirname, String filename) {
         this.containingDirname = containingDirname;
         this.filename = filename;
     }
 
-    AssetsFiles(String filename) {
-        this(TestResourceDirnames.ASSET_DESERIALIZATION_TESTS.getDirname(), filename);
+    AssetDefinitionsFiles(String filename) {
+        this(
+                TestResourceDirnames.ASSET_DEFINITIONS_DESERIALIZATION_TESTS.getDirname(),
+                filename
+        );
     }
 
     @Override
