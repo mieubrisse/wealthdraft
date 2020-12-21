@@ -11,12 +11,7 @@ import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 
 import java.util.Map;
 
-@JsonTypeInfo(
-        use = JsonTypeInfo.Id.NAME,
-        property = "type")
-@JsonSubTypes(
-        @JsonSubTypes.Type(value = BankAccountAsset.class, name = "BANK_ACCOUNT")
-)
+@JsonDeserialize(as = AbstractAsset.class)
 public interface Asset {
     String getName();
 
@@ -26,7 +21,9 @@ public interface Asset {
 
     AssetTypeTagValue getAssetTypeTagValue();
 
-    Map<String, String> getAssetSpecificTags();
+    // If I add more tests here, make sure to:
+    //  1) update the deserializeEveryAsset test AssetDefinitionsTest to verify it doesn't collide with intrinsic tags
+    //  2) update the AssetDefinitions check to verify that custom asset tags don't collide with asset-specific tags
 
     Map<String, String> getCustomTags();
 }

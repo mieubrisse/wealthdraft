@@ -23,6 +23,7 @@ public interface AssetDefinitions {
     @Value.Check
     default void check() {
         var customTagDefinitions = getCustomTags();
+
         for (var customTagName : customTagDefinitions.keySet()) {
             Preconditions.checkState(
                     !IntrinsicAssetTag.getAllNames().contains(customTagName),

@@ -1,0 +1,7 @@
+assets:
+  bank:
+    name: Bank Account
+    type: BANK_ACCOUNT
+  stock:
+    name: Stonks
+    type: STOCK

@@ -1,3 +1,7 @@
+## TBD
+* Refactor asset modelling further to make it easy to add new assets
+* Add `StockAsset`
+
 ## 0.7.8
 * Remove debugging line in CircleCI config now that publishing works!
 

@@ -25,4 +25,6 @@ public interface AssetParameterChange {
         }
         return result;
     }
+
+    // TODO Build toString that's the original parse
 }
