@@ -1,12 +1,12 @@
-package com.strangegrotto.wealthdraft.assets.bankaccount;
+package com.strangegrotto.wealthdraft.assetimpls.bankaccount;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
-import com.strangegrotto.wealthdraft.assets.AbstractAsset;
-import com.strangegrotto.wealthdraft.assets.AssetSnapshot;
-import com.strangegrotto.wealthdraft.assets.DefaultAssetTag;
-import com.strangegrotto.wealthdraft.assets.AssetChange;
+import com.strangegrotto.wealthdraft.assets.definition.AbstractAsset;
+import com.strangegrotto.wealthdraft.assets.temporal.AssetSnapshot;
+import com.strangegrotto.wealthdraft.assets.definition.DefaultAssetTag;
+import com.strangegrotto.wealthdraft.assets.temporal.AssetChange;
 import org.immutables.value.Value;
 
 import java.util.Map;

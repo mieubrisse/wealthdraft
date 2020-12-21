@@ -1,5 +1,6 @@
-package com.strangegrotto.wealthdraft.assets;
+package com.strangegrotto.wealthdraft.assets.temporal;
 
+import com.strangegrotto.wealthdraft.assets.temporal.AssetParameterChangeValueOperation;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -1,11 +1,11 @@
-package com.strangegrotto.wealthdraft.assets;
+package com.strangegrotto.wealthdraft.assets.definition;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
-import com.strangegrotto.wealthdraft.assets.bankaccount.BankAccountAsset;
+import com.strangegrotto.wealthdraft.assetimpls.bankaccount.BankAccountAsset;
 
 import java.util.HashMap;
 import java.util.Map;

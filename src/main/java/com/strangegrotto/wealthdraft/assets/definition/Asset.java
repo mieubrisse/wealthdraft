@@ -1,6 +1,8 @@
-package com.strangegrotto.wealthdraft.assets;
+package com.strangegrotto.wealthdraft.assets.definition;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.strangegrotto.wealthdraft.assets.temporal.AssetChange;
+import com.strangegrotto.wealthdraft.assets.temporal.AssetSnapshot;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 
 import java.util.Map;

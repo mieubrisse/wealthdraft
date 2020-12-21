@@ -1,7 +1,8 @@
-package com.strangegrotto.wealthdraft.assets;
+package com.strangegrotto.wealthdraft.assets.definition;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
+import com.strangegrotto.wealthdraft.assets.ImmCustomTagDefinition;
 import org.immutables.value.Value;
 
 import java.util.Set;

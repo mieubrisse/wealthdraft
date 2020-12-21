@@ -8,9 +8,9 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
-import com.strangegrotto.wealthdraft.assets.AbstractAsset;
-import com.strangegrotto.wealthdraft.assets.CustomTagDefinition;
-import com.strangegrotto.wealthdraft.assets.AssetSnapshot;
+import com.strangegrotto.wealthdraft.assets.definition.AbstractAsset;
+import com.strangegrotto.wealthdraft.assets.definition.CustomTagDefinition;
+import com.strangegrotto.wealthdraft.assets.temporal.AssetSnapshot;
 import org.immutables.value.Value;
 
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.assets;
+package com.strangegrotto.wealthdraft.assets.temporal;
 
 
 /**
