@@ -16,7 +16,6 @@ jobs:
       # - image: circleci/postgres:9.4
 
     working_directory: ~/repo
-
     environment:
       # Customize the JVM maximum heap limit
       JVM_OPTS: -Xmx3200m
@@ -39,27 +38,42 @@ jobs:
             - ~/.gradle
           key: v1-dependencies-{{ checksum "build.gradle" }}
 
-      # run tests!
-      - run: gradle test
+      - run: gradle build
+
+      - run: mkdir -p workspace
+      - run: mv build/libs/*.jar workspace/
+      - persist_to_workspace:
+          root: workspace
+          paths: wealthdraft-<<pipeline.git.tag>>.jar
 
   publish-github-release:
     docker:
-      - image: circleci/golang:1.8
+      - image: circleci/golang:1.15
     steps:
       - attach_workspace:
-          at: ./artifacts
+          at: ./workspace
       - run:
-          name: "Publish Release on GitHub"
+          name: "Publish JAR to release on GitHub"
           command: |
             go get github.com/tcnksm/ghr
-            VERSION="<<pipeline.git.tag>>"
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} ${VERSION} ./artifacts/
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} <<pipeline.git.tag>> ./workspace/
 
 workflows:
   main:
     jobs:
-      - build
+      - build:
+          filters:
+            branches:
+              # No need to build these - we only care about PR (non-master/develop) and tag builds
+              ignore:
+                - master
+                - develop
+            # Build tags in preparation for publishing a Github release
+            tags: 
+              only: /^[0-9]+\.[0-9]+\.[0-9]+$/
       - publish-github-release:
+          context:
+            - github-public-repo-access
           requires:
             - build
           filters:

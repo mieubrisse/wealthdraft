@@ -1,3 +1,24 @@
+## 0.7.8
+* Remove debugging line in CircleCI config now that publishing works!
+
+## 0.7.7
+* Upgrade CircleCI Go Docker image to 1.15
+
+## 0.7.6
+* Use personal access token for pushing to repo
+
+## 0.7.5
+* Actually fix syntax error :|
+
+## 0.7.4
+* Fix syntax error in CircleCI config file
+
+## 0.7.3
+* Try using workspaces to pass artifacts between jobs
+
+## 0.7.2
+* More CircleCI debugging
+
 ## 0.7.1
 * Trying again to publish artifacts on only X.Y.Z tags
 
