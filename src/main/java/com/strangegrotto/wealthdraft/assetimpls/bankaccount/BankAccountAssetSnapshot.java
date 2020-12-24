@@ -84,7 +84,7 @@ public class BankAccountAssetSnapshot implements AssetSnapshot {
             newInterestRate = newInterestRateOrErr.getVal();
         }
 
-        var newSnapshot = ImmBankAccountAssetSnapshot.of(newBalance, newInterestRate);
+        var newSnapshot = new BankAccountAssetSnapshot(newBalance, newInterestRate);
         return ValOrGerr.val(newSnapshot);
     }
 }

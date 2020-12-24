@@ -18,7 +18,12 @@ public enum ExampleInputFile implements TestFileProvider {
     }
 
     @Override
-    public URL getResource() {
-        return getClass().getClassLoader().getResource(CONTAINING_DIRNAME + "/" + this.filename);
+    public String getContainingDirname() {
+        return CONTAINING_DIRNAME;
+    }
+
+    @Override
+    public String getFilename() {
+        return this.filename;
     }
 }

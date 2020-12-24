@@ -11,7 +11,13 @@ import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 
 import java.util.Map;
 
-@JsonDeserialize(as = AbstractAsset.class)
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "type"
+)
+@JsonSubTypes(
+        @JsonSubTypes.Type(value = BankAccountAsset.class, name = "BANK_ACCOUNT")
+)
 public interface Asset {
     String getName();
 

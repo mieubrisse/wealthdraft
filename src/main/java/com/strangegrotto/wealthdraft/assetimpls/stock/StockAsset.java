@@ -2,6 +2,8 @@ package com.strangegrotto.wealthdraft.assetimpls.stock;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import com.strangegrotto.wealthdraft.assetimpls.AssetTypeTagValue;
 import com.strangegrotto.wealthdraft.assetimpls.bankaccount.BankAccountAssetChange;
 import com.strangegrotto.wealthdraft.assetimpls.bankaccount.BankAccountAssetSnapshot;
@@ -18,9 +20,9 @@ public final class StockAsset extends AbstractAsset {
     @JsonCreator
     public StockAsset(
             @JsonProperty("name") String name,
-            @JsonProperty("tags") Map<String, String> tags
+            @JsonProperty("tags") @JsonSetter(nulls = Nulls.AS_EMPTY) Map<String, String> customTags
     ) {
-        super(name, tags);
+        super(name, customTags);
     }
 
     @Override

@@ -4,18 +4,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.strangegrotto.wealthdraft.assetimpls.bankaccount.BankAccountAsset;
 import org.immutables.value.Value;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@JsonTypeInfo(
-        use = JsonTypeInfo.Id.NAME,
-        property = "type")
-@JsonSubTypes(
-        @JsonSubTypes.Type(value = BankAccountAsset.class, name = "BANK_ACCOUNT")
-)
 public abstract class AbstractAsset implements Asset {
     private final String name;
     private final Map<String, String> customTags;
