@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class AssetsHistoryDeserializer extends JsonDeserializer<AssetsHistory> {
     private final Map<String, Asset> assets;
@@ -32,7 +34,7 @@ public class AssetsHistoryDeserializer extends JsonDeserializer<AssetsHistory> {
 
         LocalDate today = LocalDate.now();
 
-        var parsedAssetSnapshots = new HashMap<String, Map<LocalDate, AssetSnapshot>>();
+        var parsedAssetSnapshots = new HashMap<String, SortedMap<LocalDate, AssetSnapshot>>();
         for (var assetId : raw.keySet()) {
             var unparsedSnapshotsForAsset = raw.get(assetId);
             Preconditions.checkState(
@@ -42,7 +44,7 @@ public class AssetsHistoryDeserializer extends JsonDeserializer<AssetsHistory> {
             var asset = this.assets.get(assetId);
             var snapshotType = asset.getSnapshotType();
 
-            var parsedSnapshotsForAsset = new HashMap<LocalDate, AssetSnapshot>();
+            var parsedSnapshotsForAsset = new TreeMap<LocalDate, AssetSnapshot>();
             for (var date : unparsedSnapshotsForAsset.keySet()) {
                 var unparsedSnapshot = unparsedSnapshotsForAsset.get(date);
                 var parsedSnapshot = mapper.convertValue(unparsedSnapshot, snapshotType);

@@ -17,6 +17,7 @@ import java.util.Map;
 )
 @JsonSubTypes(
         @JsonSubTypes.Type(value = BankAccountAsset.class, name = "BANK_ACCOUNT")
+        // TODO add stock asset here
 )
 public interface Asset {
     String getName();

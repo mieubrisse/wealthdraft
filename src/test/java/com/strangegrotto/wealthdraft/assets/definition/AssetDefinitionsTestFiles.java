@@ -8,6 +8,7 @@ public enum AssetDefinitionsTestFiles implements TestFileProvider  {
     INTRINSIC_TAG_COLLISION("intrinsic-tag-collision.yml"),
     UNRECOGNIZED_TAG("unrecognized-tag.yml"),
     EVERY_ASSET_TYPE("every-asset-type.yml"),
+    UNSPECIFIED_TAGS_IS_EMPTY_MAP("unspecified-tags-is-empty-map.yml"),
     EXAMPLE(TestResourceDirnames.EXAMPLES.getDirname(), "assets.yml");
 
     private final String containingDirname;

@@ -21,7 +21,7 @@ public final class BankAccountAsset extends AbstractAsset {
     @JsonCreator
     public BankAccountAsset(
             @JsonProperty("name") String name,
-            @JsonProperty(value = "tags", defaultValue = new HashMap<>()) Map<String, String> customTags
+            @JsonProperty("tags") @JsonSetter(nulls = Nulls.AS_EMPTY) Map<String, String> customTags
     ) {
         super(name, customTags);
     }

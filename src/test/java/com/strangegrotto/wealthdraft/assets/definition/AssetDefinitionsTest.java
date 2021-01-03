@@ -24,7 +24,7 @@ public class AssetDefinitionsTest {
 
 
     @Test
-    public void testDeserializngEveryAsset() throws IOException {
+    public void testDeserializingEveryAsset() throws IOException {
         var definitions = parseAssetsFile(AssetDefinitionsTestFiles.EVERY_ASSET_TYPE);
         var assetsMap = definitions.getAssets();
         var assets = assetsMap.values();
@@ -58,6 +58,13 @@ public class AssetDefinitionsTest {
                 .distinct()
                 .count();
         Assert.assertEquals(expectedDistinctAssets, distinctAssetTypeTags);
+    }
+
+    @Test
+    public void unspecifiedTagsIsEmptyMap() throws IOException {
+        var definitions = parseAssetsFile(AssetDefinitionsTestFiles.UNSPECIFIED_TAGS_IS_EMPTY_MAP);
+        var asset = definitions.getAssets().get(ExpectedExampleAssetDefinitions.RETIREMENT_ACCOUNT_ID);
+        Assert.assertEquals(asset.getCustomTags().size(), 0);
     }
 
     @Test(expected = ValueInstantiationException.class)
