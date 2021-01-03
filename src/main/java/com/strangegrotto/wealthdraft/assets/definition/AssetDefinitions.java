@@ -12,7 +12,7 @@ import java.util.Map;
 @JsonDeserialize(as = ImmAssetDefinitions.class)
 public interface AssetDefinitions {
     @Value.Parameter
-    Map<String, Asset> getAssets();
+    Map<String, Asset<?, ?>> getAssets();
 
     Map<String, CustomTagDefinition> getCustomTags();
 

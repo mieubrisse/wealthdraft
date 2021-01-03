@@ -18,9 +18,9 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 public class AssetsHistoryDeserializer extends JsonDeserializer<AssetsHistory> {
-    private final Map<String, Asset> assets;
+    private final Map<String, Asset<?, ?>> assets;
 
-    public AssetsHistoryDeserializer(Map<String, Asset> assets) {
+    public AssetsHistoryDeserializer(Map<String, Asset<?, ?>> assets) {
         this.assets = assets;
     }
 

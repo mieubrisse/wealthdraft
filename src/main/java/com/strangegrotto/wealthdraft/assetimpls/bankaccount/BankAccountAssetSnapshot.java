@@ -33,7 +33,7 @@ public abstract class BankAccountAssetSnapshot implements AssetSnapshot<BankAcco
     }
 
     @Override
-    public final ValOrGerr<AssetSnapshot> applyChange(BankAccountAssetChange change) {
+    public final ValOrGerr<AssetSnapshot<BankAccountAssetChange>> applyChange(BankAccountAssetChange change) {
         var balanceModificationOpt = change.getBalance();
         var newBalance = getBalance();
         if (balanceModificationOpt.isPresent()) {

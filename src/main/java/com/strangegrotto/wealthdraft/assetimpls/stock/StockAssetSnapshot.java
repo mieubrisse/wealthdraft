@@ -18,13 +18,13 @@ public abstract class StockAssetSnapshot implements AssetSnapshot<StockAssetChan
     //               Logic custom this class, not filled by Immutables
     // ================================================================================
     @Override
-    public final AssetSnapshot projectOneMonth() {
+    public final AssetSnapshot<StockAssetChange> projectOneMonth() {
         // TODO use price-pulling function
         return ImmStockAssetSnapshot.of(getQuantity(), getPrice());
     }
 
     @Override
-    public final ValOrGerr<AssetSnapshot> applyChange(StockAssetChange change) {
+    public final ValOrGerr<AssetSnapshot<StockAssetChange>> applyChange(StockAssetChange change) {
         var quantityChangeOpt = change.getQuantity();
         var newQuantity = getQuantity();
         if (quantityChangeOpt.isPresent()) {

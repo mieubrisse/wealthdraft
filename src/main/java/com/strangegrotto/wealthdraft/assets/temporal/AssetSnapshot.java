@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 public interface AssetSnapshot<CHANGE extends AssetChange> {
     BigDecimal getValue();
 
-    AssetSnapshot projectOneMonth();
+    AssetSnapshot<CHANGE> projectOneMonth();
 
-    ValOrGerr<AssetSnapshot> applyChange(CHANGE change);
+    ValOrGerr<AssetSnapshot<CHANGE>> applyChange(CHANGE change);
 }
