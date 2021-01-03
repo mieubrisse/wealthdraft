@@ -15,9 +15,9 @@ import java.util.Optional;
 public interface StockAssetChange extends AssetChange {
     @Value.Parameter
     @JsonProperty("quantity")
-    Optional<AssetParameterChange> getQuantityChangeOpt();
+    Optional<AssetParameterChange> getQuantity();
 
     @Value.Parameter
     @JsonProperty("price")
-    Optional<AssetParameterChange> getPriceChangeOpt();
+    Optional<AssetParameterChange> getPrice();
 }

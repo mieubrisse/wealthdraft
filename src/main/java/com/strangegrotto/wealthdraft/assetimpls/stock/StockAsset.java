@@ -22,20 +22,6 @@ public abstract class StockAsset implements Asset {
     //               Logic custom this class, not filled by Immutables
     // ================================================================================
     @Override
-    public final Class<? extends AssetSnapshot> getSnapshotType() {
-        return StockAssetSnapshot.class;
-    }
-
-    @Override
-    public abstract String getName();
-
-    @Override
-    public abstract Map<String, String> getTags();
-
-    // ================================================================================
-    //                     Functions filled by Immutables
-    // ================================================================================
-    @Override
     public final AssetTypeTagValue getAssetTypeTagValue() {
         return AssetTypeTagValue.STOCK;
     }
@@ -44,4 +30,19 @@ public abstract class StockAsset implements Asset {
     public final Class<? extends AssetChange> getChangeType() {
         return StockAssetChange.class;
     }
+
+    @Override
+    public final Class<? extends AssetSnapshot> getSnapshotType() {
+        return StockAssetSnapshot.class;
+    }
+
+    // ================================================================================
+    //                     Functions filled by Immutables
+    // ================================================================================
+
+    @Override
+    public abstract String getName();
+
+    @Override
+    public abstract Map<String, String> getTags();
 }

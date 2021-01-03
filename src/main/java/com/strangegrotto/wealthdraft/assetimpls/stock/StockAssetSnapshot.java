@@ -1,18 +1,14 @@
 package com.strangegrotto.wealthdraft.assetimpls.stock;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.annotations.VisibleForTesting;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
 import com.strangegrotto.wealthdraft.assets.temporal.AssetChange;
-import com.strangegrotto.wealthdraft.assets.temporal.AssetParameterChange;
 import com.strangegrotto.wealthdraft.assets.temporal.AssetSnapshot;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import org.immutables.value.Value;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 
 @WealthdraftImmutableStyle
 @Value.Immutable
@@ -32,7 +28,7 @@ public abstract class StockAssetSnapshot implements AssetSnapshot {
         // TODO Get rid of this nasty casty
         StockAssetChange castedChange = (StockAssetChange) change;
 
-        var quantityChangeOpt = castedChange.getQuantityChangeOpt();
+        var quantityChangeOpt = castedChange.getQuantity();
         var newQuantity = getQuantity();
         if (quantityChangeOpt.isPresent()) {
             var newQuantityOrErr = quantityChangeOpt.get().apply(getQuantity());
@@ -45,7 +41,7 @@ public abstract class StockAssetSnapshot implements AssetSnapshot {
             newQuantity = newQuantityOrErr.getVal();
         }
 
-        var priceChangeOpt = castedChange.getPriceChangeOpt();
+        var priceChangeOpt = castedChange.getPrice();
         var newPrice = getPrice();
         if (priceChangeOpt.isPresent()) {
             var newPriceOrErr = priceChangeOpt.get().apply(getPrice());
