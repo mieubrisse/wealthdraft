@@ -205,6 +205,7 @@ public class Main {
                 MINIMUM_ITEM_TITLE_WIDTH,
                 MINIMUM_CURRENCY_WIDTH,
                 CURRENCY_FORMAT);
+
         renderMultipleTaxScenarios(
                 display,
                 parsedArgs.getBoolean(ALL_SCENARIOS_ARG),

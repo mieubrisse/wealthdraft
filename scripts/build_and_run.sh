@@ -13,4 +13,6 @@ extra_args="${1+"${@}"}"
     --assets ${test_resources_dirpath}/assets.yml \
     --assets-history ${test_resources_dirpath}/assets-history.yml \
     --projections ${test_resources_dirpath}/projections.yml \
+    `# Render all scenarios during development, to make sure things work` \
+    --all \
     ${extra_args}"
