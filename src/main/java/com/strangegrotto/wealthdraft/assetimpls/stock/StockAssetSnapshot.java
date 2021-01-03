@@ -2,47 +2,40 @@ package com.strangegrotto.wealthdraft.assetimpls.stock;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.annotations.VisibleForTesting;
+import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
 import com.strangegrotto.wealthdraft.assets.temporal.AssetChange;
 import com.strangegrotto.wealthdraft.assets.temporal.AssetParameterChange;
 import com.strangegrotto.wealthdraft.assets.temporal.AssetSnapshot;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
+import org.immutables.value.Value;
 
 import java.math.BigDecimal;
 import java.util.Optional;
 
-public class StockAssetSnapshot implements AssetSnapshot {
-    private final BigDecimal quantity;
-    private final BigDecimal price;
-
-    @JsonCreator
-    public StockAssetSnapshot(
-            @JsonProperty("quantity") BigDecimal quantity,
-            @JsonProperty("price") BigDecimal price
-    ) {
-        this.quantity = quantity;
-        this.price = price;
-    }
-
+@WealthdraftImmutableStyle
+@Value.Immutable
+@JsonDeserialize(as = ImmStockAssetSnapshot.class)
+public abstract class StockAssetSnapshot implements AssetSnapshot {
+    // ================================================================================
+    //               Logic custom this class, not filled by Immutables
+    // ================================================================================
     @Override
-    public BigDecimal getValue() {
-        return this.quantity.multiply(this.price);
-    }
-
-    @Override
-    public AssetSnapshot projectOneMonth() {
+    public final AssetSnapshot projectOneMonth() {
         // TODO use price-pulling function
-        return new StockAssetSnapshot(this.quantity, this.price);
+        return ImmStockAssetSnapshot.of(getQuantity(), getPrice());
     }
 
     @Override
-    public ValOrGerr<AssetSnapshot> applyChange(AssetChange change) {
+    public final ValOrGerr<AssetSnapshot> applyChange(AssetChange change) {
         // TODO Get rid of this nasty casty
         StockAssetChange castedChange = (StockAssetChange) change;
 
         var quantityChangeOpt = castedChange.getQuantityChangeOpt();
-        var newQuantity = this.quantity;
+        var newQuantity = getQuantity();
         if (quantityChangeOpt.isPresent()) {
-            var newQuantityOrErr = quantityChangeOpt.get().apply(this.quantity);
+            var newQuantityOrErr = quantityChangeOpt.get().apply(getQuantity());
             if (newQuantityOrErr.hasGerr()) {
                 return ValOrGerr.propGerr(
                         newQuantityOrErr.getGerr(),
@@ -53,9 +46,9 @@ public class StockAssetSnapshot implements AssetSnapshot {
         }
 
         var priceChangeOpt = castedChange.getPriceChangeOpt();
-        var newPrice = this.price;
+        var newPrice = getPrice();
         if (priceChangeOpt.isPresent()) {
-            var newPriceOrErr = priceChangeOpt.get().apply(this.price);
+            var newPriceOrErr = priceChangeOpt.get().apply(getPrice());
             if (newPriceOrErr.hasGerr()) {
                 return ValOrGerr.propGerr(
                         newPriceOrErr.getGerr(),
@@ -65,6 +58,22 @@ public class StockAssetSnapshot implements AssetSnapshot {
             newPrice = newPriceOrErr.getVal();
         }
 
-        return ValOrGerr.val(new StockAssetSnapshot(newQuantity, newPrice));
+        return ValOrGerr.val(ImmStockAssetSnapshot.of(newQuantity, newPrice));
     }
+
+    // ================================================================================
+    //                     Functions filled by Immutables
+    // ================================================================================
+    @VisibleForTesting
+    abstract BigDecimal getQuantity();
+
+    @VisibleForTesting
+    abstract BigDecimal getPrice();
+
+    @Override
+    @Value.Derived
+    public BigDecimal getValue() {
+        return getQuantity().multiply(getPrice());
+    }
+
 }

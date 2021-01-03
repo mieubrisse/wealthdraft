@@ -6,7 +6,8 @@ package com.strangegrotto.wealthdraft.assetimpls;
  * There should be one per custom asset implementation
  */
 public enum AssetTypeTagValue {
-    BANK_ACCOUNT("Bank Account");
+    BANK_ACCOUNT("Bank Account"),
+    STOCK("Stock");
 
     private final String value;
 

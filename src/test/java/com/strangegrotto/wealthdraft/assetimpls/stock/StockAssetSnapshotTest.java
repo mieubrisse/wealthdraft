@@ -13,7 +13,7 @@ public class StockAssetSnapshotTest {
     @Test
     public void testProjectionMath() {
         var expectedSnapshotValue = BigDecimal.valueOf(60);
-        var snapshot = new StockAssetSnapshot(BigDecimal.valueOf(12), BigDecimal.valueOf(5));
+        var snapshot = ImmStockAssetSnapshot.of(BigDecimal.valueOf(12), BigDecimal.valueOf(5));
         var snapshotValue = snapshot.getValue();
         Assert.assertEquals(expectedSnapshotValue, snapshotValue);
 
@@ -25,7 +25,7 @@ public class StockAssetSnapshotTest {
 
     @Test
     public void testChangeApplication() {
-        var snapshot = new StockAssetSnapshot(BigDecimal.valueOf(10), BigDecimal.valueOf(10));
+        var snapshot = ImmStockAssetSnapshot.of(BigDecimal.valueOf(10), BigDecimal.valueOf(10));
         var change = ImmStockAssetChange.of(
                 ImmAssetParameterChange.of(
                         BigDecimal.valueOf(5),

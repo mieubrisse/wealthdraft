@@ -19,7 +19,7 @@ assets:
       domOrIntl: domestic
   pbrok:
     name: Personal brokerage account
-    type: BANK_ACCOUNT
+    type: STOCK
     tags:
       broker: Vanguard
       domOrIntl: domestic

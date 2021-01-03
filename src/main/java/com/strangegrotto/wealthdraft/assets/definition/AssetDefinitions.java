@@ -1,12 +1,8 @@
 package com.strangegrotto.wealthdraft.assets.definition;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
-import com.strangegrotto.wealthdraft.assets.definition.Asset;
-import com.strangegrotto.wealthdraft.assets.definition.CustomTagDefinition;
-import com.strangegrotto.wealthdraft.assets.definition.IntrinsicAssetTag;
 import org.immutables.value.Value;
 
 import java.util.Map;
@@ -35,7 +31,7 @@ public interface AssetDefinitions {
         var assets = getAssets();
         for (var assetId : assets.keySet()) {
             var asset = assets.get(assetId);
-            var customTagsForAsset = asset.getCustomTags();
+            var customTagsForAsset = asset.getTags();
             for (var customTag : customTagsForAsset.keySet()) {
                 var customTagValue = customTagsForAsset.get(customTag);
 
