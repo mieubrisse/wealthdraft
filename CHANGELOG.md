@@ -1,3 +1,9 @@
+## 0.8.0
+* Refactor asset modelling further to make it easy to add new assets
+* Add `StockAsset`
+* Disallowed duplicate keys in JSON, and added a test to ensure it's blocked
+* Sorted each asset's records in `AssetsHistory` by date 
+
 ## 0.7.8
 * Remove debugging line in CircleCI config now that publishing works!
 

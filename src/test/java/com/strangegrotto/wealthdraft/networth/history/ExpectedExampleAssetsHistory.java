@@ -1,8 +1,10 @@
 package com.strangegrotto.wealthdraft.networth.history;
 
+import com.strangegrotto.wealthdraft.assetimpls.bankaccount.BankAccountAssetSnapshot;
+import com.strangegrotto.wealthdraft.assetimpls.bankaccount.ImmBankAccountAssetSnapshot;
+import com.strangegrotto.wealthdraft.assetimpls.stock.ImmStockAssetSnapshot;
 import com.strangegrotto.wealthdraft.assets.definition.ExpectedExampleAssetDefinitions;
 import com.strangegrotto.wealthdraft.assets.temporal.AssetSnapshot;
-import com.strangegrotto.wealthdraft.assetimpls.bankaccount.ImmBankAccountAssetSnapshot;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -21,8 +23,8 @@ public class ExpectedExampleAssetsHistory {
         ));
 
         var brokerageHistory = new TreeMap<LocalDate, AssetSnapshot>(Map.of(
-                LocalDate.of(2020, 6, 1), ImmBankAccountAssetSnapshot.of(new BigDecimal(20000), new BigDecimal("0.03")),
-                LocalDate.of(2020, 11, 30), ImmBankAccountAssetSnapshot.of(new BigDecimal(22000), new BigDecimal("0.03"))
+                LocalDate.of(2020, 6, 1), ImmStockAssetSnapshot.of(new BigDecimal(1000), new BigDecimal(100)),
+                LocalDate.of(2020, 11, 30), ImmStockAssetSnapshot.of(new BigDecimal(1200), new BigDecimal(90))
         ));
 
         var bankAccountHistory = new TreeMap<LocalDate, AssetSnapshot>(Map.of(

@@ -13,24 +13,14 @@ import java.math.BigDecimal;
 @WealthdraftImmutableStyle
 @Value.Immutable
 @JsonDeserialize(as = ImmBankAccountAssetSnapshot.class)
-public interface BankAccountAssetSnapshot extends AssetSnapshot {
-    int MONTHS_IN_YEAR = 12;
+public abstract class BankAccountAssetSnapshot implements AssetSnapshot {
+    private static final int MONTHS_IN_YEAR = 12;
 
-    @VisibleForTesting
-    BigDecimal getBalance();
-
-    @VisibleForTesting
-    BigDecimal getAnnualInterestRate();
-
+    // ================================================================================
+    //               Logic custom this class, not filled by Immutables
+    // ================================================================================
     @Override
-    @Value.Derived
-    default BigDecimal getValue() {
-        return getBalance();
-    }
-
-
-    @Override
-    default BankAccountAssetSnapshot projectOneMonth() {
+    public final BankAccountAssetSnapshot projectOneMonth() {
         // BigDecimal doesn't allow fractional exponents, so we drop down to Double (the loss of
         //  precision will be okay here)
         double balanceDouble = getBalance().doubleValue();
@@ -43,7 +33,7 @@ public interface BankAccountAssetSnapshot extends AssetSnapshot {
     }
 
     @Override
-    default ValOrGerr<AssetSnapshot> applyChange(AssetChange change) {
+    public final ValOrGerr<AssetSnapshot> applyChange(AssetChange change) {
         BankAccountAssetChange castedChange = (BankAccountAssetChange)change;
 
         var balanceModificationOpt = castedChange.getBalance();
@@ -72,5 +62,20 @@ public interface BankAccountAssetSnapshot extends AssetSnapshot {
 
         var newSnapshot = ImmBankAccountAssetSnapshot.of(newBalance, newInterestRate);
         return ValOrGerr.val(newSnapshot);
+    }
+
+    // ================================================================================
+    //                     Functions filled by Immutables
+    // ================================================================================
+    @VisibleForTesting
+    abstract BigDecimal getBalance();
+
+    @VisibleForTesting
+    abstract BigDecimal getAnnualInterestRate();
+
+    @Override
+    @Value.Derived
+    public BigDecimal getValue() {
+        return getBalance();
     }
 }

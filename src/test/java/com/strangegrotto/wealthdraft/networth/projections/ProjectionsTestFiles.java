@@ -3,9 +3,7 @@ package com.strangegrotto.wealthdraft.networth.projections;
 import com.strangegrotto.wealthdraft.TestFileProvider;
 import com.strangegrotto.wealthdraft.TestResourceDirnames;
 
-import java.net.URL;
-
-enum ProjectionsFiles implements TestFileProvider {
+enum ProjectionsTestFiles implements TestFileProvider {
     CHANGE_ON_TODAY("change-on-today.yml"),
     DEPEND_ON_NONEXISTENT_SCENARIO("depend-on-nonexistent-scenario.yml"),
     DEPENDENCY_CYLE("dependency-cycle.yml"),
@@ -19,17 +17,23 @@ enum ProjectionsFiles implements TestFileProvider {
     private final String containingDirname;
     private final String filename;
 
-    ProjectionsFiles(String containingDirname, String filename) {
+    ProjectionsTestFiles(String containingDirname, String filename) {
         this.containingDirname = containingDirname;
         this.filename = filename;
     }
 
-    ProjectionsFiles(String filename) {
+    ProjectionsTestFiles(String filename) {
         this(TestResourceDirnames.PROJECTIONS_DESERIALIZATION_TESTS.getDirname(), filename);
     }
 
     @Override
-    public URL getResource() {
-        return getClass().getClassLoader().getResource(this.containingDirname + "/" + this.filename);
+    public String getContainingDirname() {
+        return this.containingDirname;
+    }
+
+    @Override
+    public String getFilename() {
+        return this.filename;
+
     }
 }

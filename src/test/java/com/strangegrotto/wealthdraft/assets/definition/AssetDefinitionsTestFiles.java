@@ -3,23 +3,23 @@ package com.strangegrotto.wealthdraft.assets.definition;
 import com.strangegrotto.wealthdraft.TestFileProvider;
 import com.strangegrotto.wealthdraft.TestResourceDirnames;
 
-import java.net.URL;
-
-public enum AssetDefinitionsFiles implements TestFileProvider  {
+public enum AssetDefinitionsTestFiles implements TestFileProvider  {
     DISALLOWED_TAG_VALUES("disallowed-tag-value.yml"),
     INTRINSIC_TAG_COLLISION("intrinsic-tag-collision.yml"),
     UNRECOGNIZED_TAG("unrecognized-tag.yml"),
+    EVERY_ASSET_TYPE("every-asset-type.yml"),
+    UNSPECIFIED_TAGS_IS_EMPTY_MAP("unspecified-tags-is-empty-map.yml"),
     EXAMPLE(TestResourceDirnames.EXAMPLES.getDirname(), "assets.yml");
 
     private final String containingDirname;
     private final String filename;
 
-    AssetDefinitionsFiles(String containingDirname, String filename) {
+    AssetDefinitionsTestFiles(String containingDirname, String filename) {
         this.containingDirname = containingDirname;
         this.filename = filename;
     }
 
-    AssetDefinitionsFiles(String filename) {
+    AssetDefinitionsTestFiles(String filename) {
         this(
                 TestResourceDirnames.ASSET_DEFINITIONS_DESERIALIZATION_TESTS.getDirname(),
                 filename
@@ -27,7 +27,12 @@ public enum AssetDefinitionsFiles implements TestFileProvider  {
     }
 
     @Override
-    public URL getResource() {
-        return getClass().getClassLoader().getResource(this.containingDirname + "/" + this.filename);
+    public String getContainingDirname() {
+        return this.containingDirname;
+    }
+
+    @Override
+    public String getFilename() {
+        return this.filename;
     }
 }

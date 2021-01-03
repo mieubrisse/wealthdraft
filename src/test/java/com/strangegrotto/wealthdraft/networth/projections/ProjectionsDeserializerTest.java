@@ -2,11 +2,8 @@ package com.strangegrotto.wealthdraft.networth.projections;
 
 import com.strangegrotto.wealthdraft.Main;
 import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitions;
-import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitionsFiles;
+import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitionsTestFiles;
 import com.strangegrotto.wealthdraft.assets.definition.ImmAssetDefinitions;
-import com.strangegrotto.wealthdraft.networth.history.AssetsHistory;
-import com.strangegrotto.wealthdraft.networth.history.AssetsHistoryFiles;
-import com.strangegrotto.wealthdraft.networth.history.ImmAssetsHistory;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -46,7 +43,7 @@ public class ProjectionsDeserializerTest {
 
     @Test
     public void testValidDeserialization() throws IOException {
-        var projections = parseProjectionsFile(ProjectionsFiles.EXAMPLE);
+        var projections = parseProjectionsFile(ProjectionsTestFiles.EXAMPLE);
         var projectionScenariosOrErr = projections.getScenarios();
         var projectionScenarios = new HashMap<String, ProjectionScenario>();
         for (var scenarioId : projectionScenariosOrErr.keySet()) {
@@ -64,11 +61,11 @@ public class ProjectionsDeserializerTest {
     @Test
     public void testInvalidYmlThrowsException() throws IOException {
         var mapper = Main.getObjectMapper();
-        var assetsUrl = AssetDefinitionsFiles.EXAMPLE.getResource();
+        var assetsUrl = AssetDefinitionsTestFiles.EXAMPLE.getResource();
         var assetDefinitions = mapper.readValue(assetsUrl, AssetDefinitions.class);
         Main.addDeserializersNeedingAssets(mapper, assetDefinitions.getAssets());
 
-        var projectionsUrl = ProjectionsFiles.INVALID_YML.getResource();
+        var projectionsUrl = ProjectionsTestFiles.INVALID_YML.getResource();
         Main.addDeserializersNeedingAssets(mapper, assetDefinitions.getAssets());
         try {
             mapper.readValue(projectionsUrl, Projections.class);
@@ -83,7 +80,7 @@ public class ProjectionsDeserializerTest {
         // Empty assets this time, so all projections will correspond to nonexistent assets
         var assetDefinitions = ImmAssetDefinitions.builder().build();
 
-        var projectionsUrl = ProjectionsFiles.EXAMPLE.getResource();
+        var projectionsUrl = ProjectionsTestFiles.EXAMPLE.getResource();
 
         Main.addDeserializersNeedingAssets(mapper, assetDefinitions.getAssets());
         var projections = mapper.readValue(projectionsUrl, Projections.class);
@@ -100,7 +97,7 @@ public class ProjectionsDeserializerTest {
 
     @Test
     public void testErrorOnPastDate() throws IOException {
-        var projections = parseProjectionsFile(ProjectionsFiles.PAST_DATE_IN_PROJECTION);
+        var projections = parseProjectionsFile(ProjectionsTestFiles.PAST_DATE_IN_PROJECTION);
 
         var projectionScenariosOrErr = projections.getScenarios();
         var scenarioOrErr = projectionScenariosOrErr.get(ExpectedExampleProjections.SELL_ALL_BTC_3Y_ID);
@@ -112,7 +109,7 @@ public class ProjectionsDeserializerTest {
 
     @Test
     public void testNoErrorOnToday() throws IOException {
-        var projections = parseProjectionsFile(ProjectionsFiles.CHANGE_ON_TODAY);
+        var projections = parseProjectionsFile(ProjectionsTestFiles.CHANGE_ON_TODAY);
         var projectionScenariosOrErr = projections.getScenarios();
         var scenarioOrErr = projectionScenariosOrErr.get(ExpectedExampleProjections.SELL_ALL_BTC_3Y_ID);
         Assert.assertFalse(
@@ -123,7 +120,7 @@ public class ProjectionsDeserializerTest {
 
     @Test
     public void testErrorOnDependencyCycle() throws IOException {
-        var projections = parseProjectionsFile(ProjectionsFiles.DEPENDENCY_CYLE);
+        var projections = parseProjectionsFile(ProjectionsTestFiles.DEPENDENCY_CYLE);
         var projectionScenariosOrErr = projections.getScenarios();
         for (String scenarioId : projectionScenariosOrErr.keySet()) {
             var scenarioOrErr = projectionScenariosOrErr.get(scenarioId);
@@ -136,7 +133,7 @@ public class ProjectionsDeserializerTest {
 
     @Test
     public void testErrorOnTwoChangesOnSameDate() throws IOException {
-        var projections = parseProjectionsFile(ProjectionsFiles.TWO_CHNAGES_ON_SAME_DATE);
+        var projections = parseProjectionsFile(ProjectionsTestFiles.TWO_CHNAGES_ON_SAME_DATE);
         var projectionScenariosOrErr = projections.getScenarios();
         var scenarioOrErr = projectionScenariosOrErr.get(ExpectedExampleProjections.SELL_ALL_BTC_3Y_ID);
         Assert.assertTrue(
@@ -147,7 +144,7 @@ public class ProjectionsDeserializerTest {
 
     @Test
     public void testErrorOnTwoChangesOnSameDateFromDiffScenarios() throws IOException {
-        var projections = parseProjectionsFile(ProjectionsFiles.TWO_CHANGES_ON_SAME_DATE_FROM_DIFF_SCENARIOS);
+        var projections = parseProjectionsFile(ProjectionsTestFiles.TWO_CHANGES_ON_SAME_DATE_FROM_DIFF_SCENARIOS);
         var projectionScenariosOrErr = projections.getScenarios();
         var scenarioOrErr = projectionScenariosOrErr.get(ExpectedExampleProjections.SELL_OTHER_HALF_BTC_2Y_ID);
         Assert.assertTrue(
@@ -158,7 +155,7 @@ public class ProjectionsDeserializerTest {
 
     @Test
     public void testErrorWhenDependencyHasError() throws IOException {
-        var projections = parseProjectionsFile(ProjectionsFiles.DEPENDENCY_HAS_ERROR);
+        var projections = parseProjectionsFile(ProjectionsTestFiles.DEPENDENCY_HAS_ERROR);
         var projectionScenariosOrErr = projections.getScenarios();
         for (String scenarioId : projectionScenariosOrErr.keySet()) {
             var scenarioOrErr = projectionScenariosOrErr.get(scenarioId);
@@ -183,7 +180,7 @@ public class ProjectionsDeserializerTest {
 
     @Test
     public void testErrorWhenDependingOnNonexistentScenario() throws IOException {
-        var projections = parseProjectionsFile(ProjectionsFiles.DEPEND_ON_NONEXISTENT_SCENARIO);
+        var projections = parseProjectionsFile(ProjectionsTestFiles.DEPEND_ON_NONEXISTENT_SCENARIO);
         var projectionScenariosOrErr = projections.getScenarios();
         var scenarioOrErr = projectionScenariosOrErr.get(ExpectedExampleProjections.SELL_ALL_BTC_3Y_ID);
         Assert.assertTrue(
@@ -192,9 +189,9 @@ public class ProjectionsDeserializerTest {
         );
     }
 
-    private static Projections parseProjectionsFile(ProjectionsFiles testFile) throws IOException {
+    private static Projections parseProjectionsFile(ProjectionsTestFiles testFile) throws IOException {
         var mapper = Main.getObjectMapper();
-        var assetsUrl = AssetDefinitionsFiles.EXAMPLE.getResource();
+        var assetsUrl = AssetDefinitionsTestFiles.EXAMPLE.getResource();
         var assetDefinitions = mapper.readValue(assetsUrl, AssetDefinitions.class);
         Main.addDeserializersNeedingAssets(mapper, assetDefinitions.getAssets());
 

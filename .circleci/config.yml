@@ -38,13 +38,16 @@ jobs:
             - ~/.gradle
           key: v1-dependencies-{{ checksum "build.gradle" }}
 
-      - run: gradle build
+      - run: scripts/build_and_run.sh
 
-      - run: mkdir -p workspace
-      - run: mv build/libs/*.jar workspace/
-      - persist_to_workspace:
-          root: workspace
-          paths: wealthdraft-<<pipeline.git.tag>>.jar
+      - when:
+          condition: "<<pipeline.git.tag>>"
+          steps:
+            - run: mkdir -p workspace
+            - run: mv build/libs/*.jar workspace/
+            - persist_to_workspace:
+                root: workspace
+                paths: wealthdraft-<<pipeline.git.tag>>.jar
 
   publish-github-release:
     docker:
