@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @WealthdraftImmutableStyle
 @Value.Immutable
 @JsonDeserialize(as = ImmBankAccountAssetSnapshot.class)
-public abstract class BankAccountAssetSnapshot implements AssetSnapshot {
+public abstract class BankAccountAssetSnapshot implements AssetSnapshot<BankAccountAssetChange> {
     private static final int MONTHS_IN_YEAR = 12;
 
     // ================================================================================
@@ -33,10 +33,8 @@ public abstract class BankAccountAssetSnapshot implements AssetSnapshot {
     }
 
     @Override
-    public final ValOrGerr<AssetSnapshot> applyChange(AssetChange change) {
-        BankAccountAssetChange castedChange = (BankAccountAssetChange)change;
-
-        var balanceModificationOpt = castedChange.getBalance();
+    public final ValOrGerr<AssetSnapshot> applyChange(BankAccountAssetChange change) {
+        var balanceModificationOpt = change.getBalance();
         var newBalance = getBalance();
         if (balanceModificationOpt.isPresent()) {
             ValOrGerr<BigDecimal> newBalanceOrErr = balanceModificationOpt.get().apply(getBalance());
@@ -48,7 +46,7 @@ public abstract class BankAccountAssetSnapshot implements AssetSnapshot {
             newBalance = newBalanceOrErr.getVal();
         }
 
-        var interestRateModificationOpt = castedChange.getAnnualInterestRate();
+        var interestRateModificationOpt = change.getAnnualInterestRate();
         var newInterestRate = getAnnualInterestRate();
         if (interestRateModificationOpt.isPresent()) {
             ValOrGerr<BigDecimal> newInterestRateOrErr = interestRateModificationOpt.get().apply(getAnnualInterestRate());

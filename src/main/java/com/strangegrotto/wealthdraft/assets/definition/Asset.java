@@ -21,12 +21,12 @@ import java.util.Map;
         @JsonSubTypes.Type(value = BankAccountAsset.class, name = "BANK_ACCOUNT"),
         @JsonSubTypes.Type(value = StockAsset.class, name = "STOCK")
 })
-public interface Asset {
+public interface Asset<SNAPSHOT extends AssetSnapshot<CHANGE>, CHANGE extends AssetChange> {
     String getName();
 
-    Class<? extends AssetChange> getChangeType();
+    Class<CHANGE> getChangeType();
 
-    Class<? extends AssetSnapshot> getSnapshotType();
+    Class<SNAPSHOT> getSnapshotType();
 
     AssetTypeTagValue getAssetTypeTagValue();
 

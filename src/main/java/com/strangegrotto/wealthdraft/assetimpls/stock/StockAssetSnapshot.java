@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @WealthdraftImmutableStyle
 @Value.Immutable
 @JsonDeserialize(as = ImmStockAssetSnapshot.class)
-public abstract class StockAssetSnapshot implements AssetSnapshot {
+public abstract class StockAssetSnapshot implements AssetSnapshot<StockAssetChange> {
     // ================================================================================
     //               Logic custom this class, not filled by Immutables
     // ================================================================================
@@ -24,11 +24,8 @@ public abstract class StockAssetSnapshot implements AssetSnapshot {
     }
 
     @Override
-    public final ValOrGerr<AssetSnapshot> applyChange(AssetChange change) {
-        // TODO Get rid of this nasty casty
-        StockAssetChange castedChange = (StockAssetChange) change;
-
-        var quantityChangeOpt = castedChange.getQuantity();
+    public final ValOrGerr<AssetSnapshot> applyChange(StockAssetChange change) {
+        var quantityChangeOpt = change.getQuantity();
         var newQuantity = getQuantity();
         if (quantityChangeOpt.isPresent()) {
             var newQuantityOrErr = quantityChangeOpt.get().apply(getQuantity());
@@ -41,7 +38,7 @@ public abstract class StockAssetSnapshot implements AssetSnapshot {
             newQuantity = newQuantityOrErr.getVal();
         }
 
-        var priceChangeOpt = castedChange.getPrice();
+        var priceChangeOpt = change.getPrice();
         var newPrice = getPrice();
         if (priceChangeOpt.isPresent()) {
             var newPriceOrErr = priceChangeOpt.get().apply(getPrice());
