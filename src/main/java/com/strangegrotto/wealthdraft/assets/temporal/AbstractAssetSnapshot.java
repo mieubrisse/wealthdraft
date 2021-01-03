@@ -4,6 +4,10 @@ import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 
 import java.math.BigDecimal;
 
+/**
+ * Use this class to implement {@link AssetSnapshot}
+ * @param <CHANGE> The type of asset change that the snapshot will consume/produce
+ */
 public abstract class AbstractAssetSnapshot<CHANGE extends AssetChange> implements AssetSnapshot<CHANGE> {
     private final Class<CHANGE> changeClass;
 
