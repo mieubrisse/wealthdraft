@@ -1,4 +1,4 @@
-## TBD
+## 0.8.0
 * Refactor asset modelling further to make it easy to add new assets
 * Add `StockAsset`
 * Disallowed duplicate keys in JSON, and added a test to ensure it's blocked
