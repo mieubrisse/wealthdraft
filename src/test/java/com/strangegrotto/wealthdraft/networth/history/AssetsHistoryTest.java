@@ -13,20 +13,6 @@ public class AssetsHistoryTest {
     @Test
     public void testValidDeserialization() throws IOException {
         AssetsHistory assetsHistory = parseAssetsHistoryFile(AssetsHistoryTestFiles.EXAMPLE);
-
-        // TODO dEBUGGING
-        var expected = ExpectedExampleAssetsHistory.EXPECTED_ASSETS_HISTORY;
-        var actual = assetsHistory.getHistory();
-        for (var assetId : expected.keySet()) {
-            var expectedHistoryForAsset = expected.get(assetId);
-            var actualHistoryForAsset = actual.get(assetId);
-            for (var date : expectedHistoryForAsset.keySet()) {
-                var expectedRecordForAssetOnDate = expectedHistoryForAsset.get(date);
-                var actualRecordForAssetOnDate = actualHistoryForAsset.get(date);
-                Assert.assertEquals(expectedRecordForAssetOnDate, actualRecordForAssetOnDate);
-            }
-        }
-
         Assert.assertEquals(
                 ExpectedExampleAssetsHistory.EXPECTED_ASSETS_HISTORY,
                 assetsHistory.getHistory()
