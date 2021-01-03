@@ -3,12 +3,19 @@
  */
 package com.strangegrotto.wealthdraft;
 
-public class MainTest {
-    /*
-    @Test public void testAppHasAGreeting() {
-        Main classUnderTest = new Main();
-        assertNotNull("app should have a greeting", classUnderTest.getGreeting());
-    }
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Test;
 
-     */
+import java.io.IOException;
+import java.util.HashMap;
+
+public class MainTest {
+    @Test(expected = IOException.class)
+    public void ensureDuplicateKeysThrowError() throws IOException {
+        var mapper = Main.getObjectMapper();
+        var typeFactory = mapper.getTypeFactory();
+        var mapType = typeFactory.constructMapType(HashMap.class, String.class, String.class);
+
+        mapper.readValue(MainTestFiles.DUPLICATE_KEYS.getResource(), mapType);
+    }
 }

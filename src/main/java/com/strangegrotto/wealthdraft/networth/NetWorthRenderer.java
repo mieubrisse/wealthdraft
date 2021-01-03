@@ -30,7 +30,7 @@ public class NetWorthRenderer {
     }
 
     public ValOrGerr<Void> renderNetWorthCalculations(AssetsHistory assetsHistory, Projections projections) {
-        Map<String, Map<LocalDate, AssetSnapshot>> history = assetsHistory.getHistory();
+        Map<String, SortedMap<LocalDate, AssetSnapshot>> history = assetsHistory.getHistory();
 
         display.printEmptyLine();
         display.printBannerHeader("Historical Net Worth");
@@ -60,7 +60,7 @@ public class NetWorthRenderer {
         return ValOrGerr.val(null);
     }
 
-    private static SortedMap<LocalDate, Map<String, AssetSnapshot>> getHistAssetSnapshotsByDate(Map<String, Map<LocalDate, AssetSnapshot>> history) {
+    private static SortedMap<LocalDate, Map<String, AssetSnapshot>> getHistAssetSnapshotsByDate(Map<String, SortedMap<LocalDate, AssetSnapshot>> history) {
         var assetSnapshotsByDate = new TreeMap<LocalDate, Map<String, AssetSnapshot>>();
         for (String assetId : history.keySet()) {
             var historyForAsset = history.get(assetId);

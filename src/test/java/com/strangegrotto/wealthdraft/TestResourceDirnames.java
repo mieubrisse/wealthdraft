@@ -2,6 +2,7 @@ package com.strangegrotto.wealthdraft;
 
 public enum TestResourceDirnames {
     EXAMPLES("examples"),
+    MAIN_TESTS("main"),
     ASSET_DEFINITIONS_DESERIALIZATION_TESTS("assets-deserialization"),
     ASSETS_HISTORY_DESERIALIZATION_TESTS("assets-history-deserialization"),
     PROJECTIONS_DESERIALIZATION_TESTS("projections-deserialization");

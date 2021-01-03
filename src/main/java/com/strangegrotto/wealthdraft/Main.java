@@ -6,6 +6,8 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.ConsoleAppender;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.MapType;
@@ -203,6 +205,7 @@ public class Main {
                 MINIMUM_ITEM_TITLE_WIDTH,
                 MINIMUM_CURRENCY_WIDTH,
                 CURRENCY_FORMAT);
+
         renderMultipleTaxScenarios(
                 display,
                 parsedArgs.getBoolean(ALL_SCENARIOS_ARG),
@@ -221,6 +224,8 @@ public class Main {
     @VisibleForTesting
     public static ObjectMapper getObjectMapper() {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        mapper.enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
+
         mapper.registerModule(new GuavaModule());
         mapper.registerModule(new JavaTimeModule());
         mapper.registerModule(new Jdk8Module());    // Support deserializing to Optionals

@@ -10,6 +10,7 @@ import org.immutables.value.Value;
 
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.SortedMap;
 
 @WealthdraftImmutableStyle
 @Value.Immutable
@@ -19,7 +20,7 @@ public interface AssetsHistory {
     Map<String, Asset> getAssets();
 
     @Value.Parameter
-    Map<String, Map<LocalDate, AssetSnapshot>> getHistory();
+    Map<String, SortedMap<LocalDate, AssetSnapshot>> getHistory();
 
     @Value.Check
     default void check() {

@@ -1,5 +1,6 @@
 package com.strangegrotto.wealthdraft.assets.temporal;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import org.immutables.value.Value;
@@ -25,4 +26,6 @@ public interface AssetParameterChange {
         }
         return result;
     }
+
+    // TODO Build toString that's the original parse
 }

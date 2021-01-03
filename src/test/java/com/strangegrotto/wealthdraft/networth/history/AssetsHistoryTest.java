@@ -1,11 +1,9 @@
 package com.strangegrotto.wealthdraft.networth.history;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import com.strangegrotto.wealthdraft.Main;
 import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitions;
-import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitionsFiles;
-import com.strangegrotto.wealthdraft.networth.projections.Projections;
+import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitionsTestFiles;
+import com.strangegrotto.wealthdraft.assets.definition.ExpectedExampleAssetDefinitions;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -14,7 +12,7 @@ import java.io.IOException;
 public class AssetsHistoryTest {
     @Test
     public void testValidDeserialization() throws IOException {
-        AssetsHistory assetsHistory = parseAssetsHistoryFile(AssetsHistoryFiles.EXAMPLE);
+        AssetsHistory assetsHistory = parseAssetsHistoryFile(AssetsHistoryTestFiles.EXAMPLE);
         Assert.assertEquals(
                 ExpectedExampleAssetsHistory.EXPECTED_ASSETS_HISTORY,
                 assetsHistory.getHistory()
@@ -23,17 +21,17 @@ public class AssetsHistoryTest {
 
     @Test(expected = IllegalStateException.class)
     public void testErrorOnNonexistentAsset() throws IOException{
-        parseAssetsHistoryFile(AssetsHistoryFiles.NONEXISTENT_ASSET);
+        parseAssetsHistoryFile(AssetsHistoryTestFiles.NONEXISTENT_ASSET);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testErrorOnFutureHistory() throws IOException {
-        parseAssetsHistoryFile(AssetsHistoryFiles.FUTURE_DATE);
+        parseAssetsHistoryFile(AssetsHistoryTestFiles.FUTURE_DATE);
     }
 
-    private static AssetsHistory parseAssetsHistoryFile(AssetsHistoryFiles testFile) throws IOException {
+    private static AssetsHistory parseAssetsHistoryFile(AssetsHistoryTestFiles testFile) throws IOException {
         var mapper = Main.getObjectMapper();
-        var assetsUrl = AssetDefinitionsFiles.EXAMPLE.getResource();
+        var assetsUrl = AssetDefinitionsTestFiles.EXAMPLE.getResource();
         var assetDefinitions = mapper.readValue(assetsUrl, AssetDefinitions.class);
         Main.addDeserializersNeedingAssets(mapper, assetDefinitions.getAssets());
 

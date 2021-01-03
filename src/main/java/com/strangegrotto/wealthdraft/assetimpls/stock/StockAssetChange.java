@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.assetimpls.bankaccount;
+package com.strangegrotto.wealthdraft.assetimpls.stock;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -11,13 +11,13 @@ import java.util.Optional;
 
 @WealthdraftImmutableStyle
 @Value.Immutable
-@JsonDeserialize(as = ImmBankAccountAssetChange.class)
-public interface BankAccountAssetChange extends AssetChange {
+@JsonDeserialize(as = ImmStockAssetChange.class)
+public interface StockAssetChange extends AssetChange {
     @Value.Parameter
-    @JsonProperty("balance")
-    Optional<AssetParameterChange> getBalance();
+    @JsonProperty("quantity")
+    Optional<AssetParameterChange> getQuantity();
 
     @Value.Parameter
-    @JsonProperty("annualInterestRate")
-    Optional<AssetParameterChange> getAnnualInterestRate();
+    @JsonProperty("price")
+    Optional<AssetParameterChange> getPrice();
 }
