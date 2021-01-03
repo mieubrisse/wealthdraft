@@ -3,6 +3,8 @@ package com.strangegrotto.wealthdraft.assetimpls.bankaccount;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.annotations.VisibleForTesting;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
+import com.strangegrotto.wealthdraft.assetimpls.stock.StockAssetChange;
+import com.strangegrotto.wealthdraft.assets.temporal.AbstractAssetSnapshot;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.assets.temporal.AssetSnapshot;
 import com.strangegrotto.wealthdraft.assets.temporal.AssetChange;
@@ -13,8 +15,12 @@ import java.math.BigDecimal;
 @WealthdraftImmutableStyle
 @Value.Immutable
 @JsonDeserialize(as = ImmBankAccountAssetSnapshot.class)
-public abstract class BankAccountAssetSnapshot implements AssetSnapshot<BankAccountAssetChange> {
+public abstract class BankAccountAssetSnapshot extends AbstractAssetSnapshot<BankAccountAssetChange> {
     private static final int MONTHS_IN_YEAR = 12;
+
+    public BankAccountAssetSnapshot() {
+        super(BankAccountAssetChange.class);
+    }
 
     // ================================================================================
     //               Logic custom this class, not filled by Immutables
@@ -33,7 +39,7 @@ public abstract class BankAccountAssetSnapshot implements AssetSnapshot<BankAcco
     }
 
     @Override
-    public final ValOrGerr<AssetSnapshot<BankAccountAssetChange>> applyChange(BankAccountAssetChange change) {
+    public final ValOrGerr<AssetSnapshot<BankAccountAssetChange>> applyChangeInternal(BankAccountAssetChange change) {
         var balanceModificationOpt = change.getBalance();
         var newBalance = getBalance();
         if (balanceModificationOpt.isPresent()) {

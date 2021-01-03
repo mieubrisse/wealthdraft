@@ -17,10 +17,10 @@ import java.util.SortedMap;
 public interface AssetsHistory {
 
     @Value.Parameter
-    Map<String, Asset> getAssets();
+    Map<String, Asset<?, ?>> getAssets();
 
     @Value.Parameter
-    Map<String, SortedMap<LocalDate, AssetSnapshot>> getHistory();
+    Map<String, SortedMap<LocalDate, AssetSnapshot<?>>> getHistory();
 
     @Value.Check
     default void check() {

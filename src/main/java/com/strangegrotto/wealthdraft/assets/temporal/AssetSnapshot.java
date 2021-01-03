@@ -7,7 +7,8 @@ import java.math.BigDecimal;
 public interface AssetSnapshot<CHANGE extends AssetChange> {
     BigDecimal getValue();
 
+    // TODO Make this get an AssetChange instead, and feed into the regular applyChange machinery
     AssetSnapshot<CHANGE> projectOneMonth();
 
-    ValOrGerr<AssetSnapshot<CHANGE>> applyChange(CHANGE change);
+    ValOrGerr<AssetSnapshot<CHANGE>> applyChange(AssetChange change) throws ClassCastException;
 }
