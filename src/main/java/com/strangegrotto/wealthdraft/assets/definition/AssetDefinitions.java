@@ -27,7 +27,7 @@ public interface AssetDefinitions {
             var customTagDefinition = customTagEntry.getValue();
 
             Preconditions.checkState(
-                    !IntrinsicAssetTag.getAllNames().contains(customTagName),
+                    !IntrinsicAssetTag.getAllTagNames().contains(customTagName),
                     "Custom tag '%s' collides with an intrinsic tag",
                     customTagName
             );
@@ -40,7 +40,7 @@ public interface AssetDefinitions {
         for (var assetEntry : assets.entrySet()) {
             var assetId = assetEntry.getKey();
             var asset = assetEntry.getValue();
-            var customTagsForAsset = asset.getTags();
+            var customTagsForAsset = asset.getCustomTags();
             var requiredTagsNotSeen = new HashSet<>(requiredCustomTags);
             for (var tagEntry : customTagsForAsset.entrySet()) {
                 var customTagName = tagEntry.getKey();

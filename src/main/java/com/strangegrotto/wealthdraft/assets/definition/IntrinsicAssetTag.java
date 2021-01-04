@@ -1,7 +1,5 @@
 package com.strangegrotto.wealthdraft.assets.definition;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -15,13 +13,13 @@ public enum IntrinsicAssetTag {
         this.name = name;
     }
 
-    public String getName() {
+    public String getTagName() {
         return name;
     }
 
-    public static Set<String> getAllNames() {
+    public static Set<String> getAllTagNames() {
         return Arrays.stream(IntrinsicAssetTag.values())
-                .map(IntrinsicAssetTag::getName)
+                .map(IntrinsicAssetTag::getTagName)
                 .collect(Collectors.toSet());
     }
 }

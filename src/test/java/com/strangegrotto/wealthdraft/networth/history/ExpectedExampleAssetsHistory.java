@@ -18,8 +18,8 @@ public class ExpectedExampleAssetsHistory {
 
     static {
         var retirementHistory = new TreeMap<LocalDate, AssetSnapshot>(Map.of(
-                LocalDate.of(2020, 6, 1), ImmBankAccountAssetSnapshot.of(new BigDecimal(150000), new BigDecimal("0.05")),
-                LocalDate.of(2020, 8, 15), ImmBankAccountAssetSnapshot.of(new BigDecimal(150000), new BigDecimal("0.06"))
+                LocalDate.of(2020, 6, 1), ImmStockAssetSnapshot.of(new BigDecimal(15000), new BigDecimal(10)),
+                LocalDate.of(2020, 8, 15), ImmStockAssetSnapshot.of(new BigDecimal(17000), new BigDecimal(11))
         ));
 
         var brokerageHistory = new TreeMap<LocalDate, AssetSnapshot>(Map.of(

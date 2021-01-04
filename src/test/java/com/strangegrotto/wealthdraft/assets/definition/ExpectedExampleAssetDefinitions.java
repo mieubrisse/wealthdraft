@@ -9,11 +9,11 @@ import java.util.Set;
 
 public class ExpectedExampleAssetDefinitions {
     // Custom tags
-    private static final String DOM_OR_INTL_TAG = "domOrIntl";
-    private static final String DOMESTIC_ASSET_TAG_VALUE = "domestic";
-    private static final String INTERNATIONAL_ASSET_TAG_VALUE = "international";
+    public static final String DOM_OR_INTL_TAG = "domOrIntl";
+    public static final String DOMESTIC_ASSET_TAG_VALUE = "domestic";
+    public static final String INTERNATIONAL_ASSET_TAG_VALUE = "international";
 
-    private static final String BROKER_TAG = "broker";
+    public static final String BROKER_TAG = "broker";
 
     public static final Map<String, CustomTagDefinition> EXPECTED_CUSTOM_TAGS = Map.of(
             DOM_OR_INTL_TAG, ImmCustomTagDefinition
@@ -29,19 +29,19 @@ public class ExpectedExampleAssetDefinitions {
 
 
 
-    public static final Asset RETIREMENT_ASSET = ImmBankAccountAsset.of("Retirement account").withTags(Map.of(
+    public static final Asset RETIREMENT_ASSET = ImmStockAsset.of("Retirement account").withCustomTags(Map.of(
             BROKER_TAG, "Fidelity",
             DOM_OR_INTL_TAG, DOMESTIC_ASSET_TAG_VALUE
     ));
-    public static final Asset BROKERAGE_ACCOUNT_ASSET = ImmStockAsset.of("Personal brokerage account").withTags(Map.of(
+    public static final Asset BROKERAGE_ACCOUNT_ASSET = ImmStockAsset.of("Personal brokerage account").withCustomTags(Map.of(
             BROKER_TAG, "Vanguard",
             DOM_OR_INTL_TAG, DOMESTIC_ASSET_TAG_VALUE
     ));
-    public static final Asset BANK_ACCOUNT_ASSET = ImmBankAccountAsset.of("Bank account").withTags(Map.of(
+    public static final Asset BANK_ACCOUNT_ASSET = ImmBankAccountAsset.of("Bank account").withCustomTags(Map.of(
             BROKER_TAG, "Chase",
-            DOM_OR_INTL_TAG, INTERNATIONAL_ASSET_TAG_VALUE
+            DOM_OR_INTL_TAG, DOMESTIC_ASSET_TAG_VALUE
     ));
-    public static final Asset BITCOIN_ASSET = ImmBankAccountAsset.of("BTC holdings").withTags(Map.of(
+    public static final Asset BITCOIN_ASSET = ImmBankAccountAsset.of("BTC holdings").withCustomTags(Map.of(
             DOM_OR_INTL_TAG, INTERNATIONAL_ASSET_TAG_VALUE
     ));
 
