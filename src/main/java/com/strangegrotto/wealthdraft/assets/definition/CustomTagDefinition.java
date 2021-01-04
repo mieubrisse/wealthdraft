@@ -12,6 +12,11 @@ import java.util.Set;
 public interface CustomTagDefinition {
     // TODO Implement default values
 
+    @Value.Default
+    default boolean isRequired() {
+        return false;
+    }
+
     // An empty set means all values are allowed
     @Value.Parameter
     Set<String> getAllowedValues();

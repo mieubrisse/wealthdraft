@@ -1,6 +1,7 @@
 ## TBD
 * Finally sorted out the generics puzzle!
 * Add SpotBugs
+* Give the ability to specify required custom tags when defining assets
 
 ## 0.8.0
 * Refactor asset modelling further to make it easy to add new assets

@@ -9,6 +9,7 @@ customTags:
     allowedValues:
       - international
       - domestic
+    required: true
 
 assets:
   ret:
@@ -32,3 +33,5 @@ assets:
   btc:
     name: BTC holdings
     type: BANK_ACCOUNT
+    tags:
+      domOrIntl: international

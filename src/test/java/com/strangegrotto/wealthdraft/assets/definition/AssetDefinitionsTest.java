@@ -82,6 +82,11 @@ public class AssetDefinitionsTest {
         parseAssetsFile(AssetDefinitionsTestFiles.UNRECOGNIZED_TAG);
     }
 
+    @Test(expected = ValueInstantiationException.class)
+    public void testErrorOnMissingRequiredTag() throws IOException {
+        parseAssetsFile(AssetDefinitionsTestFiles.MISSING_REQUIRED_TAG);
+    }
+
     private static AssetDefinitions parseAssetsFile(AssetDefinitionsTestFiles testFile) throws IOException {
         var mapper = Main.getObjectMapper();
         var assetsUrl = testFile.getResource();
