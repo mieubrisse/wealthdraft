@@ -30,11 +30,9 @@ public class NetWorthRenderer {
     }
 
     public ValOrGerr<Void> renderNetWorthCalculations(AssetsHistory assetsHistory, Projections projections) {
-        Map<String, SortedMap<LocalDate, AssetSnapshot<?>>> history = assetsHistory.getHistory();
-
+        SortedMap<LocalDate, Map<String, AssetSnapshot<?>>> histAssetSnapshotsByDate = assetsHistory.getHistoryByDate();
         display.printEmptyLine();
         display.printBannerHeader("Historical Net Worth");
-        SortedMap<LocalDate, Map<String, AssetSnapshot<?>>> histAssetSnapshotsByDate = getHistAssetSnapshotsByDate(history);
         histAssetSnapshotsByDate.forEach((date, assetSnapshotsForDate) -> {
             var netWorth = assetSnapshotsForDate.values().stream()
                     .map(AssetSnapshot::getValue)
@@ -57,37 +55,6 @@ public class NetWorthRenderer {
             );
         }
         return ValOrGerr.val(null);
-    }
-
-    private static SortedMap<LocalDate, Map<String, AssetSnapshot<?>>> getHistAssetSnapshotsByDate(Map<String, SortedMap<LocalDate, AssetSnapshot<?>>> history) {
-        var assetSnapshotsByDate = new TreeMap<LocalDate, Map<String, AssetSnapshot<?>>>();
-        for (var assetHistoryEntry : history.entrySet()) {
-            var assetId = assetHistoryEntry.getKey();
-            var historyForAsset = assetHistoryEntry.getValue();
-            for (var recordForAssetEntry : historyForAsset.entrySet()) {
-                var date = recordForAssetEntry.getKey();
-                var assetSnapshot = recordForAssetEntry.getValue();
-                var snapshotsOnDate = assetSnapshotsByDate.getOrDefault(date, new HashMap<>());
-                snapshotsOnDate.put(assetId, assetSnapshot);
-                assetSnapshotsByDate.put(date, snapshotsOnDate);
-            }
-        }
-
-        // Because history can be declared piecemeal (e.g. asset A and B are declared on date T, asset B and C
-        //  are declared on date T+1) we "fill forward" past snapshots into any slots in the future where
-        //  they're missing. This assumes that asset values don't change over historical time.
-        var latestAssetSnapshots = new HashMap<String, AssetSnapshot<?>>();
-        var result = new TreeMap<LocalDate, Map<String, AssetSnapshot<?>>>();
-        for (var entry : assetSnapshotsByDate.entrySet()) {
-            var date = entry.getKey();
-            var assetSnapshotsForDate = entry.getValue();
-            latestAssetSnapshots.putAll(assetSnapshotsForDate);
-
-            var resultAssetSnapshotsForDate = result.getOrDefault(date, new HashMap<>());
-            resultAssetSnapshotsForDate.putAll(latestAssetSnapshots);
-            result.put(date, resultAssetSnapshotsForDate);
-        }
-        return result;
     }
 
     private static ValOrGerr<Void> renderProjectionNetWorths(

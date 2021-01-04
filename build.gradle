@@ -46,6 +46,8 @@ dependencies {
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
 
+    implementation "com.jakewharton.picnic:picnic:${picnicVersion}"
+
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
 }

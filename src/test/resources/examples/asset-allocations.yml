@@ -1,0 +1,8 @@
+- filter:
+    tags:
+      domOrIntl: domestic
+  percentagePortfolio: 0.7
+- filter:
+    tags:
+      domOrIntl: international
+  percentagePortfolio: 0.3
