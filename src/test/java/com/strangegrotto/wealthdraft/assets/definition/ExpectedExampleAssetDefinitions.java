@@ -16,7 +16,9 @@ public class ExpectedExampleAssetDefinitions {
     private static final String BROKER_TAG = "broker";
 
     public static final Map<String, CustomTagDefinition> EXPECTED_CUSTOM_TAGS = Map.of(
-            DOM_OR_INTL_TAG, ImmCustomTagDefinition.of(Set.of(DOMESTIC_ASSET_TAG_VALUE, INTERNATIONAL_ASSET_TAG_VALUE)),
+            DOM_OR_INTL_TAG, ImmCustomTagDefinition
+                    .of(Set.of(DOMESTIC_ASSET_TAG_VALUE, INTERNATIONAL_ASSET_TAG_VALUE))
+                    .withRequired(true),
             BROKER_TAG, ImmCustomTagDefinition.of(Set.of())
     );
 
@@ -39,7 +41,9 @@ public class ExpectedExampleAssetDefinitions {
             BROKER_TAG, "Chase",
             DOM_OR_INTL_TAG, INTERNATIONAL_ASSET_TAG_VALUE
     ));
-    public static final Asset BITCOIN_ASSET = ImmBankAccountAsset.of("BTC holdings").withTags(Map.of());
+    public static final Asset BITCOIN_ASSET = ImmBankAccountAsset.of("BTC holdings").withTags(Map.of(
+            DOM_OR_INTL_TAG, INTERNATIONAL_ASSET_TAG_VALUE
+    ));
 
     public static final Map<String, Asset> EXPECTED_ASSETS = Map.of(
             RETIREMENT_ACCOUNT_ID, RETIREMENT_ASSET,
