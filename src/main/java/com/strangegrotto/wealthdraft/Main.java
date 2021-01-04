@@ -7,9 +7,9 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.ConsoleAppender;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -18,6 +18,8 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Ordering;
+import com.strangegrotto.wealthdraft.assetallocation.AssetAllocationRenderer;
+import com.strangegrotto.wealthdraft.assetallocation.TargetAssetAllocation;
 import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitions;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
@@ -63,6 +65,7 @@ public class Main {
     private static final String ASSETS_FILEPATH_ARG = "assets";
     private static final String ASSETS_HISTORY_FILEPATH_ARG = "assets-history";
     private static final String PROJECTIONS_FILEPATH_ARG = "projections";
+    private static final String ASSET_ALLOCATIONS_FILEPATH_ARG = "asset-allocations";
     private static final String LOG_LEVEL_ARG = "log-level";
     private static final String ALL_SCENARIOS_ARG = "all";
 
@@ -77,6 +80,9 @@ public class Main {
 
     // TODO Make this months instead
     private static final int PROJECTION_DISPLAY_INCREMENT_YEARS = 1;
+
+    private static final double ASSET_ALLOCATION_DEVIATION_PCT_WARN = 0.10;
+    private static final double ASSET_ALLOCATION_DEVIATION_PCT_ERROR = 0.15;
 
     private static final Logger log = LoggerFactory.getLogger(Main.class);
 
@@ -115,6 +121,10 @@ public class Main {
                 .dest(PROJECTIONS_FILEPATH_ARG)
                 .required(true)
                 .help("YAML file of future projections");
+        parser.addArgument("--" + ASSET_ALLOCATIONS_FILEPATH_ARG)
+                .dest(ASSET_ALLOCATIONS_FILEPATH_ARG)
+                .required(true)
+                .help("YAML file of target asset allocations");
         parser.addArgument("--" + LOG_LEVEL_ARG)
                 .dest(LOG_LEVEL_ARG)
                 .type(Level.class)
@@ -176,6 +186,18 @@ public class Main {
             return;
         }
 
+        String assetAllocationsFilepath = parsedArgs.getString(ASSET_ALLOCATIONS_FILEPATH_ARG);
+        log.debug("Asset allocations filepath: {}", assetAllocationsFilepath);
+        CollectionType targetAssetAllocationsType = typeFactory.constructCollectionType(ArrayList.class, TargetAssetAllocation.class);
+        List<TargetAssetAllocation> targetAssetAllocations;
+        try {
+            targetAssetAllocations = mapper.readValue(new File(assetAllocationsFilepath), targetAssetAllocationsType);
+        } catch (IOException e) {
+            log.error("An error occurred parsing the asset allocations file '{}'", assetAllocationsFilepath, e);
+            System.exit(FAILURE_EXIT_CODE);
+            return;
+        }
+
         addDeserializersNeedingAssets(mapper, assetDefinitions.getAssets());
 
         String assetsHistoryFilepath = parsedArgs.getString(ASSETS_HISTORY_FILEPATH_ARG);
@@ -190,7 +212,7 @@ public class Main {
         }
 
         String projectionsFilepath = parsedArgs.getString(PROJECTIONS_FILEPATH_ARG);
-        log.debug("Projections filepath: {}", assetsFilepath);
+        log.debug("Projections filepath: {}", projectionsFilepath);
         Projections projections;
         try {
             projections = mapper.readValue(new File(projectionsFilepath), Projections.class);
@@ -199,6 +221,7 @@ public class Main {
             System.exit(FAILURE_EXIT_CODE);
             return;
         }
+
 
         Display display = new Display(
                 log,
@@ -219,6 +242,20 @@ public class Main {
             log.error("An error occurred rendering net worth: {}", emptyOrErr.getGerr());
             System.exit(FAILURE_EXIT_CODE);
         }
+
+        var assetAllocationRenderer = new AssetAllocationRenderer(
+                display,
+                ASSET_ALLOCATION_DEVIATION_PCT_WARN,
+                ASSET_ALLOCATION_DEVIATION_PCT_ERROR
+        );
+        var assetsHistoryByDate = assetsHistory.getHistoryByDate();
+        var latestDate = assetsHistoryByDate.lastKey();
+        var latestAssetSnapshots = assetsHistoryByDate.get(latestDate);
+        assetAllocationRenderer.renderAssetAllocations(
+                targetAssetAllocations,
+                assetDefinitions.getAssets(),
+                latestAssetSnapshots
+        );
     }
 
     @VisibleForTesting
@@ -238,7 +275,7 @@ public class Main {
     }
 
     @VisibleForTesting
-    public static void addDeserializersNeedingAssets(ObjectMapper mapper, Map<String, Asset> assets) {
+    public static void addDeserializersNeedingAssets(ObjectMapper mapper, Map<String, Asset<?, ?>> assets) {
         var deserializerModule = new SimpleModule();
         deserializerModule.addDeserializer(Projections.class, new ProjectionsDeserializer(assets));
         deserializerModule.addDeserializer(AssetsHistory.class, new AssetsHistoryDeserializer(assets));
@@ -473,14 +510,17 @@ public class Main {
         double effectiveTaxRate = totalTaxes / (double)grossIncome;
         display.printSumLine();
         String itemTitle = "Total " + titleCaseSumName;
-        log.info(
-                "{}: {} ({} effective tax rate)",
-                String.format("%1$" + MINIMUM_ITEM_TITLE_WIDTH + "s", itemTitle),
+        display.printStringItem(
+                itemTitle,
                 String.format(
-                        "%1$" + MINIMUM_CURRENCY_WIDTH + "s",
-                        CURRENCY_FORMAT.format(totalTaxes)
-                ),
-                PERCENT_FORMAT.format(effectiveTaxRate)
+                        "%s (%s effective tax rate)",
+                        // TODO replace with better methods on Display
+                        String.format(
+                                "%1$" + MINIMUM_CURRENCY_WIDTH + "s",
+                                CURRENCY_FORMAT.format(totalTaxes)
+                        ),
+                        PERCENT_FORMAT.format(effectiveTaxRate)
+                )
         );
     }
 }

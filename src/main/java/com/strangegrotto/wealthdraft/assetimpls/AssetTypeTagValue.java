@@ -6,16 +6,8 @@ package com.strangegrotto.wealthdraft.assetimpls;
  * There should be one per custom asset implementation
  */
 public enum AssetTypeTagValue {
-    BANK_ACCOUNT("Bank Account"),
-    STOCK("Stock");
-
-    private final String value;
-
-    AssetTypeTagValue(String value) {
-        this.value = value;
-    }
-
-    public String getValue() {
-        return value;
-    }
+    // TODO Replace this entire enum with an AssetType enum, and use that enum for the deserialization of Assets
+    //  in AssetDefinitionsDeserializer
+    BANK_ACCOUNT,
+    STOCK;
 }

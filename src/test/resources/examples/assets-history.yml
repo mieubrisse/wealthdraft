@@ -1,11 +1,11 @@
 # TODO Switch this to be date -> (assetId -> value)
 ret:
   2020-06-01:
-    balance: 150000
-    annualInterestRate: 0.05
+    quantity: 15000
+    price: 10
   2020-08-15:
-    balance: 150000
-    annualInterestRate: 0.06
+    quantity: 17000
+    price: 11
 
 pbrok:
   2020-06-01:

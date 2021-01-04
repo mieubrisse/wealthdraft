@@ -1,0 +1,13 @@
+- filter:
+    tags:
+      domOrIntl: domestic
+  portfolioFraction: 0.7
+- filter:
+    tags:
+      domOrIntl: international
+  portfolioFraction: 0.3
+- filter:
+    tags:
+      domOrIntl: domestic
+      assetType: BANK_ACCOUNT
+  portfolioFraction: 0.01

@@ -52,10 +52,17 @@ public class Display {
         log.info(this.sumLine);
     }
 
-    public void printCurrencyItem(String title, Object value) {
+    public void printStringItem(String title, String value) {
         log.info(
                 "{}: {}",
                 String.format("%1$" + this.minimumItemTitleWidth + "s", title),
+                value
+        );
+    }
+
+    public void printCurrencyItem(String title, Object value) {
+        printStringItem(
+                title,
                 String.format(
                         "%1$" + this.minimumCurrencyWidth + "s",
                         currencyFormat.format(value)

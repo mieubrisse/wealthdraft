@@ -1,3 +1,9 @@
+## 0.9.0
+* Finally sorted out the generics puzzle!
+* Add SpotBugs
+* Give the ability to specify required custom tags when defining assets
+* Allow users to define a target asset allocation, and print how close to it they are
+
 ## 0.8.0
 * Refactor asset modelling further to make it easy to add new assets
 * Add `StockAsset`

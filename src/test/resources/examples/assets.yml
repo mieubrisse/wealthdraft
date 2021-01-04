@@ -9,11 +9,12 @@ customTags:
     allowedValues:
       - international
       - domestic
+    required: true
 
 assets:
   ret:
     name: Retirement account
-    type: BANK_ACCOUNT
+    type: STOCK
     tags:
       broker: Fidelity
       domOrIntl: domestic
@@ -28,7 +29,9 @@ assets:
     type: BANK_ACCOUNT
     tags:
       broker: Chase
-      domOrIntl: international
+      domOrIntl: domestic
   btc:
     name: BTC holdings
     type: BANK_ACCOUNT
+    tags:
+      domOrIntl: international

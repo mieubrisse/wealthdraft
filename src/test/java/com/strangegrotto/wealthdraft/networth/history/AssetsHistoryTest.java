@@ -3,7 +3,6 @@ package com.strangegrotto.wealthdraft.networth.history;
 import com.strangegrotto.wealthdraft.Main;
 import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitions;
 import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitionsTestFiles;
-import com.strangegrotto.wealthdraft.assets.definition.ExpectedExampleAssetDefinitions;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,7 +14,7 @@ public class AssetsHistoryTest {
         AssetsHistory assetsHistory = parseAssetsHistoryFile(AssetsHistoryTestFiles.EXAMPLE);
         Assert.assertEquals(
                 ExpectedExampleAssetsHistory.EXPECTED_ASSETS_HISTORY,
-                assetsHistory.getHistory()
+                assetsHistory.getHistoryByAsset()
         );
     }
 

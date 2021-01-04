@@ -1,38 +1,54 @@
 package com.strangegrotto.wealthdraft.assets.definition;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableMap;
 import com.strangegrotto.wealthdraft.assetimpls.AssetTypeTagValue;
 import com.strangegrotto.wealthdraft.assetimpls.bankaccount.BankAccountAsset;
 import com.strangegrotto.wealthdraft.assetimpls.stock.StockAsset;
 import com.strangegrotto.wealthdraft.assets.temporal.AssetChange;
 import com.strangegrotto.wealthdraft.assets.temporal.AssetSnapshot;
-import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         property = "type"
 )
+// TODO Rather than these being string-coded values, make them pull from an enum (merge with AssetTypeTagValue)
 @JsonSubTypes({
         @JsonSubTypes.Type(value = BankAccountAsset.class, name = "BANK_ACCOUNT"),
         @JsonSubTypes.Type(value = StockAsset.class, name = "STOCK")
 })
-public interface Asset {
-    String getName();
+// TODO Rename this to AbstractAsset and extract Asset to an interface!!
+public abstract class Asset<SNAPSHOT extends AssetSnapshot<CHANGE>, CHANGE extends AssetChange> {
+    public abstract String getName();
 
-    Class<? extends AssetChange> getChangeType();
+    public abstract Class<CHANGE> getChangeType();
 
-    Class<? extends AssetSnapshot> getSnapshotType();
+    public abstract Class<SNAPSHOT> getSnapshotType();
 
-    AssetTypeTagValue getAssetTypeTagValue();
+    protected abstract AssetTypeTagValue getAssetTypeTagValue();
 
-    // If I add more intrinsic tags here, make sure to:
-    //  1) update the deserializeEveryAsset test AssetDefinitionsTest to verify it doesn't collide with intrinsic tags
-    //  2) update the AssetDefinitions check to verify that custom asset tags don't collide with asset-specific tags
+    protected abstract Map<String, String> getCustomTags();
 
-    Map<String, String> getTags();
+    public final Map<String, String> getTags() {
+        var intrinsicTagsAsStr = getIntrinsicTags().entrySet().stream()
+                .collect(Collectors.toMap(
+                        entry -> entry.getKey().getTagName(),
+                        Map.Entry::getValue
+                ));
+        return ImmutableMap.<String, String>builder()
+                .putAll(intrinsicTagsAsStr)
+                .putAll(getCustomTags())
+                .build();
+    }
+
+    // This function is the "registry" of intrinsic tags, so that it's concentrated in one place
+    private final Map<IntrinsicAssetTag, String> getIntrinsicTags() {
+        return Map.of(
+                IntrinsicAssetTag.ASSET_TYPE, getAssetTypeTagValue().name()
+        );
+    }
 }

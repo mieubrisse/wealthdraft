@@ -3,6 +3,10 @@ package com.strangegrotto.wealthdraft;
 import org.immutables.value.Value;
 
 @Value.Style(
+        // Stupidly, "is*" isn't recognized out of the box
+        // See: https://immutables.github.io/style.html#other-customizations
+        get = {"is*", "get*"},
+
         allMandatoryParameters = true,
         stagedBuilder = true,
         optionalAcceptNullable = true,

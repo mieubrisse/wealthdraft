@@ -64,7 +64,7 @@ public class AssetDefinitionsTest {
     public void unspecifiedTagsIsEmptyMap() throws IOException {
         var definitions = parseAssetsFile(AssetDefinitionsTestFiles.UNSPECIFIED_TAGS_IS_EMPTY_MAP);
         var asset = definitions.getAssets().get(ExpectedExampleAssetDefinitions.RETIREMENT_ACCOUNT_ID);
-        Assert.assertEquals(asset.getTags().size(), 0);
+        Assert.assertEquals(asset.getCustomTags().size(), 0);
     }
 
     @Test(expected = ValueInstantiationException.class)
@@ -80,6 +80,11 @@ public class AssetDefinitionsTest {
     @Test(expected = ValueInstantiationException.class)
     public void testErrorOnUnrecognizedTag() throws IOException {
         parseAssetsFile(AssetDefinitionsTestFiles.UNRECOGNIZED_TAG);
+    }
+
+    @Test(expected = ValueInstantiationException.class)
+    public void testErrorOnMissingRequiredTag() throws IOException {
+        parseAssetsFile(AssetDefinitionsTestFiles.MISSING_REQUIRED_TAG);
     }
 
     private static AssetDefinitions parseAssetsFile(AssetDefinitionsTestFiles testFile) throws IOException {
