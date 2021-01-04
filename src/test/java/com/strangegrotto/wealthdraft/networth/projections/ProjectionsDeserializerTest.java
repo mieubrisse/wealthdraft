@@ -10,6 +10,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.Optional;
 
 public class ProjectionsDeserializerTest {
     @Test
@@ -46,8 +47,9 @@ public class ProjectionsDeserializerTest {
         var projections = parseProjectionsFile(ProjectionsTestFiles.EXAMPLE);
         var projectionScenariosOrErr = projections.getScenarios();
         var projectionScenarios = new HashMap<String, ProjectionScenario>();
-        for (var scenarioId : projectionScenariosOrErr.keySet()) {
-            var scenarioOrErr = projectionScenariosOrErr.get(scenarioId);
+        for (var entry : projectionScenariosOrErr.entrySet()) {
+            var scenarioId = entry.getKey();
+            var scenarioOrErr = entry.getValue();
             Assert.assertFalse(
                     "Scenario " + scenarioId + " deserialized with an error when it should have deserialized successfully",
                     scenarioOrErr.hasGerr()
@@ -67,10 +69,14 @@ public class ProjectionsDeserializerTest {
 
         var projectionsUrl = ProjectionsTestFiles.INVALID_YML.getResource();
         Main.addDeserializersNeedingAssets(mapper, assetDefinitions.getAssets());
+
+        Optional<IOException> invalidYmlExceptionOpt = Optional.empty();
         try {
             mapper.readValue(projectionsUrl, Projections.class);
-            Assert.fail("Deserialization of projections should have failed due to invalid YAML but didn't");
-        } catch (IOException ignored) {}
+        } catch (IOException e) {
+            invalidYmlExceptionOpt = Optional.of(e);
+        }
+        Assert.assertTrue("Deserialization of projections should have failed due to invalid YAML but didn't", invalidYmlExceptionOpt.isPresent());
     }
 
     @Test
@@ -86,8 +92,9 @@ public class ProjectionsDeserializerTest {
         var projections = mapper.readValue(projectionsUrl, Projections.class);
 
         var projectionScenariosOrErr = projections.getScenarios();
-        for (var scenarioId : projectionScenariosOrErr.keySet()) {
-            var scenarioOrErr = projectionScenariosOrErr.get(scenarioId);
+        for (var entry : projectionScenariosOrErr.entrySet()) {
+            var scenarioId = entry.getKey();
+            var scenarioOrErr = entry.getValue();
             Assert.assertTrue(
                     "Scenario " + scenarioId + " should have failed to deserialize due to referencing nonexistent assets",
                     scenarioOrErr.hasGerr()
@@ -122,8 +129,9 @@ public class ProjectionsDeserializerTest {
     public void testErrorOnDependencyCycle() throws IOException {
         var projections = parseProjectionsFile(ProjectionsTestFiles.DEPENDENCY_CYLE);
         var projectionScenariosOrErr = projections.getScenarios();
-        for (String scenarioId : projectionScenariosOrErr.keySet()) {
-            var scenarioOrErr = projectionScenariosOrErr.get(scenarioId);
+        for (var entry : projectionScenariosOrErr.entrySet()) {
+            var scenarioId = entry.getKey();
+            var scenarioOrErr = entry.getValue();
             Assert.assertTrue(
                     "Expected scenario '" + scenarioId + "' to fail parsing due to a date in the past, but it succeeded",
                     scenarioOrErr.hasGerr()
@@ -157,8 +165,9 @@ public class ProjectionsDeserializerTest {
     public void testErrorWhenDependencyHasError() throws IOException {
         var projections = parseProjectionsFile(ProjectionsTestFiles.DEPENDENCY_HAS_ERROR);
         var projectionScenariosOrErr = projections.getScenarios();
-        for (String scenarioId : projectionScenariosOrErr.keySet()) {
-            var scenarioOrErr = projectionScenariosOrErr.get(scenarioId);
+        for (var entry : projectionScenariosOrErr.entrySet()) {
+            var scenarioId = entry.getKey();
+            var scenarioOrErr = entry.getValue();
             switch (scenarioId) {
                 case ExpectedExampleProjections.SELL_HALF_BTC_1Y_ID:
                     Assert.assertTrue(

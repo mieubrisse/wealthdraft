@@ -35,13 +35,12 @@ public class NetWorthRenderer {
         display.printEmptyLine();
         display.printBannerHeader("Historical Net Worth");
         SortedMap<LocalDate, Map<String, AssetSnapshot<?>>> histAssetSnapshotsByDate = getHistAssetSnapshotsByDate(history);
-        for (LocalDate date : histAssetSnapshotsByDate.keySet()) {
-            var assetSnapshotsForDate = histAssetSnapshotsByDate.get(date);
+        histAssetSnapshotsByDate.forEach((date, assetSnapshotsForDate) -> {
             var netWorth = assetSnapshotsForDate.values().stream()
                     .map(AssetSnapshot::getValue)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             this.display.printCurrencyItem(date.toString(), netWorth);
-        }
+        });
 
         var latestAssetSnapshots = histAssetSnapshotsByDate.get(histAssetSnapshotsByDate.lastKey());
         var emptyOrErr = renderProjectionNetWorths(
@@ -62,10 +61,12 @@ public class NetWorthRenderer {
 
     private static SortedMap<LocalDate, Map<String, AssetSnapshot<?>>> getHistAssetSnapshotsByDate(Map<String, SortedMap<LocalDate, AssetSnapshot<?>>> history) {
         var assetSnapshotsByDate = new TreeMap<LocalDate, Map<String, AssetSnapshot<?>>>();
-        for (String assetId : history.keySet()) {
-            var historyForAsset = history.get(assetId);
-            for (LocalDate date : historyForAsset.keySet()) {
-                var assetSnapshot = historyForAsset.get(date);
+        for (var assetHistoryEntry : history.entrySet()) {
+            var assetId = assetHistoryEntry.getKey();
+            var historyForAsset = assetHistoryEntry.getValue();
+            for (var recordForAssetEntry : historyForAsset.entrySet()) {
+                var date = recordForAssetEntry.getKey();
+                var assetSnapshot = recordForAssetEntry.getValue();
                 var snapshotsOnDate = assetSnapshotsByDate.getOrDefault(date, new HashMap<>());
                 snapshotsOnDate.put(assetId, assetSnapshot);
                 assetSnapshotsByDate.put(date, snapshotsOnDate);
@@ -77,8 +78,9 @@ public class NetWorthRenderer {
         //  they're missing. This assumes that asset values don't change over historical time.
         var latestAssetSnapshots = new HashMap<String, AssetSnapshot<?>>();
         var result = new TreeMap<LocalDate, Map<String, AssetSnapshot<?>>>();
-        for (LocalDate date : assetSnapshotsByDate.keySet()) {
-            var assetSnapshotsForDate = assetSnapshotsByDate.get(date);
+        for (var entry : assetSnapshotsByDate.entrySet()) {
+            var date = entry.getKey();
+            var assetSnapshotsForDate = entry.getValue();
             latestAssetSnapshots.putAll(assetSnapshotsForDate);
 
             var resultAssetSnapshotsForDate = result.getOrDefault(date, new HashMap<>());
@@ -95,8 +97,9 @@ public class NetWorthRenderer {
             int maxYearsToProject,
             int projectionDisplayIncrementYears) {
         var projectionsParseResults = projections.getScenarios();
-        for (var scenarioId : projectionsParseResults.keySet()) {
-            var scenarioParseResultOrErr = projectionsParseResults.get(scenarioId);
+        for (var entry : projectionsParseResults.entrySet()) {
+            var scenarioId = entry.getKey();
+            var scenarioParseResultOrErr = entry.getValue();
 
             display.printEmptyLine();
             display.printBannerHeader("Networth Proj: " + scenarioId);
@@ -120,13 +123,12 @@ public class NetWorthRenderer {
                 );
             }
             var futureNetWorths = futureNetWorthsOrErr.getVal();
-            for (var date : futureNetWorths.keySet()) {
-                var assetSnapshotsForDate = futureNetWorths.get(date);
+            futureNetWorths.forEach((date, assetSnapshotsForDate) -> {
                 var netWorthOnDate = assetSnapshotsForDate.values().stream()
                         .map(AssetSnapshot::getValue)
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
                 display.printCurrencyItem(date.toString(), netWorthOnDate);
-            }
+            });
         }
         return ValOrGerr.val(null);
     }
@@ -165,8 +167,9 @@ public class NetWorthRenderer {
             // This is so that the user defining an asset change doesn't cause a compounding (which would make
             //  their returns higher than they should be)
             if (compoundingDates.contains(date)) {
-                for (String assetId : newAssetSnapshots.keySet()) {
-                    AssetSnapshot<?> snapshot = newAssetSnapshots.get(assetId);
+                for (var assetSnapshotEntry : newAssetSnapshots.entrySet()) {
+                    var assetId = assetSnapshotEntry.getKey();
+                    AssetSnapshot<?> snapshot = assetSnapshotEntry.getValue();
                     // TODO to be entirely accurate, this should really be daily compounding (since the user could issue
                     //  a +15k to their bank account the day before compounding and that would all be counted)
                     AssetSnapshot<?> newSnapshot = snapshot.projectOneMonth();
@@ -178,8 +181,9 @@ public class NetWorthRenderer {
             if (assetChangeDates.contains(date)) {
                 Map<String, AssetChange> assetChangesForDate = assetChanges.get(date);
 
-                for (String assetId : assetChangesForDate.keySet()) {
-                    AssetChange change = assetChangesForDate.get(assetId);
+                for (var entry : assetChangesForDate.entrySet()) {
+                    var assetId = entry.getKey();
+                    var change = entry.getValue();
                     AssetSnapshot<?> snapshot = newAssetSnapshots.get(assetId);
                     ValOrGerr<? extends AssetSnapshot<?>> newSnapshotOrErr = snapshot.applyChange(change);
                     if (newSnapshotOrErr.hasGerr()) {

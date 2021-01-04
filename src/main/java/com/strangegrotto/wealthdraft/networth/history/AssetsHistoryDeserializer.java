@@ -32,8 +32,9 @@ public class AssetsHistoryDeserializer extends JsonDeserializer<AssetsHistory> {
         );
 
         var parsedAssetSnapshots = new HashMap<String, SortedMap<LocalDate, AssetSnapshot<?>>>();
-        for (var assetId : raw.keySet()) {
-            var unparsedSnapshotsForAsset = raw.get(assetId);
+        for (var rawEntry : raw.entrySet()) {
+            var assetId = rawEntry.getKey();
+            var unparsedSnapshotsForAsset = rawEntry.getValue();
             Preconditions.checkState(
                     this.assets.containsKey(assetId),
                     "Asset ID '%s' doesn't match any known asset"
@@ -42,8 +43,9 @@ public class AssetsHistoryDeserializer extends JsonDeserializer<AssetsHistory> {
             var snapshotType = asset.getSnapshotType();
 
             var parsedSnapshotsForAsset = new TreeMap<LocalDate, AssetSnapshot<?>>();
-            for (var date : unparsedSnapshotsForAsset.keySet()) {
-                var unparsedSnapshot = unparsedSnapshotsForAsset.get(date);
+            for (var unparsedSnapshotEntry : unparsedSnapshotsForAsset.entrySet()) {
+                var date = unparsedSnapshotEntry.getKey();
+                var unparsedSnapshot = unparsedSnapshotEntry.getValue();
                 var parsedSnapshot = mapper.convertValue(unparsedSnapshot, snapshotType);
                 parsedSnapshotsForAsset.put(date, parsedSnapshot);
             }
