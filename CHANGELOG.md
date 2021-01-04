@@ -1,4 +1,4 @@
-## TBD
+## 0.9.0
 * Finally sorted out the generics puzzle!
 * Add SpotBugs
 * Give the ability to specify required custom tags when defining assets
