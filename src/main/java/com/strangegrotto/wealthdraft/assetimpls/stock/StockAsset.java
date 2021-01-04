@@ -17,7 +17,7 @@ import java.util.Map;
 @WealthdraftImmutableStyle
 @Value.Immutable
 @JsonDeserialize(as = ImmStockAsset.class)
-public abstract class StockAsset implements Asset<StockAssetSnapshot, StockAssetChange> {
+public abstract class StockAsset extends Asset<StockAssetSnapshot, StockAssetChange> {
     // ================================================================================
     //               Logic custom this class, not filled by Immutables
     // ================================================================================
@@ -43,6 +43,8 @@ public abstract class StockAsset implements Asset<StockAssetSnapshot, StockAsset
     @Override
     public abstract String getName();
 
+    // TODO Rather than needing to do this here, push this to Asset by killing this class entirely and replacing with an enum
+    @JsonProperty("tags")
     @Override
-    public abstract Map<String, String> getTags();
+    public abstract Map<String, String> getCustomTags();
 }

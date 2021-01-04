@@ -16,13 +16,13 @@ public class ConjunctiveAssetTagFilterTest {
         var matchingAssetId = "matches";
 
         var assets = Map.<String, Asset<?, ?>>of(
-                matchingAssetId, ImmBankAccountAsset.of("Matches").withTags(Map.of(
+                matchingAssetId, ImmBankAccountAsset.of("Matches").withCustomTags(Map.of(
                         selectedTagName, selectedTagValue
                 )),
-                "right-name-wrong-values", ImmBankAccountAsset.of("Right name, wrong values").withTags(Map.of(
+                "right-name-wrong-values", ImmBankAccountAsset.of("Right name, wrong values").withCustomTags(Map.of(
                         selectedTagName, "wrong-value"
                 )),
-                "unmatching-tags", ImmBankAccountAsset.of("Unmatching tags").withTags(Map.of("foo", "bar")),
+                "unmatching-tags", ImmBankAccountAsset.of("Unmatching tags").withCustomTags(Map.of("foo", "bar")),
                 "no-tags", ImmBankAccountAsset.of("No tags")
         );
 

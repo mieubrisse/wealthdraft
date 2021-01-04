@@ -1,6 +1,5 @@
 package com.strangegrotto.wealthdraft.assetallocation;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
 import com.strangegrotto.wealthdraft.assets.definition.Asset;
@@ -9,7 +8,6 @@ import org.immutables.value.Value;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @WealthdraftImmutableStyle
@@ -45,6 +43,6 @@ public abstract class ConjunctiveAssetTagFilter implements AssetFilter {
                 .sorted(Comparator.comparing(Map.Entry::getKey))
                 .map(entry -> entry.getKey() + ": " + entry.getValue())
                 .collect(Collectors.toList());
-        return String.join(" && ", selectorsList);
+        return String.join("\n", selectorsList);
     }
 }

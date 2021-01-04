@@ -12,5 +12,6 @@ import java.math.BigDecimal;
 public interface TargetAssetAllocation {
     AssetFilter getFilter();
 
-    BigDecimal getPercentagePortfolio();
+    // Fraction meaning 0.7, rather than 70%
+    BigDecimal getPortfolioFraction();
 }

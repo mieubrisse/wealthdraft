@@ -1,5 +1,9 @@
 package com.strangegrotto.wealthdraft.assetallocation;
 
+import com.jakewharton.picnic.CellStyle;
+import com.jakewharton.picnic.Table;
+import com.jakewharton.picnic.TableSection;
+import com.jakewharton.picnic.TextAlignment;
 import com.strangegrotto.wealthdraft.Display;
 import com.strangegrotto.wealthdraft.assets.definition.Asset;
 import com.strangegrotto.wealthdraft.assets.temporal.AssetSnapshot;
@@ -15,6 +19,8 @@ import java.util.Map;
 //  we split up the calculation & rendering step (and can write good unit tests)
 public class AssetAllocationRenderer {
     private static final Logger log = LoggerFactory.getLogger(AssetAllocationRenderer.class);
+    private static final RoundingMode ROUNDING_MODE = RoundingMode.HALF_EVEN;
+    private static final int BIG_DECIMAL_DISPLAY_SCALE = 2;  // TODO replace this with something on Display
 
     private final Display display;
     private final double deviationPercentageWarn;
@@ -32,9 +38,13 @@ public class AssetAllocationRenderer {
             Map<String, AssetSnapshot<?>> latestAssetSnapshots) {
         display.printEmptyLine();
         display.printBannerHeader("Asset Allocations");
-        var totalPortfolioWorth = latestAssetSnapshots.values().stream()
+        var totalPortfolioValue = latestAssetSnapshots.values().stream()
                 .map(AssetSnapshot::getValue)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // GET TO DAH CHOPPAH!
+        var tableBodyBuilder = new TableSection.Builder();
+        tableBodyBuilder.addRow("Selectors", "Current Value", "Current % Portfolio", "Desired Value", "Desired % Portfolio", "Change Needed");
         for (var targetAllocation : targetAssetAllocations) {
             var filter = targetAllocation.getFilter();
             var matchingAssetIds = filter.apply(assets).keySet();
@@ -43,31 +53,60 @@ public class AssetAllocationRenderer {
                     .map(Map.Entry::getValue)
                     .map(AssetSnapshot::getValue)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            var matchingAssetPortfolioPercent = matchingAssetValue.divide(totalPortfolioWorth, 4, RoundingMode.HALF_EVEN);
-            var targetPortfolioPercent = targetAllocation.getPercentagePortfolio();
-            var targetValue = targetPortfolioPercent.multiply(totalPortfolioWorth);
-            var correctionNeeded = targetValue.subtract(matchingAssetValue);
 
-            // TODO Super janky - replace with a better way of doing this!!
-            var formattedStr = String.format(
-                    // The double percent is the way to escape the percent sign
-                    "Current: %s (%s%% portfolio), Desired: %s (%s%% portfolio), Change needed: %s",
-                    matchingAssetValue.setScale(2, RoundingMode.HALF_EVEN),
-                    formatBigDecimalAsPercent(matchingAssetPortfolioPercent),
-                    targetValue.setScale(2, RoundingMode.HALF_EVEN),
-                    formatBigDecimalAsPercent(targetPortfolioPercent),
-                    correctionNeeded.setScale(2, RoundingMode.HALF_EVEN)
-            );
-            display.printStringItem(
+            addTableRow(
+                    tableBodyBuilder,
                     filter.getStringRepresentation(),
-                    formattedStr
+                    matchingAssetValue,
+                    targetAllocation.getPortfolioFraction(),
+                    totalPortfolioValue
             );
         }
+
+        // TODO Replace this with a better method inside Display
+        var tableBody = tableBodyBuilder.build();
+        var cellStyle = new CellStyle.Builder()
+                .setAlignment(TextAlignment.MiddleCenter)
+                .setPadding(1)
+                .setBorder(true)
+                .build();
+        var table = new Table.Builder()
+                .setCellStyle(cellStyle)
+                .setBody(tableBody)
+                .build();
+        System.out.println(table.toString());
     }
 
-    private BigDecimal formatBigDecimalAsPercent(BigDecimal input) {
+    private static void addTableRow(
+            TableSection.Builder tableBodyBuilder,
+            String selectors,
+            BigDecimal currentValue,
+            BigDecimal targetPortfolioFraction,
+            BigDecimal totalPortfolioValue) {
+        var currentValuePortfolioFraction = currentValue.divide(
+                totalPortfolioValue,
+                BIG_DECIMAL_DISPLAY_SCALE + 2,  // Plus 2 so that when we multiply by 100 to get a fraction we have scale == 2
+                RoundingMode.HALF_EVEN);
+        var currentValuePortfolioPercent = formatFractionAsPercent(currentValuePortfolioFraction);
+        var targetPortfolioPercent = formatFractionAsPercent(targetPortfolioFraction);
+        var targetValue = targetPortfolioFraction.multiply(totalPortfolioValue).setScale(BIG_DECIMAL_DISPLAY_SCALE);
+        var correctionNeeded = targetValue.subtract(currentValue).setScale(BIG_DECIMAL_DISPLAY_SCALE);
+
+        var strRow = List.of(
+                selectors,
+                currentValue.toString(),
+                currentValuePortfolioPercent.toString(),
+                targetValue.toString(),
+                targetPortfolioPercent.toString(),
+                correctionNeeded.toString()
+        );
+        var strRowArr = strRow.toArray(new String[0]);
+        tableBodyBuilder.addRow(strRowArr);
+    }
+
+    private static BigDecimal formatFractionAsPercent(BigDecimal input) {
         var scaledUp = input.multiply(BigDecimal.valueOf(100));
-        return scaledUp.setScale(2, RoundingMode.HALF_EVEN);
+        return scaledUp.setScale(BIG_DECIMAL_DISPLAY_SCALE, ROUNDING_MODE);
     }
 }
 
