@@ -214,17 +214,17 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
             NotUnrolledParsedScenario scenarioToVisit = scenarioToVisitOrErr.getVal();
 
             Map<LocalDate, Map<String, AssetChange>> scenarioAssetChanges = scenarioToVisit.assetChanges;
-            for (var assetChangesEntry : scenarioAssetChanges.entrySet()) {
-                var date = assetChangesEntry.getKey();
-                var scenarioChangesForDate = assetChangesEntry.getValue();
+            for (var changesForDateEntry : scenarioAssetChanges.entrySet()) {
+                var date = changesForDateEntry.getKey();
+                var scenarioChangesForDate = changesForDateEntry.getValue();
 
                 Map<String, AssetChange> unrolledChangesForDate = unrolledAssetChanges.getOrDefault(
                         date,
                         new HashMap<>()
                 );
-                for (var scenarioChangeEntry : scenarioChangesForDate.entrySet()) {
-                    var assetId = scenarioChangeEntry.getKey();
-                    var assetChange = scenarioChangeEntry.getValue();
+                for (var assetChangeEntry : scenarioChangesForDate.entrySet()) {
+                    var assetId = assetChangeEntry.getKey();
+                    var assetChange = assetChangeEntry.getValue();
 
                     if (unrolledChangesForDate.containsKey(assetId)) {
                         return ValOrGerr.newGerr(
