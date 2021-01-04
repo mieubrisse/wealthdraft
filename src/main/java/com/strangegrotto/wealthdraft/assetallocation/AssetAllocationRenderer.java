@@ -23,6 +23,8 @@ public class AssetAllocationRenderer {
     private static final int BIG_DECIMAL_DISPLAY_SCALE = 2;  // TODO replace this with something on Display
 
     private final Display display;
+
+    // TODO Use these to color the output accordingly
     private final double deviationPercentageWarn;
     private final double deviationPercentageError;
 
@@ -92,6 +94,7 @@ public class AssetAllocationRenderer {
         var targetValue = targetPortfolioFraction.multiply(totalPortfolioValue).setScale(BIG_DECIMAL_DISPLAY_SCALE);
         var correctionNeeded = targetValue.subtract(currentValue).setScale(BIG_DECIMAL_DISPLAY_SCALE);
 
+        // TODO Pull back a preferred currency format and use that here instead!
         var strRow = List.of(
                 selectors,
                 currentValue.toString(),
