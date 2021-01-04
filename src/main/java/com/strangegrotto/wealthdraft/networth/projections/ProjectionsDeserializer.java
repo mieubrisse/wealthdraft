@@ -81,12 +81,10 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
 
         Map<String, RawProjectionScenario> rawScenarios = rawjProjections.scenarios;
         Map<String, ValOrGerr<NotUnrolledParsedScenario>> notUnrolledParsedScenarios = new HashMap<>();
-        for (String scenarioId : rawScenarios.keySet()) {
-            RawProjectionScenario rawScenario = rawScenarios.get(scenarioId);
-
+        rawScenarios.forEach((scenarioId, rawScenario) -> {
             ValOrGerr<NotUnrolledParsedScenario> parsedScenarioOrErr = parseProjectionScenario(scenarioId, rawScenario, this.assets, mapper);
             notUnrolledParsedScenarios.put(scenarioId, parsedScenarioOrErr);
-        }
+        });
 
         Map<String, ValOrGerr<ProjectionScenario>> unrolledParsedScenarios = new HashMap<>();
         for (String scenarioId : notUnrolledParsedScenarios.keySet()) {
@@ -127,8 +125,9 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
                 );
             }
 
-            for (String assetId : unparsedAssetChangesOnDate.keySet()) {
-                Map<String, String> unparsedAssetChange = unparsedAssetChangesOnDate.get(assetId);
+            for (var assetChangeEntry : unparsedAssetChangesOnDate.entrySet()) {
+                var assetId = assetChangeEntry.getKey();
+                var unparsedAssetChange = assetChangeEntry.getValue();
 
                 if (!assets.containsKey(assetId)) {
                     return ValOrGerr.newGerr(
@@ -215,14 +214,18 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
             NotUnrolledParsedScenario scenarioToVisit = scenarioToVisitOrErr.getVal();
 
             Map<LocalDate, Map<String, AssetChange>> scenarioAssetChanges = scenarioToVisit.assetChanges;
-            for (LocalDate date : scenarioAssetChanges.keySet()) {
+            for (var assetChangesEntry : scenarioAssetChanges.entrySet()) {
+                var date = assetChangesEntry.getKey();
+                var scenarioChangesForDate = assetChangesEntry.getValue();
+
                 Map<String, AssetChange> unrolledChangesForDate = unrolledAssetChanges.getOrDefault(
                         date,
                         new HashMap<>()
                 );
+                for (var scenarioChangeEntry : scenarioChangesForDate.entrySet()) {
+                    var assetId = scenarioChangeEntry.getKey();
+                    var assetChange = scenarioChangeEntry.getValue();
 
-                Map<String, AssetChange> scenarioChangesForDate = scenarioAssetChanges.get(date);
-                for (String assetId : scenarioChangesForDate.keySet()) {
                     if (unrolledChangesForDate.containsKey(assetId)) {
                         return ValOrGerr.newGerr(
                                 "Scenario {} depends on scenario {}, which results in a duplicate change for {} on date {}",
@@ -232,7 +235,6 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
                                 date
                         );
                     }
-                    AssetChange assetChange = scenarioChangesForDate.get(assetId);
                     unrolledChangesForDate.put(assetId, assetChange);
                 }
                 unrolledAssetChanges.put(date, unrolledChangesForDate);

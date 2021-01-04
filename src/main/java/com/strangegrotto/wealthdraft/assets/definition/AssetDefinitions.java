@@ -29,11 +29,13 @@ public interface AssetDefinitions {
         }
 
         var assets = getAssets();
-        for (var assetId : assets.keySet()) {
-            var asset = assets.get(assetId);
+        for (var assetEntry : assets.entrySet()) {
+            var assetId = assetEntry.getKey();
+            var asset = assetEntry.getValue();
             var customTagsForAsset = asset.getTags();
-            for (var customTag : customTagsForAsset.keySet()) {
-                var customTagValue = customTagsForAsset.get(customTag);
+            for (var tagEntry : customTagsForAsset.entrySet()) {
+                var customTag = tagEntry.getKey();
+                var customTagValue = tagEntry.getValue();
 
                 Preconditions.checkState(
                         customTagDefinitions.containsKey(customTag),

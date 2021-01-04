@@ -55,13 +55,17 @@ compileJava {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
-spotbugsMain {
-    reports {
-        html.enabled = true
-    }
+// =========================================================================================================
+//                                               SpotBugs
+// =========================================================================================================
+spotbugs {
+    excludeFilter = file(".spotbugs/exclude.xml")
 }
-spotbugsTest {
-    reports {
+
+// SpotBugs has two tasks, spotbugsMain and spotbugsTest; they both need to be configured independently unfortunately
+// See: https://github.com/spotbugs/spotbugs-gradle-plugin/issues/32
+tasks.matching {task -> task.name.startsWith('spotbugs')}.forEach {
+    it.reports {
         html.enabled = true
     }
 }
