@@ -17,7 +17,7 @@ import java.util.Map;
 @WealthdraftImmutableStyle
 @Value.Immutable
 @JsonDeserialize(as = ImmStockAsset.class)
-public abstract class StockAsset implements Asset {
+public abstract class StockAsset implements Asset<StockAssetSnapshot, StockAssetChange> {
     // ================================================================================
     //               Logic custom this class, not filled by Immutables
     // ================================================================================
@@ -27,12 +27,12 @@ public abstract class StockAsset implements Asset {
     }
 
     @Override
-    public final Class<? extends AssetChange> getChangeType() {
+    public final Class<StockAssetChange> getChangeType() {
         return StockAssetChange.class;
     }
 
     @Override
-    public final Class<? extends AssetSnapshot> getSnapshotType() {
+    public final Class<StockAssetSnapshot> getSnapshotType() {
         return StockAssetSnapshot.class;
     }
 

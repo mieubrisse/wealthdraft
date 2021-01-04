@@ -30,11 +30,11 @@ public class NetWorthRenderer {
     }
 
     public ValOrGerr<Void> renderNetWorthCalculations(AssetsHistory assetsHistory, Projections projections) {
-        Map<String, SortedMap<LocalDate, AssetSnapshot>> history = assetsHistory.getHistory();
+        Map<String, SortedMap<LocalDate, AssetSnapshot<?>>> history = assetsHistory.getHistory();
 
         display.printEmptyLine();
         display.printBannerHeader("Historical Net Worth");
-        SortedMap<LocalDate, Map<String, AssetSnapshot>> histAssetSnapshotsByDate = getHistAssetSnapshotsByDate(history);
+        SortedMap<LocalDate, Map<String, AssetSnapshot<?>>> histAssetSnapshotsByDate = getHistAssetSnapshotsByDate(history);
         for (LocalDate date : histAssetSnapshotsByDate.keySet()) {
             var assetSnapshotsForDate = histAssetSnapshotsByDate.get(date);
             var netWorth = assetSnapshotsForDate.values().stream()
@@ -60,8 +60,8 @@ public class NetWorthRenderer {
         return ValOrGerr.val(null);
     }
 
-    private static SortedMap<LocalDate, Map<String, AssetSnapshot>> getHistAssetSnapshotsByDate(Map<String, SortedMap<LocalDate, AssetSnapshot>> history) {
-        var assetSnapshotsByDate = new TreeMap<LocalDate, Map<String, AssetSnapshot>>();
+    private static SortedMap<LocalDate, Map<String, AssetSnapshot<?>>> getHistAssetSnapshotsByDate(Map<String, SortedMap<LocalDate, AssetSnapshot<?>>> history) {
+        var assetSnapshotsByDate = new TreeMap<LocalDate, Map<String, AssetSnapshot<?>>>();
         for (String assetId : history.keySet()) {
             var historyForAsset = history.get(assetId);
             for (LocalDate date : historyForAsset.keySet()) {
@@ -75,8 +75,8 @@ public class NetWorthRenderer {
         // Because history can be declared piecemeal (e.g. asset A and B are declared on date T, asset B and C
         //  are declared on date T+1) we "fill forward" past snapshots into any slots in the future where
         //  they're missing. This assumes that asset values don't change over historical time.
-        var latestAssetSnapshots = new HashMap<String, AssetSnapshot>();
-        var result = new TreeMap<LocalDate, Map<String, AssetSnapshot>>();
+        var latestAssetSnapshots = new HashMap<String, AssetSnapshot<?>>();
+        var result = new TreeMap<LocalDate, Map<String, AssetSnapshot<?>>>();
         for (LocalDate date : assetSnapshotsByDate.keySet()) {
             var assetSnapshotsForDate = assetSnapshotsByDate.get(date);
             latestAssetSnapshots.putAll(assetSnapshotsForDate);
@@ -90,7 +90,7 @@ public class NetWorthRenderer {
 
     private static ValOrGerr<Void> renderProjectionNetWorths(
             Display display,
-            Map<String, AssetSnapshot> latestHistAssetSnapshots,
+            Map<String, AssetSnapshot<?>> latestHistAssetSnapshots,
             Projections projections,
             int maxYearsToProject,
             int projectionDisplayIncrementYears) {
@@ -123,16 +123,16 @@ public class NetWorthRenderer {
             for (var date : futureNetWorths.keySet()) {
                 var assetSnapshotsForDate = futureNetWorths.get(date);
                 var netWorthOnDate = assetSnapshotsForDate.values().stream()
-                        .map(snapshot -> snapshot.getValue())
-                        .reduce(BigDecimal.ZERO, (l, r) -> l.add(r));
+                        .map(AssetSnapshot::getValue)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
                 display.printCurrencyItem(date.toString(), netWorthOnDate);
             }
         }
         return ValOrGerr.val(null);
     }
 
-    private static ValOrGerr<SortedMap<LocalDate, Map<String, AssetSnapshot>>> calculateSingleScenarioAssetSnapshots(
-            Map<String, AssetSnapshot> latestHistAssetSnapshots,
+    private static ValOrGerr<SortedMap<LocalDate, Map<String, AssetSnapshot<?>>>> calculateSingleScenarioAssetSnapshots(
+            Map<String, AssetSnapshot<?>> latestHistAssetSnapshots,
             ProjectionScenario scenario,
             int maxYearsToProject,
             int projectionDisplayIncrementYears) {
@@ -156,20 +156,20 @@ public class NetWorthRenderer {
         allDatesOfInterest.addAll(assetChangeDates);
         allDatesOfInterest.addAll(compoundingDates);
 
-        Map<String, AssetSnapshot> currentAssetSnapshots = new HashMap<>(latestHistAssetSnapshots);
-        SortedMap<LocalDate, Map<String, AssetSnapshot>> projectedSnapshots = new TreeMap<>();
+        Map<String, AssetSnapshot<?>> currentAssetSnapshots = new HashMap<>(latestHistAssetSnapshots);
+        SortedMap<LocalDate, Map<String, AssetSnapshot<?>>> projectedSnapshots = new TreeMap<>();
         for (LocalDate date : allDatesOfInterest) {
-            Map<String, AssetSnapshot> newAssetSnapshots = new HashMap<>(currentAssetSnapshots);
+            Map<String, AssetSnapshot<?>> newAssetSnapshots = new HashMap<>(currentAssetSnapshots);
 
             // Apply monthly growth only if we're on the month boundary
             // This is so that the user defining an asset change doesn't cause a compounding (which would make
             //  their returns higher than they should be)
             if (compoundingDates.contains(date)) {
                 for (String assetId : newAssetSnapshots.keySet()) {
-                    AssetSnapshot snapshot = newAssetSnapshots.get(assetId);
+                    AssetSnapshot<?> snapshot = newAssetSnapshots.get(assetId);
                     // TODO to be entirely accurate, this should really be daily compounding (since the user could issue
                     //  a +15k to their bank account the day before compounding and that would all be counted)
-                    AssetSnapshot newSnapshot = snapshot.projectOneMonth();
+                    AssetSnapshot<?> newSnapshot = snapshot.projectOneMonth();
                     newAssetSnapshots.put(assetId, newSnapshot);
                 }
             }
@@ -180,8 +180,8 @@ public class NetWorthRenderer {
 
                 for (String assetId : assetChangesForDate.keySet()) {
                     AssetChange change = assetChangesForDate.get(assetId);
-                    AssetSnapshot snapshot = newAssetSnapshots.get(assetId);
-                    ValOrGerr<AssetSnapshot> newSnapshotOrErr = snapshot.applyChange(change);
+                    AssetSnapshot<?> snapshot = newAssetSnapshots.get(assetId);
+                    ValOrGerr<? extends AssetSnapshot<?>> newSnapshotOrErr = snapshot.applyChange(change);
                     if (newSnapshotOrErr.hasGerr()) {
                         return ValOrGerr.propGerr(
                                 newSnapshotOrErr.getGerr(),
@@ -190,7 +190,7 @@ public class NetWorthRenderer {
                                 date
                         );
                     }
-                    AssetSnapshot newSnapshot = newSnapshotOrErr.getVal();
+                    AssetSnapshot<?> newSnapshot = newSnapshotOrErr.getVal();
                     newAssetSnapshots.put(assetId, newSnapshot);
                 }
             }
@@ -199,7 +199,7 @@ public class NetWorthRenderer {
             currentAssetSnapshots = newAssetSnapshots;
         }
 
-        var result = new TreeMap<LocalDate, Map<String, AssetSnapshot>>();
+        var result = new TreeMap<LocalDate, Map<String, AssetSnapshot<?>>>();
         for (var date : datesToLogNetWorth) {
             result.put(date, projectedSnapshots.get(date));
         }

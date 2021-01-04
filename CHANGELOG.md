@@ -1,3 +1,6 @@
+## TBD
+* Finally sorted out the generics puzzle!
+
 ## 0.8.0
 * Refactor asset modelling further to make it easy to add new assets
 * Add `StockAsset`

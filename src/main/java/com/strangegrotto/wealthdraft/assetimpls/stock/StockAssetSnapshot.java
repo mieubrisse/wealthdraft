@@ -3,6 +3,7 @@ package com.strangegrotto.wealthdraft.assetimpls.stock;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.annotations.VisibleForTesting;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
+import com.strangegrotto.wealthdraft.assets.temporal.AbstractAssetSnapshot;
 import com.strangegrotto.wealthdraft.assets.temporal.AssetChange;
 import com.strangegrotto.wealthdraft.assets.temporal.AssetSnapshot;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
@@ -13,22 +14,23 @@ import java.math.BigDecimal;
 @WealthdraftImmutableStyle
 @Value.Immutable
 @JsonDeserialize(as = ImmStockAssetSnapshot.class)
-public abstract class StockAssetSnapshot implements AssetSnapshot {
+public abstract class StockAssetSnapshot extends AbstractAssetSnapshot<StockAssetChange> {
+    public StockAssetSnapshot() {
+        super(StockAssetChange.class);
+    }
+
     // ================================================================================
     //               Logic custom this class, not filled by Immutables
     // ================================================================================
     @Override
-    public final AssetSnapshot projectOneMonth() {
+    public final AssetSnapshot<StockAssetChange> projectOneMonth() {
         // TODO use price-pulling function
         return ImmStockAssetSnapshot.of(getQuantity(), getPrice());
     }
 
     @Override
-    public final ValOrGerr<AssetSnapshot> applyChange(AssetChange change) {
-        // TODO Get rid of this nasty casty
-        StockAssetChange castedChange = (StockAssetChange) change;
-
-        var quantityChangeOpt = castedChange.getQuantity();
+    public final ValOrGerr<AssetSnapshot<StockAssetChange>> applyChangeInternal(StockAssetChange change) {
+        var quantityChangeOpt = change.getQuantity();
         var newQuantity = getQuantity();
         if (quantityChangeOpt.isPresent()) {
             var newQuantityOrErr = quantityChangeOpt.get().apply(getQuantity());
@@ -41,7 +43,7 @@ public abstract class StockAssetSnapshot implements AssetSnapshot {
             newQuantity = newQuantityOrErr.getVal();
         }
 
-        var priceChangeOpt = castedChange.getPrice();
+        var priceChangeOpt = change.getPrice();
         var newPrice = getPrice();
         if (priceChangeOpt.isPresent()) {
             var newPriceOrErr = priceChangeOpt.get().apply(getPrice());

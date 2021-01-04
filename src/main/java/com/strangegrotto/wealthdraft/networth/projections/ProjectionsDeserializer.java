@@ -50,13 +50,13 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
         public final String name;
         @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
         public final Optional<String> base;
-        public final Map<String, Asset> assets;
+        public final Map<String, Asset<?, ?>> assets;
         public final Map<LocalDate, Map<String, AssetChange>> assetChanges;
 
         private NotUnrolledParsedScenario(
                 String name,
                 @SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<String> base,
-                Map<String, Asset> assets,
+                Map<String, Asset<?, ?>> assets,
                 Map<LocalDate, Map<String, AssetChange>> assetChanges) {
             this.name = name;
             this.base = base;
@@ -65,9 +65,9 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
         }
     }
 
-    private final Map<String, Asset> assets;
+    private final Map<String, Asset<?, ?>> assets;
 
-    public ProjectionsDeserializer(Map<String, Asset> assets) {
+    public ProjectionsDeserializer(Map<String, Asset<?, ?>> assets) {
         this.assets = assets;
     }
 
@@ -103,7 +103,7 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
     private static ValOrGerr<NotUnrolledParsedScenario> parseProjectionScenario(
             String scenarioId,
             RawProjectionScenario rawScenario,
-            Map<String, Asset> assets,
+            Map<String, Asset<?, ?>> assets,
             ObjectMapper mapper) {
         Map<LocalDate, Map<String, AssetChange>> parsedAssetChanges = new HashMap<>();
         for (String relativeDateStr : rawScenario.changes.keySet()) {
@@ -138,7 +138,7 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
                     );
                 }
 
-                Asset referencedAsset = assets.get(assetId);
+                Asset<?, ?> referencedAsset = assets.get(assetId);
                 AssetChange parsedAssetChange;
                 try {
                     parsedAssetChange = mapper.convertValue(unparsedAssetChange, referencedAsset.getChangeType());

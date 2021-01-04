@@ -238,7 +238,7 @@ public class Main {
     }
 
     @VisibleForTesting
-    public static void addDeserializersNeedingAssets(ObjectMapper mapper, Map<String, Asset> assets) {
+    public static void addDeserializersNeedingAssets(ObjectMapper mapper, Map<String, Asset<?, ?>> assets) {
         var deserializerModule = new SimpleModule();
         deserializerModule.addDeserializer(Projections.class, new ProjectionsDeserializer(assets));
         deserializerModule.addDeserializer(AssetsHistory.class, new AssetsHistoryDeserializer(assets));
