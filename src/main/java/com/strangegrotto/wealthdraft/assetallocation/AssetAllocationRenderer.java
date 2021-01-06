@@ -46,22 +46,30 @@ public class AssetAllocationRenderer {
 
         // GET TO DAH CHOPPAH!
         var tableBodyBuilder = new TableSection.Builder();
-        tableBodyBuilder.addRow("Selectors", "Current Value", "Current % Portfolio", "Desired Value", "Desired % Portfolio", "Change Needed");
+        tableBodyBuilder.addRow("Numerator Selectors", "Denominator Selectors", "Current Num/Denom %", "Desired Num/Denom %", "Change Needed");
         for (var targetAllocation : targetAssetAllocations) {
-            var filter = targetAllocation.getFilter();
-            var matchingAssetIds = filter.apply(assets).keySet();
-            var matchingAssetValue = latestAssetSnapshots.entrySet().stream()
-                    .filter(entry -> matchingAssetIds.contains(entry.getKey()))
-                    .map(Map.Entry::getValue)
-                    .map(AssetSnapshot::getValue)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            var numeratorFilter = targetAllocation.getNumeratorFilter();
+            var numeratorValue = getValueOfAssetsMatchingFilter(assets, latestAssetSnapshots, numeratorFilter);
+
+            var denominatorFilterOpt = targetAllocation.getDenominatorOpt();
+            BigDecimal denominatorValue;
+            String denominatorSelectors;
+            if (denominatorFilterOpt.isPresent()) {
+                var denominatorFilter = denominatorFilterOpt.get();
+                denominatorValue = getValueOfAssetsMatchingFilter(assets, latestAssetSnapshots, denominatorFilter);
+                denominatorSelectors = denominatorFilter.getStringRepresentation();
+            } else {
+                denominatorValue = totalPortfolioValue;
+                denominatorSelectors = "Total Portfolio";
+            }
 
             addTableRow(
                     tableBodyBuilder,
-                    filter.getStringRepresentation(),
-                    matchingAssetValue,
-                    targetAllocation.getPortfolioFraction(),
-                    totalPortfolioValue
+                    numeratorFilter.getStringRepresentation(),
+                    denominatorSelectors,
+                    numeratorValue,
+                    denominatorValue,
+                    targetAllocation.getFraction()
             );
         }
 
@@ -79,28 +87,41 @@ public class AssetAllocationRenderer {
         System.out.println(table.toString());
     }
 
+    private static BigDecimal getValueOfAssetsMatchingFilter(
+            Map<String, Asset<?, ?>> assets,
+            Map<String, AssetSnapshot<?>> latestAssetSnapshots,
+            AssetFilter filter) {
+        var matchingAssetIds = filter.apply(assets).keySet();
+        var matchingAssetValue = latestAssetSnapshots.entrySet().stream()
+                .filter(entry -> matchingAssetIds.contains(entry.getKey()))
+                .map(Map.Entry::getValue)
+                .map(AssetSnapshot::getValue)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return matchingAssetValue;
+    }
+
     private static void addTableRow(
             TableSection.Builder tableBodyBuilder,
-            String selectors,
-            BigDecimal currentValue,
-            BigDecimal targetPortfolioFraction,
-            BigDecimal totalPortfolioValue) {
-        var currentValuePortfolioFraction = currentValue.divide(
-                totalPortfolioValue,
+            String numeratorSelectors,
+            String denominatorSelectors,
+            BigDecimal numeratorValue,
+            BigDecimal denominatorValue,
+            BigDecimal targetFraction) {
+        var currentFraction = numeratorValue.divide(
+                denominatorValue,
                 BIG_DECIMAL_DISPLAY_SCALE + 2,  // Plus 2 so that when we multiply by 100 to get a fraction we have scale == 2
                 RoundingMode.HALF_EVEN);
-        var currentValuePortfolioPercent = formatFractionAsPercent(currentValuePortfolioFraction);
-        var targetPortfolioPercent = formatFractionAsPercent(targetPortfolioFraction);
-        var targetValue = targetPortfolioFraction.multiply(totalPortfolioValue).setScale(BIG_DECIMAL_DISPLAY_SCALE);
-        var correctionNeeded = targetValue.subtract(currentValue).setScale(BIG_DECIMAL_DISPLAY_SCALE);
+        var currentPercent = formatFractionAsPercent(currentFraction);
+        var targetPercent = formatFractionAsPercent(targetFraction);
+        var targetValue = targetFraction.multiply(denominatorValue).setScale(BIG_DECIMAL_DISPLAY_SCALE);
+        var correctionNeeded = targetValue.subtract(numeratorValue).setScale(BIG_DECIMAL_DISPLAY_SCALE);
 
         // TODO Pull back a preferred currency format and use that here instead!
         var strRow = List.of(
-                selectors,
-                currentValue.toString(),
-                currentValuePortfolioPercent.toString(),
-                targetValue.toString(),
-                targetPortfolioPercent.toString(),
+                numeratorSelectors,
+                denominatorSelectors,
+                currentPercent.toString(),
+                targetPercent.toString(),
                 correctionNeeded.toString()
         );
         var strRowArr = strRow.toArray(new String[0]);
