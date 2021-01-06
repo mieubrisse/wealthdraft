@@ -1,3 +1,6 @@
+## 0.10.0
+* Allow users to configure the denominator of asset allocation rules
+
 ## 0.9.0
 * Finally sorted out the generics puzzle!
 * Add SpotBugs

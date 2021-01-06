@@ -1,13 +1,18 @@
-- filter:
+- numerator:
     tags:
       domOrIntl: domestic
-  portfolioFraction: 0.7
-- filter:
+  fraction: 0.7
+  # If no denominator is specified, the entire portfolio is assumed to be the denominator
+- numerator:
     tags:
       domOrIntl: international
-  portfolioFraction: 0.3
-- filter:
+  fraction: 0.3
+- numerator:
+    tags:
+      assetType: BANK_ACCOUNT
+      domOrIntl: domestic
+  # Denominators can also be specified
+  denominator:
     tags:
       domOrIntl: domestic
-      assetType: BANK_ACCOUNT
-  portfolioFraction: 0.01
+  fraction: 0.01
