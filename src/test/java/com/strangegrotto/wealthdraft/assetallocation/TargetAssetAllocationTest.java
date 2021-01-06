@@ -19,10 +19,9 @@ public class TargetAssetAllocationTest {
     }
 
 
-    private static List<TargetAssetAllocation> parseAssetAllocationsFile(TargetAssetAllocationsTestFiles testFile) throws IOException {
+    private static TargetAssetAllocations parseAssetAllocationsFile(TargetAssetAllocationsTestFiles testFile) throws IOException {
         var mapper = Main.getObjectMapper();
         var assetAllocationsUrl = testFile.getResource();
-        CollectionType assetAllocationsListType = mapper.getTypeFactory().constructCollectionType(ArrayList.class, TargetAssetAllocation.class);
-        return mapper.readValue(assetAllocationsUrl, assetAllocationsListType);
+        return mapper.readValue(assetAllocationsUrl, TargetAssetAllocations.class);
     }
 }
