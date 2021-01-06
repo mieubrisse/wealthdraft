@@ -27,10 +27,14 @@ public class ExpectedExampleTargetAssetAllocations {
 
     private static final TargetAssetAllocation ALLOCATION_3 = ImmTargetAssetAllocation.of(
             ImmConjunctiveAssetTagFilter.of(Map.of(
-                    ExpectedExampleAssetDefinitions.DOM_OR_INTL_TAG, ExpectedExampleAssetDefinitions.DOMESTIC_ASSET_TAG_VALUE,
-                    IntrinsicAssetTag.ASSET_TYPE.getTagName(), AssetTypeTagValue.BANK_ACCOUNT.name()
+                    IntrinsicAssetTag.ASSET_TYPE.getTagName(), AssetTypeTagValue.BANK_ACCOUNT.name(),
+                    ExpectedExampleAssetDefinitions.DOM_OR_INTL_TAG, ExpectedExampleAssetDefinitions.DOMESTIC_ASSET_TAG_VALUE
             )),
             BigDecimal.valueOf(0.01)
+    ).withDenominatorOpt(
+            ImmConjunctiveAssetTagFilter.of(Map.of(
+                    ExpectedExampleAssetDefinitions.DOM_OR_INTL_TAG, ExpectedExampleAssetDefinitions.DOMESTIC_ASSET_TAG_VALUE
+            ))
     );
 
     public static final List<TargetAssetAllocation> ASSET_ALLOCATIONS = List.of(
