@@ -1,3 +1,6 @@
+## TBD
+* Allow full set math expressiveness when defining asset allocation filters: AND, NOT, OR, and tag filter
+
 ## 0.10.0
 * Allow users to configure the denominator of asset allocation rules
 

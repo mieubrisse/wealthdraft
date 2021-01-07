@@ -5,6 +5,7 @@ import com.jakewharton.picnic.Table;
 import com.jakewharton.picnic.TableSection;
 import com.jakewharton.picnic.TextAlignment;
 import com.strangegrotto.wealthdraft.Display;
+import com.strangegrotto.wealthdraft.assetallocation.filters.AssetFilter;
 import com.strangegrotto.wealthdraft.assets.definition.Asset;
 import com.strangegrotto.wealthdraft.assets.temporal.AssetSnapshot;
 import org.slf4j.Logger;
@@ -35,7 +36,7 @@ public class AssetAllocationRenderer {
     }
 
     public void renderAssetAllocations(
-            List<TargetAssetAllocation> targetAssetAllocations,
+            TargetAssetAllocations targetAssetAllocations,
             Map<String, Asset<?, ?>> assets,
             Map<String, AssetSnapshot<?>> latestAssetSnapshots) {
         display.printEmptyLine();
@@ -44,32 +45,37 @@ public class AssetAllocationRenderer {
                 .map(AssetSnapshot::getValue)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        var filters = targetAssetAllocations.getFilters();
+        var targets = targetAssetAllocations.getTargets();
+
         // GET TO DAH CHOPPAH!
         var tableBodyBuilder = new TableSection.Builder();
         tableBodyBuilder.addRow("Numerator Selectors", "Denominator Selectors", "Current Num/Denom %", "Desired Num/Denom %", "Change Needed");
-        for (var targetAllocation : targetAssetAllocations) {
-            var numeratorFilter = targetAllocation.getNumeratorFilter();
+        for (var target : targets) {
+            var numeratorFilterName = target.getNumeratorFilter();
+            var numeratorFilter = filters.get(numeratorFilterName);
             var numeratorValue = getValueOfAssetsMatchingFilter(assets, latestAssetSnapshots, numeratorFilter);
 
-            var denominatorFilterOpt = targetAllocation.getDenominatorOpt();
+            var denominatorFilterNameOpt = target.getDenominatorFilterOpt();
             BigDecimal denominatorValue;
-            String denominatorSelectors;
-            if (denominatorFilterOpt.isPresent()) {
-                var denominatorFilter = denominatorFilterOpt.get();
+            String denominatorStrRepr;
+            if (denominatorFilterNameOpt.isPresent()) {
+                var denominatorFilterName = denominatorFilterNameOpt.get();
+                var denominatorFilter = filters.get(denominatorFilterName);
                 denominatorValue = getValueOfAssetsMatchingFilter(assets, latestAssetSnapshots, denominatorFilter);
-                denominatorSelectors = denominatorFilter.getStringRepresentation();
+                denominatorStrRepr = denominatorFilterName;
             } else {
                 denominatorValue = totalPortfolioValue;
-                denominatorSelectors = "Total Portfolio";
+                denominatorStrRepr = "Total Portfolio";
             }
 
             addTableRow(
                     tableBodyBuilder,
-                    numeratorFilter.getStringRepresentation(),
-                    denominatorSelectors,
+                    numeratorFilterName,
+                    denominatorStrRepr,
                     numeratorValue,
                     denominatorValue,
-                    targetAllocation.getFraction()
+                    target.getFraction()
             );
         }
 
@@ -91,13 +97,12 @@ public class AssetAllocationRenderer {
             Map<String, Asset<?, ?>> assets,
             Map<String, AssetSnapshot<?>> latestAssetSnapshots,
             AssetFilter filter) {
-        var matchingAssetIds = filter.apply(assets).keySet();
-        var matchingAssetValue = latestAssetSnapshots.entrySet().stream()
+        var matchingAssetIds = filter.apply(assets, assets.keySet());
+        return latestAssetSnapshots.entrySet().stream()
                 .filter(entry -> matchingAssetIds.contains(entry.getKey()))
                 .map(Map.Entry::getValue)
                 .map(AssetSnapshot::getValue)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        return matchingAssetValue;
     }
 
     private static void addTableRow(
@@ -113,8 +118,8 @@ public class AssetAllocationRenderer {
                 RoundingMode.HALF_EVEN);
         var currentPercent = formatFractionAsPercent(currentFraction);
         var targetPercent = formatFractionAsPercent(targetFraction);
-        var targetValue = targetFraction.multiply(denominatorValue).setScale(BIG_DECIMAL_DISPLAY_SCALE);
-        var correctionNeeded = targetValue.subtract(numeratorValue).setScale(BIG_DECIMAL_DISPLAY_SCALE);
+        var targetValue = targetFraction.multiply(denominatorValue).setScale(BIG_DECIMAL_DISPLAY_SCALE, RoundingMode.HALF_EVEN);
+        var correctionNeeded = targetValue.subtract(numeratorValue).setScale(BIG_DECIMAL_DISPLAY_SCALE, RoundingMode.HALF_EVEN);
 
         // TODO Pull back a preferred currency format and use that here instead!
         var strRow = List.of(

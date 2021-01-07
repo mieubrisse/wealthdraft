@@ -20,6 +20,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Ordering;
 import com.strangegrotto.wealthdraft.assetallocation.AssetAllocationRenderer;
 import com.strangegrotto.wealthdraft.assetallocation.TargetAssetAllocation;
+import com.strangegrotto.wealthdraft.assetallocation.TargetAssetAllocations;
 import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitions;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
@@ -188,10 +189,9 @@ public class Main {
 
         String assetAllocationsFilepath = parsedArgs.getString(ASSET_ALLOCATIONS_FILEPATH_ARG);
         log.debug("Asset allocations filepath: {}", assetAllocationsFilepath);
-        CollectionType targetAssetAllocationsType = typeFactory.constructCollectionType(ArrayList.class, TargetAssetAllocation.class);
-        List<TargetAssetAllocation> targetAssetAllocations;
+        TargetAssetAllocations targetAssetAllocations;
         try {
-            targetAssetAllocations = mapper.readValue(new File(assetAllocationsFilepath), targetAssetAllocationsType);
+            targetAssetAllocations = mapper.readValue(new File(assetAllocationsFilepath), TargetAssetAllocations.class);
         } catch (IOException e) {
             log.error("An error occurred parsing the asset allocations file '{}'", assetAllocationsFilepath, e);
             System.exit(FAILURE_EXIT_CODE);
