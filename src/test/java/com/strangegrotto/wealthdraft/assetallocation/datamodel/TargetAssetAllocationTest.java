@@ -1,18 +1,14 @@
-package com.strangegrotto.wealthdraft.assetallocation;
+package com.strangegrotto.wealthdraft.assetallocation.datamodel;
 
-import com.fasterxml.jackson.databind.type.CollectionType;
 import com.strangegrotto.wealthdraft.Main;
-import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitions;
-import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitionsTestFiles;
+import com.strangegrotto.wealthdraft.assetallocation.ExpectedExampleTargetAssetAllocations;
+import com.strangegrotto.wealthdraft.assetallocation.TargetAssetAllocationsTestFiles;
+import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocations;
 import com.strangegrotto.wealthdraft.assets.definition.ExpectedExampleAssetDefinitions;
-import com.strangegrotto.wealthdraft.assets.definition.ImmAssetDefinitions;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public class TargetAssetAllocationTest {

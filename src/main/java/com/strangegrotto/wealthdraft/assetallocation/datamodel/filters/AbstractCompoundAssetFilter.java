@@ -1,16 +1,12 @@
-package com.strangegrotto.wealthdraft.assetallocation.filters;
+package com.strangegrotto.wealthdraft.assetallocation.datamodel.filters;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
 import com.strangegrotto.wealthdraft.assets.definition.Asset;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.function.BinaryOperator;
-import java.util.stream.Collectors;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
 public abstract class AbstractCompoundAssetFilter implements AssetFilter {

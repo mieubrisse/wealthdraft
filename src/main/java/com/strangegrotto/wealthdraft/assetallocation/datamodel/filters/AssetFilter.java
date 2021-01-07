@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.assetallocation.filters;
+package com.strangegrotto.wealthdraft.assetallocation.datamodel.filters;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
