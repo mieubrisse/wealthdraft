@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.assetallocation;
+package com.strangegrotto.wealthdraft.assetallocation.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -13,7 +13,7 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmTargetAssetAllocation.class)
 public interface TargetAssetAllocation {
     @JsonProperty("numerator")
-    AssetFilter getNumeratorFilter();
+    String getNumeratorFilter();
 
     // Fraction meaning 0.7, rather than 70%
     @JsonProperty("fraction")
@@ -21,5 +21,5 @@ public interface TargetAssetAllocation {
 
     // If not present, the denominator is assumed to be the entire portfolio
     @JsonProperty("denominator")
-    Optional<ConjunctiveAssetTagFilter> getDenominatorOpt();
+    Optional<String> getDenominatorFilterOpt();
 }

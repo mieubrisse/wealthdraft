@@ -1,3 +1,8 @@
+## 0.11.0
+* Allow full set math expressiveness when defining asset allocation filters: AND, NOT, OR, and tag filter
+* Split up asset allocation calculating & rendering logic so the calculation logic can be tested
+* Added deviation % and status to asset allocation table
+
 ## 0.10.0
 * Allow users to configure the denominator of asset allocation rules
 
