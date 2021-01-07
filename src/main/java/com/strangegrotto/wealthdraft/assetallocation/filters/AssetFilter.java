@@ -1,24 +1,17 @@
 package com.strangegrotto.wealthdraft.assetallocation.filters;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.base.Preconditions;
-import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
 import com.strangegrotto.wealthdraft.assets.definition.Asset;
-import org.immutables.value.Value;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
 @JsonSubTypes({
         @JsonSubTypes.Type(TagAssetFilter.class),
-        @JsonSubTypes.Type(ConjunctiveAssetFilter.class),
-        @JsonSubTypes.Type(DisjunctiveAssetFilter.class),
+        @JsonSubTypes.Type(ConjunctionAssetFilter.class),
+        @JsonSubTypes.Type(DisjunctionAssetFilter.class),
         @JsonSubTypes.Type(NegationAssetFilter.class)
 })
 public interface AssetFilter {

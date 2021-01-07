@@ -1,7 +1,7 @@
 package com.strangegrotto.wealthdraft.assetallocation;
 
 import com.strangegrotto.wealthdraft.assetallocation.filters.AssetFilter;
-import com.strangegrotto.wealthdraft.assetallocation.filters.ImmConjunctiveAssetFilter;
+import com.strangegrotto.wealthdraft.assetallocation.filters.ImmConjunctionAssetFilter;
 import com.strangegrotto.wealthdraft.assetallocation.filters.ImmTagAssetFilter;
 import com.strangegrotto.wealthdraft.assetimpls.AssetTypeTagValue;
 import com.strangegrotto.wealthdraft.assets.definition.ExpectedExampleAssetDefinitions;
@@ -24,7 +24,7 @@ public class ExpectedExampleTargetAssetAllocations {
             ExpectedExampleAssetDefinitions.DOM_OR_INTL_TAG,
             ExpectedExampleAssetDefinitions.INTERNATIONAL_ASSET_TAG_VALUE
     );
-    public static final AssetFilter DOMESTIC_BANK_ASSETS_FILTER = ImmConjunctiveAssetFilter.of(List.of(
+    public static final AssetFilter DOMESTIC_BANK_ASSETS_FILTER = ImmConjunctionAssetFilter.of(List.of(
             ImmTagAssetFilter.of(
                     ExpectedExampleAssetDefinitions.DOM_OR_INTL_TAG,
                     ExpectedExampleAssetDefinitions.DOMESTIC_ASSET_TAG_VALUE

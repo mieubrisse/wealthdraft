@@ -8,7 +8,7 @@ import org.junit.Test;
 import java.util.Map;
 import java.util.Set;
 
-public class NegationCompountAssetFilterTest {
+public class NegationAssetFilterTest {
     @Test
     public void testVanilla() {
         var assetId1 = "asset1";
