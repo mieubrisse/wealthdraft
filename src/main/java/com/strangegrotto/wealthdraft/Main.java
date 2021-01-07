@@ -82,6 +82,7 @@ public class Main {
     // TODO Make this months instead
     private static final int PROJECTION_DISPLAY_INCREMENT_YEARS = 1;
 
+    // TODO Make asset allocation deviation thresholds configurable
     private static final BigDecimal ASSET_ALLOCATION_DEVIATION_PCT_WARN = BigDecimal.valueOf(0.10);
     private static final BigDecimal ASSET_ALLOCATION_DEVIATION_PCT_ERROR = BigDecimal.valueOf(0.15);
 
