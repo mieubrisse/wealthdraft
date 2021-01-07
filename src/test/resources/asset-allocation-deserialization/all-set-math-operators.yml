@@ -1,0 +1,13 @@
+filters:
+  megaFilter:
+    all:
+      - not:
+          tag: broker
+          value: Fidelity
+      - any:
+          - tag: assetType
+            value: STOCK
+          - tag: domOrIntl
+            value: international
+
+targets: []
