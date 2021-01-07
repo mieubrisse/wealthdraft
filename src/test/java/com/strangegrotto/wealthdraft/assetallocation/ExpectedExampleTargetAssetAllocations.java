@@ -12,19 +12,19 @@ import java.util.List;
 import java.util.Map;
 
 public class ExpectedExampleTargetAssetAllocations {
-    public static String DOMESTIC_ASSETS_FILTER_ID = "domesticAssets";
-    public static String INTERNATIONAL_ASSETS_FILTER_ID = "internationalAssets";
-    public static String DOMESTIC_BANK_ASSETS_FILTER_ID = "domesticBankAssets";
+    public static final String DOMESTIC_ASSETS_FILTER_ID = "domesticAssets";
+    public static final String INTERNATIONAL_ASSETS_FILTER_ID = "internationalAssets";
+    public static final String DOMESTIC_BANK_ASSETS_FILTER_ID = "domesticBankAssets";
 
-    public static AssetFilter DOMESTIC_ASSETS_FILTER = ImmTagAssetFilter.of(
+    public static final AssetFilter DOMESTIC_ASSETS_FILTER = ImmTagAssetFilter.of(
             ExpectedExampleAssetDefinitions.DOM_OR_INTL_TAG,
             ExpectedExampleAssetDefinitions.DOMESTIC_ASSET_TAG_VALUE
     );
-    public static AssetFilter INTERNATIONAL_ASSETS_FILTER = ImmTagAssetFilter.of(
+    public static final AssetFilter INTERNATIONAL_ASSETS_FILTER = ImmTagAssetFilter.of(
             ExpectedExampleAssetDefinitions.DOM_OR_INTL_TAG,
             ExpectedExampleAssetDefinitions.INTERNATIONAL_ASSET_TAG_VALUE
     );
-    public static AssetFilter DOMESTIC_BANK_ASSETS_FILTER = ImmConjunctiveAssetFilter.of(List.of(
+    public static final AssetFilter DOMESTIC_BANK_ASSETS_FILTER = ImmConjunctiveAssetFilter.of(List.of(
             ImmTagAssetFilter.of(
                     ExpectedExampleAssetDefinitions.DOM_OR_INTL_TAG,
                     ExpectedExampleAssetDefinitions.DOMESTIC_ASSET_TAG_VALUE
@@ -54,7 +54,7 @@ public class ExpectedExampleTargetAssetAllocations {
             Map.of(
                 DOMESTIC_ASSETS_FILTER_ID, DOMESTIC_ASSETS_FILTER,
                 INTERNATIONAL_ASSETS_FILTER_ID, INTERNATIONAL_ASSETS_FILTER,
-                DOMESTIC_BANK_ASSETS_FILTER_ID, DOMESTIC_ASSETS_FILTER
+                DOMESTIC_BANK_ASSETS_FILTER_ID, DOMESTIC_BANK_ASSETS_FILTER
             ),
             List.of(
                     TARGET_ALLOCATION_1,

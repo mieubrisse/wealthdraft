@@ -15,6 +15,12 @@ import java.util.Optional;
 import java.util.Set;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
+@JsonSubTypes({
+        @JsonSubTypes.Type(TagAssetFilter.class),
+        @JsonSubTypes.Type(ConjunctiveAssetFilter.class),
+        @JsonSubTypes.Type(DisjunctiveAssetFilter.class),
+        @JsonSubTypes.Type(NegationAssetFilter.class)
+})
 public interface AssetFilter {
     Set<String> apply(Map<String, Asset<?, ?>> allAssets, Set<String> currentSelection);
 }

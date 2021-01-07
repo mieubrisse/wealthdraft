@@ -15,7 +15,7 @@ import java.util.Optional;
 @Value.Immutable
 @JsonDeserialize(as = ImmTargetAssetAllocation.class)
 public interface TargetAssetAllocation {
-    @JsonProperty("numeratorFilter")
+    @JsonProperty("numerator")
     String getNumeratorFilter();
 
     // Fraction meaning 0.7, rather than 70%
@@ -23,6 +23,6 @@ public interface TargetAssetAllocation {
     BigDecimal getFraction();
 
     // If not present, the denominator is assumed to be the entire portfolio
-    @JsonProperty("denominatorFilter")
+    @JsonProperty("denominator")
     Optional<String> getDenominatorFilterOpt();
 }
