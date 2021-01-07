@@ -1,5 +1,6 @@
 package com.strangegrotto.wealthdraft.assetallocation.calculator;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocation;
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocations;
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.filters.AssetFilter;
@@ -12,8 +13,8 @@ import java.util.*;
 
 public class AssetAllocationCalculator {
     // The rounding parameters to use so that non-terminating divison doesn't throw an exception
-    private static final int DIVISION_SCALE = 6;
-    private static final RoundingMode ROUNDING_MODE = RoundingMode.HALF_EVEN;
+    @VisibleForTesting static final int DIVISION_SCALE = 6;
+    @VisibleForTesting static final RoundingMode ROUNDING_MODE = RoundingMode.HALF_EVEN;
 
     private final BigDecimal deviationFractionWarn;
     private final BigDecimal deviationFractionErr;
@@ -53,41 +54,57 @@ public class AssetAllocationCalculator {
                 denominatorStrRepr = "Total Portfolio";
             }
 
-            var currentFraction = numeratorValue.divide(
-                    denominatorValue,
-                    DIVISION_SCALE,
-                    ROUNDING_MODE
-            );
-            var targetFraction = target.getFraction();
-            var targetNumeratorValue = targetFraction.multiply(denominatorValue);
-            var correctionNeeded = targetNumeratorValue.subtract(numeratorValue);
-            var deviationFraction = correctionNeeded.abs().divide(
-                    targetNumeratorValue,
-                    DIVISION_SCALE,
-                    ROUNDING_MODE
-            );
-            AssetAllocationDeviationStatus deviationStatus;
-            if (deviationFraction.compareTo(this.deviationFractionErr) >= 0) {
-                deviationStatus = AssetAllocationDeviationStatus.ERROR;
-            } else if (deviationFraction.compareTo(this.deviationFractionWarn) >= 0) {
-                deviationStatus = AssetAllocationDeviationStatus.WARN;
-            } else {
-                deviationStatus = AssetAllocationDeviationStatus.OK;
-            }
-
-            var calcResult = ImmAssetAllocationCalcResult.of(
+            var calcResult = calcSingleAssetAllocation(
                     numeratorValue,
                     denominatorValue,
-                    currentFraction,
-                    targetFraction,
-                    targetNumeratorValue,
-                    correctionNeeded,
-                    deviationFraction,
-                    deviationStatus
+                    target.getFraction(),
+                    this.deviationFractionWarn,
+                    this.deviationFractionErr
             );
             results.put(target, calcResult);
         }
         return results;
+    }
+
+    @VisibleForTesting
+    static AssetAllocationCalcResult calcSingleAssetAllocation(
+            BigDecimal numeratorValue,
+            BigDecimal denominatorValue,
+            BigDecimal targetFraction,
+            BigDecimal deviationFractionWarn,
+            BigDecimal deviationFractionErr
+    ) {
+        var currentFraction = numeratorValue.divide(
+                denominatorValue,
+                DIVISION_SCALE,
+                ROUNDING_MODE
+        );
+        var targetNumeratorValue = targetFraction.multiply(denominatorValue);
+        var correctionNeeded = targetNumeratorValue.subtract(numeratorValue);
+        var deviationFraction = correctionNeeded.abs().divide(
+                targetNumeratorValue,
+                DIVISION_SCALE,
+                ROUNDING_MODE
+        );
+        AssetAllocationDeviationStatus deviationStatus;
+        if (deviationFraction.compareTo(deviationFractionErr) >= 0) {
+            deviationStatus = AssetAllocationDeviationStatus.ERROR;
+        } else if (deviationFraction.compareTo(deviationFractionWarn) >= 0) {
+            deviationStatus = AssetAllocationDeviationStatus.WARN;
+        } else {
+            deviationStatus = AssetAllocationDeviationStatus.OK;
+        }
+
+        return ImmAssetAllocationCalcResult.of(
+                numeratorValue,
+                denominatorValue,
+                currentFraction,
+                targetFraction,
+                targetNumeratorValue,
+                correctionNeeded,
+                deviationFraction,
+                deviationStatus
+        );
     }
 
     private static BigDecimal getValueOfAssetsMatchingFilter(

@@ -16,9 +16,9 @@ public interface AssetAllocationCalcResult {
 
     BigDecimal getCurrentFraction();
 
-    BigDecimal getDesiredFraction();
+    BigDecimal getTargetFraction();
 
-    BigDecimal getDesiredNumeratorValue();
+    BigDecimal getTargetNumeratorValue();
 
     BigDecimal getCorrectionNeeded();
 
