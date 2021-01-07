@@ -1,12 +1,13 @@
-package com.strangegrotto.wealthdraft.assetallocation;
+package com.strangegrotto.wealthdraft.assetallocation.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
-import com.strangegrotto.wealthdraft.assetallocation.filters.AssetFilter;
+import com.strangegrotto.wealthdraft.assetallocation.datamodel.filters.AssetFilter;
 import org.immutables.value.Value;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -47,6 +48,16 @@ public interface TargetAssetAllocations {
                         i
                 );
             }
+
+            var targetFraction = target.getFraction();
+            Preconditions.checkState(
+                    targetFraction.compareTo(BigDecimal.ZERO) >= 0,
+                    "Fraction for allocation target #%i is less than zero",
+                    i);
+            Preconditions.checkState(
+                    targetFraction.compareTo(BigDecimal.ONE) <= 0,
+                    "Fraction for allocation target #%i is greater than 1.0",
+                    i);
         }
     }
 }

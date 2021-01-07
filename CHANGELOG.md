@@ -1,3 +1,7 @@
+## TBD
+* Split up asset allocation calculating & rendering logic so the calculation logic can be tested
+* Added deviation % and status to asset allocation table
+
 ## 0.10.0
 * Allow users to configure the denominator of asset allocation rules
 

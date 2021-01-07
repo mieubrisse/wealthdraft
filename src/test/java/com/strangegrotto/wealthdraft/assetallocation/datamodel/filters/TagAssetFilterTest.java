@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.assetallocation.filters;
+package com.strangegrotto.wealthdraft.assetallocation.datamodel.filters;
 
 import com.strangegrotto.wealthdraft.assetimpls.bankaccount.ImmBankAccountAsset;
 import com.strangegrotto.wealthdraft.assets.definition.Asset;
