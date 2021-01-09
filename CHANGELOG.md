@@ -1,4 +1,4 @@
-## TBD
+## 0.12.0
 * Refactor assets history from `assetId -> (date -> assetSnapshot)` to `date -> (assetId -> assetSnapshot)`
 
 ## 0.11.0
