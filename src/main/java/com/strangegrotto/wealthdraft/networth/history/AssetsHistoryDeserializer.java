@@ -27,29 +27,31 @@ public class AssetsHistoryDeserializer extends JsonDeserializer<AssetsHistory> {
     public AssetsHistory deserialize(JsonParser parser, DeserializationContext ctxt) throws IOException {
         // We need to use ObjectMapper.convertValue, but ObjectCodec doesn't have it on it
         var mapper = (ObjectMapper) parser.getCodec();
-        Map<String, Map<LocalDate, Map<String, String>>> raw = parser.readValueAs(
-                new TypeReference<Map<String, Map<LocalDate, Map<String, String>>>>(){}
+        Map<LocalDate, Map<String, Map<String, String>>> raw = parser.readValueAs(
+                new TypeReference<Map<LocalDate, Map<String, Map<String, String>>>>(){}
         );
 
-        var parsedAssetSnapshots = new HashMap<String, SortedMap<LocalDate, AssetSnapshot<?>>>();
+        var parsedAssetSnapshots = new TreeMap<LocalDate, Map<String, AssetSnapshot<?>>>();
         for (var rawEntry : raw.entrySet()) {
-            var assetId = rawEntry.getKey();
-            var unparsedSnapshotsForAsset = rawEntry.getValue();
-            Preconditions.checkState(
-                    this.assets.containsKey(assetId),
-                    "Asset ID '%s' doesn't match any known asset"
-            );
-            var asset = this.assets.get(assetId);
-            var snapshotType = asset.getSnapshotType();
+            var date = rawEntry.getKey();
+            var unparsedAssetSnapshots = rawEntry.getValue();
 
-            var parsedSnapshotsForAsset = new TreeMap<LocalDate, AssetSnapshot<?>>();
-            for (var unparsedSnapshotEntry : unparsedSnapshotsForAsset.entrySet()) {
-                var date = unparsedSnapshotEntry.getKey();
-                var unparsedSnapshot = unparsedSnapshotEntry.getValue();
+
+            var parsedSnapshotsForAsset = new HashMap<String, AssetSnapshot<?>>();
+            for (var unparsedAssetSnapshotEntry : unparsedAssetSnapshots.entrySet()) {
+                var assetId = unparsedAssetSnapshotEntry.getKey();
+                var unparsedSnapshot = unparsedAssetSnapshotEntry.getValue();
+                Preconditions.checkState(
+                        this.assets.containsKey(assetId),
+                        "Asset ID '%s' doesn't match any known asset"
+                );
+
+                var asset = this.assets.get(assetId);
+                var snapshotType = asset.getSnapshotType();
                 var parsedSnapshot = mapper.convertValue(unparsedSnapshot, snapshotType);
-                parsedSnapshotsForAsset.put(date, parsedSnapshot);
+                parsedSnapshotsForAsset.put(assetId, parsedSnapshot);
             }
-            parsedAssetSnapshots.put(assetId, parsedSnapshotsForAsset);
+            parsedAssetSnapshots.put(date, parsedSnapshotsForAsset);
         }
 
         return ImmAssetsHistory.of(this.assets, parsedAssetSnapshots);

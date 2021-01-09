@@ -30,7 +30,7 @@ public class NetWorthRenderer {
     }
 
     public ValOrGerr<Void> renderNetWorthCalculations(AssetsHistory assetsHistory, Projections projections) {
-        SortedMap<LocalDate, Map<String, AssetSnapshot<?>>> histAssetSnapshotsByDate = assetsHistory.getHistoryByDate();
+        SortedMap<LocalDate, Map<String, AssetSnapshot<?>>> histAssetSnapshotsByDate = assetsHistory.getHistory();
         display.printEmptyLine();
         display.printBannerHeader("Historical Net Worth");
         histAssetSnapshotsByDate.forEach((date, assetSnapshotsForDate) -> {
