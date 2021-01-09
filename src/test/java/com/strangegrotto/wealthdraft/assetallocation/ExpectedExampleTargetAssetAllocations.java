@@ -21,19 +21,23 @@ public class ExpectedExampleTargetAssetAllocations {
     public static final String DOMESTIC_BANK_ASSETS_FILTER_ID = "domesticBankAssets";
 
     public static final AssetFilter DOMESTIC_ASSETS_FILTER = ImmTagAssetFilter.of(
+            ExpectedExampleAssetDefinitions.EXPECTED_CUSTOM_TAGS,
             ExpectedExampleAssetDefinitions.DOM_OR_INTL_TAG,
             ExpectedExampleAssetDefinitions.DOMESTIC_ASSET_TAG_VALUE
     );
     public static final AssetFilter INTERNATIONAL_ASSETS_FILTER = ImmTagAssetFilter.of(
+            ExpectedExampleAssetDefinitions.EXPECTED_CUSTOM_TAGS,
             ExpectedExampleAssetDefinitions.DOM_OR_INTL_TAG,
             ExpectedExampleAssetDefinitions.INTERNATIONAL_ASSET_TAG_VALUE
     );
     public static final AssetFilter DOMESTIC_BANK_ASSETS_FILTER = ImmConjunctionAssetFilter.of(List.of(
             ImmTagAssetFilter.of(
+                    ExpectedExampleAssetDefinitions.EXPECTED_CUSTOM_TAGS,
                     ExpectedExampleAssetDefinitions.DOM_OR_INTL_TAG,
                     ExpectedExampleAssetDefinitions.DOMESTIC_ASSET_TAG_VALUE
             ),
             ImmTagAssetFilter.of(
+                    ExpectedExampleAssetDefinitions.EXPECTED_CUSTOM_TAGS,
                     IntrinsicAssetTag.ASSET_TYPE.getTagName(),
                     AssetTypeTagValue.BANK_ACCOUNT.name()
             )

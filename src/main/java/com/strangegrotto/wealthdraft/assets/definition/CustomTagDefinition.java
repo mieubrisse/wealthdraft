@@ -18,6 +18,5 @@ public interface CustomTagDefinition {
     }
 
     // An empty set means all values are allowed
-    @Value.Parameter
     Set<String> getAllowedValues();
 }

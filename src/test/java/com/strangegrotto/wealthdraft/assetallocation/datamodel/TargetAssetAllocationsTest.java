@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import com.strangegrotto.wealthdraft.Main;
 import com.strangegrotto.wealthdraft.assetallocation.ExpectedExampleTargetAssetAllocations;
 import com.strangegrotto.wealthdraft.assetallocation.TargetAssetAllocationsTestFiles;
+import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitions;
+import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitionsTestFiles;
 import com.strangegrotto.wealthdraft.assets.definition.ExpectedExampleAssetDefinitions;
 import org.junit.Assert;
 import org.junit.Test;
@@ -55,6 +57,10 @@ public class TargetAssetAllocationsTest {
 
     private static TargetAssetAllocations parseAssetAllocationsFile(TargetAssetAllocationsTestFiles testFile) throws IOException {
         var mapper = Main.getObjectMapper();
+        var assetsUrl = AssetDefinitionsTestFiles.EXAMPLE.getResource();
+        var assetDefinitions = mapper.readValue(assetsUrl, AssetDefinitions.class);
+        Main.addDeserializersNeedingAssetDefs(mapper, assetDefinitions);
+
         var assetAllocationsUrl = testFile.getResource();
         return mapper.readValue(assetAllocationsUrl, TargetAssetAllocations.class);
     }

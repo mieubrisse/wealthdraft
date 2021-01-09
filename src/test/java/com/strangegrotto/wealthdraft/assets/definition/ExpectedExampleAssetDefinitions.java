@@ -16,10 +16,11 @@ public class ExpectedExampleAssetDefinitions {
     public static final String BROKER_TAG = "broker";
 
     public static final Map<String, CustomTagDefinition> EXPECTED_CUSTOM_TAGS = Map.of(
-            DOM_OR_INTL_TAG, ImmCustomTagDefinition
-                    .of(Set.of(DOMESTIC_ASSET_TAG_VALUE, INTERNATIONAL_ASSET_TAG_VALUE))
-                    .withRequired(true),
-            BROKER_TAG, ImmCustomTagDefinition.of(Set.of())
+            DOM_OR_INTL_TAG, ImmCustomTagDefinition.builder()
+                    .addAllowedValues(DOMESTIC_ASSET_TAG_VALUE, INTERNATIONAL_ASSET_TAG_VALUE)
+                    .required(true)
+                    .build(),
+            BROKER_TAG, ImmCustomTagDefinition.builder().build()
     );
 
     public static final String RETIREMENT_ACCOUNT_ID = "ret";

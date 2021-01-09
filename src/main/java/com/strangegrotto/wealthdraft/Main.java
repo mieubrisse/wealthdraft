@@ -18,6 +18,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Ordering;
 import com.strangegrotto.wealthdraft.assetallocation.calculator.AssetAllocationCalculator;
+import com.strangegrotto.wealthdraft.assetallocation.datamodel.filters.TagAssetFilter;
+import com.strangegrotto.wealthdraft.assetallocation.datamodel.filters.TagAssetFilterDeserializer;
 import com.strangegrotto.wealthdraft.assetallocation.renderer.AssetAllocationRenderer;
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocations;
 import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitions;
@@ -25,7 +27,6 @@ import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.govconstants.RetirementConstants;
 import com.strangegrotto.wealthdraft.networth.NetWorthRenderer;
-import com.strangegrotto.wealthdraft.assets.definition.Asset;
 import com.strangegrotto.wealthdraft.networth.history.AssetsHistory;
 import com.strangegrotto.wealthdraft.assets.temporal.AssetParameterChange;
 import com.strangegrotto.wealthdraft.assets.temporal.AssetParameterChangeDeserializer;
@@ -199,7 +200,7 @@ public class Main {
             return;
         }
 
-        addDeserializersNeedingAssets(mapper, assetDefinitions.getAssets());
+        addDeserializersNeedingAssetDefs(mapper, assetDefinitions);
 
         String assetsHistoryFilepath = parsedArgs.getString(ASSETS_HISTORY_FILEPATH_ARG);
         log.debug("Assets history filepath: {}", assetsHistoryFilepath);
@@ -277,10 +278,14 @@ public class Main {
     }
 
     @VisibleForTesting
-    public static void addDeserializersNeedingAssets(ObjectMapper mapper, Map<String, Asset<?, ?>> assets) {
+    public static void addDeserializersNeedingAssetDefs(ObjectMapper mapper, AssetDefinitions assetDefs) {
+        var customTags = assetDefs.getCustomTags();
+        var assets = assetDefs.getAssets();
+
         var deserializerModule = new SimpleModule();
         deserializerModule.addDeserializer(Projections.class, new ProjectionsDeserializer(assets));
         deserializerModule.addDeserializer(AssetsHistory.class, new AssetsHistoryDeserializer(assets));
+        deserializerModule.addDeserializer(TagAssetFilter.class, new TagAssetFilterDeserializer(customTags));
         mapper.registerModule(deserializerModule);
     }
 
