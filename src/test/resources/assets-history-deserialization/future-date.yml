@@ -1,8 +1,5 @@
-bank:
-  # Future date; will throw an error
-  2099-06-01:
+# Future date; will throw an error
+2099-06-01:
+  bank:
     balance: 4000
-    annualInterestRate: 0.02
-  2020-11-30:
-    balance: 12000
     annualInterestRate: 0.02

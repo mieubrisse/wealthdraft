@@ -244,7 +244,7 @@ public class Main {
             System.exit(FAILURE_EXIT_CODE);
         }
 
-        var assetsHistoryByDate = assetsHistory.getHistoryByDate();
+        var assetsHistoryByDate = assetsHistory.getHistory();
         var latestDate = assetsHistoryByDate.lastKey();
         var latestAssetSnapshots = assetsHistoryByDate.get(latestDate);
         var assetAllocationCalculator = new AssetAllocationCalculator(

@@ -1,32 +1,30 @@
-# TODO Switch this to be date -> (assetId -> value)
-ret:
-  2020-06-01:
-    quantity: 15000
-    price: 10
-  2020-08-15:
-    quantity: 17000
-    price: 11
-
-pbrok:
-  2020-06-01:
-    quantity: 1000
-    price: 100
-  2020-11-30:
+2020-11-30:
+  pbrok:
     quantity: 1200
     price: 90
-
-bank:
-  2020-06-01:
-    balance: 4000
-    annualInterestRate: 0.02
-  2020-11-30:
+  bank:
     balance: 12000
     annualInterestRate: 0.02
-
-btc:
-  2020-06-01:
-    balance: 13000
-    annualInterestRate: 0.0
-  2020-11-30:
+  btc:
     balance: 15000
+    annualInterestRate: 0.0
+
+2020-08-15:
+  ret:
+    quantity: 17000
+    price: 11
+  # NOTE: If an asset isn't specified, the last-defined historical value will be used
+
+2020-06-01:
+  ret:
+    quantity: 15000
+    price: 10
+  pbrok:
+    quantity: 1000
+    price: 100
+  bank:
+    balance: 4000
+    annualInterestRate: 0.02
+  btc:
+    balance: 13000
     annualInterestRate: 0.0
