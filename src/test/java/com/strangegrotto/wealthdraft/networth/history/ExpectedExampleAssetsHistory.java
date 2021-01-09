@@ -8,41 +8,35 @@ import com.strangegrotto.wealthdraft.assets.temporal.AssetSnapshot;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 public class ExpectedExampleAssetsHistory {
-
-    public static final Map<String, SortedMap<LocalDate, AssetSnapshot>> EXPECTED_ASSETS_HISTORY;
+    public static final SortedMap<LocalDate, Map<String, AssetSnapshot<?>>> EXPECTED_ASSETS_HISTORY;
 
     static {
-        var retirementHistory = new TreeMap<LocalDate, AssetSnapshot>(Map.of(
-                LocalDate.of(2020, 6, 1), ImmStockAssetSnapshot.of(new BigDecimal(15000), new BigDecimal(10)),
-                LocalDate.of(2020, 8, 15), ImmStockAssetSnapshot.of(new BigDecimal(17000), new BigDecimal(11))
-        ));
-
-        var brokerageHistory = new TreeMap<LocalDate, AssetSnapshot>(Map.of(
-                LocalDate.of(2020, 6, 1), ImmStockAssetSnapshot.of(new BigDecimal(1000), new BigDecimal(100)),
-                LocalDate.of(2020, 11, 30), ImmStockAssetSnapshot.of(new BigDecimal(1200), new BigDecimal(90))
-        ));
-
-        var bankAccountHistory = new TreeMap<LocalDate, AssetSnapshot>(Map.of(
-                LocalDate.of(2020, 6, 1), ImmBankAccountAssetSnapshot.of(new BigDecimal(4000), new BigDecimal("0.02")),
-                LocalDate.of(2020, 11, 30), ImmBankAccountAssetSnapshot.of(new BigDecimal(12000), new BigDecimal("0.02"))
-        ));
-
-        var bitcoinHistory = new TreeMap<LocalDate, AssetSnapshot>(Map.of(
-                LocalDate.of(2020, 6, 1), ImmBankAccountAssetSnapshot.of(new BigDecimal(13000), new BigDecimal("0.0")),
-                LocalDate.of(2020, 11, 30), ImmBankAccountAssetSnapshot.of(new BigDecimal(15000), new BigDecimal("0.0"))
-        ));
+        var history_2020_11_30 = Map.<String, AssetSnapshot<?>>of(
+                ExpectedExampleAssetDefinitions.BROKERAGE_ACCOUNT_ID, ImmStockAssetSnapshot.of(new BigDecimal(1200), new BigDecimal(90)),
+                ExpectedExampleAssetDefinitions.BANK_ACCOUNT_ID, ImmBankAccountAssetSnapshot.of(new BigDecimal(12000), new BigDecimal("0.02")),
+                ExpectedExampleAssetDefinitions.BITCOIN_HOLDING_ID, ImmBankAccountAssetSnapshot.of(new BigDecimal(15000), new BigDecimal("0.0"))
+        );
+        var history_2020_08_15 = Map.<String, AssetSnapshot<?>>of(
+                ExpectedExampleAssetDefinitions.RETIREMENT_ACCOUNT_ID, ImmStockAssetSnapshot.of(new BigDecimal(17000), new BigDecimal(11))
+        );
+        var history_2020_06_01 = Map.<String, AssetSnapshot<?>>of(
+                ExpectedExampleAssetDefinitions.RETIREMENT_ACCOUNT_ID, ImmStockAssetSnapshot.of(new BigDecimal(15000), new BigDecimal(10)),
+                ExpectedExampleAssetDefinitions.BROKERAGE_ACCOUNT_ID, ImmStockAssetSnapshot.of(new BigDecimal(1000), new BigDecimal(100)),
+                ExpectedExampleAssetDefinitions.BANK_ACCOUNT_ID, ImmBankAccountAssetSnapshot.of(new BigDecimal(4000), new BigDecimal("0.02")),
+                ExpectedExampleAssetDefinitions.BITCOIN_HOLDING_ID, ImmBankAccountAssetSnapshot.of(new BigDecimal(13000), new BigDecimal("0.0"))
+        );
 
         // ---------------------------------------------------------------------------------------------
-        EXPECTED_ASSETS_HISTORY = Map.of(
-                ExpectedExampleAssetDefinitions.RETIREMENT_ACCOUNT_ID, retirementHistory,
-                ExpectedExampleAssetDefinitions.BROKERAGE_ACCOUNT_ID, brokerageHistory,
-                ExpectedExampleAssetDefinitions.BANK_ACCOUNT_ID, bankAccountHistory,
-                ExpectedExampleAssetDefinitions.BITCOIN_HOLDING_ID, bitcoinHistory
-        );
+        EXPECTED_ASSETS_HISTORY = Collections.unmodifiableSortedMap(new TreeMap<>(Map.of(
+                LocalDate.of(2020, 11, 30), history_2020_11_30,
+                LocalDate.of(2020, 8, 15), history_2020_08_15,
+                LocalDate.of(2020, 6, 1), history_2020_06_01
+        )));
     }
 }

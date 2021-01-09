@@ -14,7 +14,7 @@ public class AssetsHistoryTest {
         AssetsHistory assetsHistory = parseAssetsHistoryFile(AssetsHistoryTestFiles.EXAMPLE);
         Assert.assertEquals(
                 ExpectedExampleAssetsHistory.EXPECTED_ASSETS_HISTORY,
-                assetsHistory.getHistoryByAsset()
+                assetsHistory.getHistory()
         );
     }
 

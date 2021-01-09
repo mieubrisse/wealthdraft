@@ -1,3 +1,6 @@
+## 0.12.0
+* Refactor assets history from `assetId -> (date -> assetSnapshot)` to `date -> (assetId -> assetSnapshot)`
+
 ## 0.11.0
 * Allow full set math expressiveness when defining asset allocation filters: AND, NOT, OR, and tag filter
 * Split up asset allocation calculating & rendering logic so the calculation logic can be tested
