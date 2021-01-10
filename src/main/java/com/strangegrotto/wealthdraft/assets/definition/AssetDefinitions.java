@@ -1,5 +1,6 @@
 package com.strangegrotto.wealthdraft.assets.definition;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
@@ -10,11 +11,14 @@ import java.util.Map;
 
 @WealthdraftImmutableStyle
 @Value.Immutable
-@JsonDeserialize(as = ImmAssetDefinitions.class)
+@JsonDeserialize(using = AssetDefinitionsDeserializer.class)
+// @JsonDeserialize(as = ImmAssetDefinitions.class)
 public interface AssetDefinitions {
     @Value.Parameter
-    Map<String, Asset<?, ?>> getAssets();
+    @JsonProperty("assets")
+    Map<String, Asset> getAssets();
 
+    @JsonProperty("customTags")
     Map<String, CustomTagDefinition> getCustomTags();
 
     @Value.Check

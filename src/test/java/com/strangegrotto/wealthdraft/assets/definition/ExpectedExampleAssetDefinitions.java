@@ -1,11 +1,8 @@
 package com.strangegrotto.wealthdraft.assets.definition;
 
-import com.strangegrotto.wealthdraft.assetimpls.bankaccount.BankAccountAsset;
-import com.strangegrotto.wealthdraft.assetimpls.bankaccount.ImmBankAccountAsset;
-import com.strangegrotto.wealthdraft.assetimpls.stock.ImmStockAsset;
+import com.strangegrotto.wealthdraft.assetimpls.AssetType;
 
 import java.util.Map;
-import java.util.Set;
 
 public class ExpectedExampleAssetDefinitions {
     // Custom tags
@@ -18,6 +15,7 @@ public class ExpectedExampleAssetDefinitions {
     public static final Map<String, CustomTagDefinition> EXPECTED_CUSTOM_TAGS = Map.of(
             DOM_OR_INTL_TAG, ImmCustomTagDefinition.builder()
                     .addAllowedValues(DOMESTIC_ASSET_TAG_VALUE, INTERNATIONAL_ASSET_TAG_VALUE)
+                    .defaultValue(DOMESTIC_ASSET_TAG_VALUE)
                     .required(true)
                     .build(),
             BROKER_TAG, ImmCustomTagDefinition.builder().build()
@@ -30,23 +28,23 @@ public class ExpectedExampleAssetDefinitions {
 
 
 
-    public static final Asset<?, ?> RETIREMENT_ASSET = ImmStockAsset.of("Retirement account").withCustomTags(Map.of(
+    public static final Asset RETIREMENT_ASSET = ImmAsset.of("Retirement account", AssetType.STOCK).withCustomTags(Map.of(
             BROKER_TAG, "Fidelity",
             DOM_OR_INTL_TAG, DOMESTIC_ASSET_TAG_VALUE
     ));
-    public static final Asset<?, ?> BROKERAGE_ACCOUNT_ASSET = ImmStockAsset.of("Personal brokerage account").withCustomTags(Map.of(
+    public static final Asset BROKERAGE_ACCOUNT_ASSET = ImmAsset.of("Personal brokerage account", AssetType.STOCK).withCustomTags(Map.of(
             BROKER_TAG, "Vanguard",
             DOM_OR_INTL_TAG, DOMESTIC_ASSET_TAG_VALUE
     ));
-    public static final Asset<?, ?> BANK_ACCOUNT_ASSET = ImmBankAccountAsset.of("Bank account").withCustomTags(Map.of(
+    public static final Asset BANK_ACCOUNT_ASSET = ImmAsset.of("Bank account", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
             BROKER_TAG, "Chase",
             DOM_OR_INTL_TAG, DOMESTIC_ASSET_TAG_VALUE
     ));
-    public static final Asset<?, ?> BITCOIN_ASSET = ImmBankAccountAsset.of("BTC holdings").withCustomTags(Map.of(
+    public static final Asset BITCOIN_ASSET = ImmAsset.of("BTC holdings", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
             DOM_OR_INTL_TAG, INTERNATIONAL_ASSET_TAG_VALUE
     ));
 
-    public static final Map<String, Asset<?, ?>> EXPECTED_ASSETS = Map.of(
+    public static final Map<String, Asset> EXPECTED_ASSETS = Map.of(
             RETIREMENT_ACCOUNT_ID, RETIREMENT_ASSET,
             BROKERAGE_ACCOUNT_ID, BROKERAGE_ACCOUNT_ASSET,
             BANK_ACCOUNT_ID, BANK_ACCOUNT_ASSET,

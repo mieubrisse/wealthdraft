@@ -1,27 +1,9 @@
 package com.strangegrotto.wealthdraft.assetallocation.calculator;
 
-import com.strangegrotto.wealthdraft.Main;
-import com.strangegrotto.wealthdraft.assetallocation.ExpectedExampleTargetAssetAllocations;
-import com.strangegrotto.wealthdraft.assetallocation.TargetAssetAllocationsTestFiles;
-import com.strangegrotto.wealthdraft.assetallocation.datamodel.ImmTargetAssetAllocation;
-import com.strangegrotto.wealthdraft.assetallocation.datamodel.ImmTargetAssetAllocations;
-import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocation;
-import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocations;
-import com.strangegrotto.wealthdraft.assetimpls.bankaccount.ImmBankAccountAsset;
-import com.strangegrotto.wealthdraft.assetimpls.bankaccount.ImmBankAccountAssetSnapshot;
-import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitions;
-import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitionsTestFiles;
-import com.strangegrotto.wealthdraft.assets.definition.ImmAssetDefinitions;
-import com.strangegrotto.wealthdraft.networth.history.AssetsHistory;
-import com.strangegrotto.wealthdraft.networth.history.AssetsHistoryTestFiles;
-import com.strangegrotto.wealthdraft.networth.history.ExpectedExampleAssetsHistory;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 public class AssetAllocationCalculatorTest {
     @Test

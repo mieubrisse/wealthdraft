@@ -1,7 +1,8 @@
 package com.strangegrotto.wealthdraft.assetallocation.datamodel.filters;
 
-import com.strangegrotto.wealthdraft.assetimpls.bankaccount.ImmBankAccountAsset;
+import com.strangegrotto.wealthdraft.assetimpls.AssetType;
 import com.strangegrotto.wealthdraft.assets.definition.Asset;
+import com.strangegrotto.wealthdraft.assets.definition.ImmAsset;
 import com.strangegrotto.wealthdraft.assets.definition.ImmCustomTagDefinition;
 import org.junit.Assert;
 import org.junit.Test;
@@ -23,12 +24,12 @@ public class NegationAssetFilterTest {
                 tagName, ImmCustomTagDefinition.builder().build()
         );
 
-        var assets = Map.<String, Asset<?, ?>>of(
-                assetId1, ImmBankAccountAsset.of("Asset 1").withCustomTags(Map.of(
+        var assets = Map.<String, Asset>of(
+                assetId1, ImmAsset.of("Asset 1", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
                         tagName, tagValue
                 )),
-                assetId2, ImmBankAccountAsset.of("Asset 2"),
-                assetId3, ImmBankAccountAsset.of("Asset 3")
+                assetId2, ImmAsset.of("Asset 2", AssetType.BANK_ACCOUNT),
+                assetId3, ImmAsset.of("Asset 3", AssetType.BANK_ACCOUNT)
         );
 
         var tagFilter = ImmTagAssetFilter.of(customTags, tagName, tagValue);

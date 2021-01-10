@@ -26,7 +26,7 @@ public class AssetAllocationCalculator {
 
     public LinkedHashMap<TargetAssetAllocation, AssetAllocationCalcResult> calculate(
             TargetAssetAllocations targetAssetAllocations,
-            Map<String, Asset<?, ?>> assets,
+            Map<String, Asset> assets,
             Map<String, AssetSnapshot<?>> latestAssetSnapshots) {
         var totalPortfolioValue = latestAssetSnapshots.values().stream()
                 .map(AssetSnapshot::getValue)
@@ -108,7 +108,7 @@ public class AssetAllocationCalculator {
     }
 
     private static BigDecimal getValueOfAssetsMatchingFilter(
-            Map<String, Asset<?, ?>> assets,
+            Map<String, Asset> assets,
             Map<String, AssetSnapshot<?>> latestAssetSnapshots,
             AssetFilter filter) {
         var matchingAssetIds = filter.apply(assets, assets.keySet());

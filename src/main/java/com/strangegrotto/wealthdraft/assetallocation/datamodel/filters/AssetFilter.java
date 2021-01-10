@@ -15,5 +15,5 @@ import java.util.Set;
         @JsonSubTypes.Type(NegationAssetFilter.class)
 })
 public interface AssetFilter {
-    Set<String> apply(Map<String, Asset<?, ?>> allAssets, Set<String> currentSelection);
+    Set<String> apply(Map<String, Asset> allAssets, Set<String> currentSelection);
 }

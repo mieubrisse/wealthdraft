@@ -13,17 +13,18 @@ import java.util.SortedMap;
 
 @WealthdraftImmutableStyle
 @Value.Immutable
-public interface AssetsHistory {
+public abstract class AssetsHistory {
 
     @Value.Parameter
-    Map<String, Asset<?, ?>> getAssets();
+    // Protected because this is only used during validation
+    protected abstract Map<String, Asset> getAssets();
 
     @JsonProperty("history")
     @Value.Parameter
-    SortedMap<LocalDate, Map<String, AssetSnapshot<?>>> getHistory();
+    public abstract SortedMap<LocalDate, Map<String, AssetSnapshot<?>>> getHistory();
 
     @Value.Check
-    default void check() {
+    public final void check() {
         LocalDate today = LocalDate.now();
         var assets = getAssets();
         var history = getHistory();
