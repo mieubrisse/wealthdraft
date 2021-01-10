@@ -1,11 +1,9 @@
 package com.strangegrotto.wealthdraft.assets.definition;
 
-import com.strangegrotto.wealthdraft.assetimpls.bankaccount.BankAccountAsset;
 import com.strangegrotto.wealthdraft.assetimpls.bankaccount.ImmBankAccountAsset;
 import com.strangegrotto.wealthdraft.assetimpls.stock.ImmStockAsset;
 
 import java.util.Map;
-import java.util.Set;
 
 public class ExpectedExampleAssetDefinitions {
     // Custom tags
