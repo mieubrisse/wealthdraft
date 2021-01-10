@@ -8,10 +8,12 @@ import com.jakewharton.picnic.TextAlignment;
 
 class AssetAllocationTable {
     private static final AssetAllocationTableRow HEADER_ROW = ImmAssetAllocationTableRow.of(
-        "Numerator Selectors",
-        "Denominator Selectors",
+        "Numerator",
+        "Denominator",
+        "Numerator ($)",
+        "Denominator ($)",
         "Current Num/Denom %",
-        "Desired Num/Denom %",
+        "Target Num/Denom %",
         "Change Needed",
         "Deviation %",
         "Deviation Status"
@@ -49,6 +51,8 @@ class AssetAllocationTable {
         return new String[]{
                 row.getNumeratorStr(),
                 row.getDenominatorStr(),
+                row.getNumeratorValue(),
+                row.getDenominatorValue(),
                 row.getCurrentNumDenomPct(),
                 row.getTargetNumDenomPct(),
                 row.getCorrectionNeeded(),
