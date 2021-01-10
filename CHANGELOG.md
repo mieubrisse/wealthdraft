@@ -1,4 +1,4 @@
-## TBD
+## 0.12.2
 * Color asset allocation rows based on their deviation status
 * Allow users to set the default value of a tag if it's missing
 * Remove the `Asset` class in favor of an `AssetType` enum
