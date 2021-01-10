@@ -17,9 +17,11 @@ import java.util.Map;
 @JsonDeserialize(as = ImmTargetAssetAllocations.class)
 public interface TargetAssetAllocations {
     @Value.Parameter
+    @JsonProperty("filters")
     Map<String, AssetFilter> getFilters();
 
     @Value.Parameter
+    @JsonProperty("targets")
     List<TargetAssetAllocation> getTargets();
 
     @Value.Check

@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 @Value.Immutable
 // Deserialized using custom deserializer
 public abstract class TagAssetFilter implements AssetFilter {
+    // Protected because this is only used in the 'check' method
     @Value.Parameter
     protected abstract Map<String, CustomTagDefinition> getCustomTags();
 
