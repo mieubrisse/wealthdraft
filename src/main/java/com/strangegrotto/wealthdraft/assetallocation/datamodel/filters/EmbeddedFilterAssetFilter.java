@@ -15,11 +15,11 @@ import java.util.*;
 @JsonDeserialize(as = ImmEmbeddedFilterAssetFilter.class)
 public abstract class EmbeddedFilterAssetFilter implements AssetFilter {
     @JsonProperty("filter")
-    public abstract String getFilterName();
+    public abstract String getFilterId();
 
     @Override
     public Map<String, Asset> apply(Map<String, AssetFilter> allFilters, Map<String, Asset> input) {
-        var embeddedFilterName = getFilterName();
+        var embeddedFilterName = getFilterId();
         Preconditions.checkState(
                 allFilters.containsKey(embeddedFilterName),
                 "Could not apply embedded filter; no filter found with name '%s'",
@@ -31,7 +31,13 @@ public abstract class EmbeddedFilterAssetFilter implements AssetFilter {
 
     @Override
     public Optional<List<String>> checkForCycles(Map<String, AssetFilter> allFilters, LinkedHashSet<String> parentFilters) {
-        var embeddedFilterName = getFilterName();
+        var embeddedFilterName = getFilterId();
+        Preconditions.checkState(
+                allFilters.containsKey(embeddedFilterName),
+                "Could not check for cycles; no filter found with name '%s'",
+                embeddedFilterName
+        );
+
         if (parentFilters.contains(embeddedFilterName)) {
             var cycle = new ArrayList<>(parentFilters);
             cycle.add(embeddedFilterName);

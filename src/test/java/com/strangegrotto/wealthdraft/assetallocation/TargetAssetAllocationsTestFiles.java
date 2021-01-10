@@ -10,6 +10,7 @@ public enum TargetAssetAllocationsTestFiles implements TestFileProvider {
     FRACTION_GREATER_THAN_1("fraction-greater-than-1.yml"),
     FRACTION_LESS_THAN_0("fraction-less-than-0.yml"),
     FILTER_CYCLE("filter-cycle.yml"),
+    NONEXISTENT_EMBEDDED_FILTER("nonexistent-embedded-filter.yml"),
     EXAMPLE(TestResourceDirnames.EXAMPLES.getDirname(), "asset-allocations.yml");
 
     private final String containingDirname;

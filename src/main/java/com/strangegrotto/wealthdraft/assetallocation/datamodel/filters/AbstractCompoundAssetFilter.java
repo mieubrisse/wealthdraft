@@ -34,7 +34,7 @@ public abstract class AbstractCompoundAssetFilter implements AssetFilter {
         return Optional.empty();
     }
 
-    abstract List<AssetFilter> getConstituentFilters();
+    protected abstract List<AssetFilter> getConstituentFilters();
 
     // Reduce function used for deciding
     protected abstract Map<String, Asset> combineFilterMatches(Map<String, Asset> filterResultA, Map<String, Asset> filterResultB);

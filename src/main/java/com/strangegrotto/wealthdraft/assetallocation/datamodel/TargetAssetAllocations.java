@@ -40,7 +40,7 @@ public interface TargetAssetAllocations {
             var cycleOpt = filter.checkForCycles(filters, parentFilters);
             if (cycleOpt.isPresent()) {
                 throw new IllegalStateException(Strings.lenientFormat(
-                        "Found an asset filter cycle starting at filter '%s': %s",
+                        "Found an asset filter cycle: %s",
                         filterName,
                         String.join(" -> ", cycleOpt.get())
                 ));

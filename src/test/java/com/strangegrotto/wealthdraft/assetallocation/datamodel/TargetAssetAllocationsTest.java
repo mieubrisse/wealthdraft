@@ -61,6 +61,11 @@ public class TargetAssetAllocationsTest {
         parseAssetAllocationsFile(TargetAssetAllocationsTestFiles.FILTER_CYCLE);
     }
 
+    @Test(expected = ValueInstantiationException.class)
+    public void testErrorOnNonexistentEmbeddedFilter() throws IOException {
+        parseAssetAllocationsFile(TargetAssetAllocationsTestFiles.NONEXISTENT_EMBEDDED_FILTER);
+    }
+
     private static TargetAssetAllocations parseAssetAllocationsFile(TargetAssetAllocationsTestFiles testFile) throws IOException {
         var mapper = Main.getObjectMapper();
         var assetsUrl = AssetDefinitionsTestFiles.EXAMPLE.getResource();
