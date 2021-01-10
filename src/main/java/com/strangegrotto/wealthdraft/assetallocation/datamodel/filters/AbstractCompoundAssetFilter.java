@@ -11,7 +11,7 @@ import java.util.Set;
 @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
 public abstract class AbstractCompoundAssetFilter implements AssetFilter {
     @Override
-    public final Set<String> apply(Map<String, Asset<?, ?>> allAssets, Set<String> currentSelection) {
+    public final Set<String> apply(Map<String, Asset> allAssets, Set<String> currentSelection) {
         var constituentFilters = getConstituentFilters();
         Preconditions.checkState(constituentFilters.size() > 0, "Compound filter requires >= 1 constituent filter");
 

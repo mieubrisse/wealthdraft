@@ -2,7 +2,7 @@ package com.strangegrotto.wealthdraft.assets.definition;
 
 import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import com.strangegrotto.wealthdraft.Main;
-import com.strangegrotto.wealthdraft.assetimpls.AssetTypeTagValue;
+import com.strangegrotto.wealthdraft.assetimpls.AssetType;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -22,42 +22,33 @@ public class AssetDefinitionsTest {
         );
     }
 
-
     @Test
     public void testDeserializingEveryAsset() throws IOException {
         var definitions = parseAssetsFile(AssetDefinitionsTestFiles.EVERY_ASSET_TYPE);
         var assetsMap = definitions.getAssets();
         var assets = assetsMap.values();
 
-        var expectedDistinctAssets = AssetTypeTagValue.values().length;
+        var expectedDistinctAssets = AssetType.values().length;
 
         // Verify that we do indeed have one of every class
         var distinctAssetClasses = assets.stream()
-                .map(Object::getClass)
+                .map(Asset::getType)
                 .distinct()
                 .count();
         Assert.assertEquals(expectedDistinctAssets, distinctAssetClasses);
+    }
 
-        // Verify no assets are reusing snapshot classes
-        var distinctSnapshotClasses = assets.stream()
-                .map(Asset::getSnapshotType)
-                .distinct()
-                .count();
-        Assert.assertEquals(expectedDistinctAssets, distinctSnapshotClasses);
+    @Test
+    public void testDefaultTags() throws IOException {
+        var definitions = parseAssetsFile(AssetDefinitionsTestFiles.TEST_DEFAULT_TAGS);
+        var assets = definitions.getAssets();
+        var myAsset = assets.get("myAsset");
+        var myAssetCustomTags = myAsset.getCustomTags();
 
-        // Verify no assets are reusing change classes
-        var distinctChangeClasses = assets.stream()
-                .map(Asset::getChangeType)
-                .distinct()
-                .count();
-        Assert.assertEquals(expectedDistinctAssets, distinctChangeClasses);
+        var tagName = "tagWithDefault";
 
-        // Verify each asset has a unique asset type tag value
-        var distinctAssetTypeTags = assets.stream()
-                .map(Asset::getAssetTypeTagValue)
-                .distinct()
-                .count();
-        Assert.assertEquals(expectedDistinctAssets, distinctAssetTypeTags);
+        Assert.assertTrue(myAssetCustomTags.containsKey(tagName));
+        Assert.assertEquals("someValue", myAssetCustomTags.get(tagName));
     }
 
     @Test
@@ -67,22 +58,22 @@ public class AssetDefinitionsTest {
         Assert.assertEquals(asset.getCustomTags().size(), 0);
     }
 
-    @Test(expected = ValueInstantiationException.class)
+    @Test(expected = IllegalStateException.class)
     public void testErrorOnInvalidTagValue() throws IOException {
         parseAssetsFile(AssetDefinitionsTestFiles.DISALLOWED_TAG_VALUES);
     }
 
-    @Test(expected = ValueInstantiationException.class)
+    @Test(expected = IllegalStateException.class)
     public void testErrorOnCollisionWithIntrinsicTag() throws IOException {
         parseAssetsFile(AssetDefinitionsTestFiles.INTRINSIC_TAG_COLLISION);
     }
 
-    @Test(expected = ValueInstantiationException.class)
+    @Test(expected = IllegalStateException.class)
     public void testErrorOnUnrecognizedTag() throws IOException {
         parseAssetsFile(AssetDefinitionsTestFiles.UNRECOGNIZED_TAG);
     }
 
-    @Test(expected = ValueInstantiationException.class)
+    @Test(expected = IllegalStateException.class)
     public void testErrorOnMissingRequiredTag() throws IOException {
         parseAssetsFile(AssetDefinitionsTestFiles.MISSING_REQUIRED_TAG);
     }

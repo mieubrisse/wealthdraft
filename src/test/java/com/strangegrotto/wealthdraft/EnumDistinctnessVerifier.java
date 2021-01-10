@@ -1,6 +1,5 @@
 package com.strangegrotto.wealthdraft;
 
-import com.strangegrotto.wealthdraft.assetimpls.AssetTypeTagValue;
 import org.junit.Assert;
 
 import java.util.Arrays;

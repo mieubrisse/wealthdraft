@@ -17,9 +17,9 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 public class AssetsHistoryDeserializer extends JsonDeserializer<AssetsHistory> {
-    private final Map<String, Asset<?, ?>> assets;
+    private final Map<String, Asset> assets;
 
-    public AssetsHistoryDeserializer(Map<String, Asset<?, ?>> assets) {
+    public AssetsHistoryDeserializer(Map<String, Asset> assets) {
         this.assets = assets;
     }
 
@@ -47,8 +47,8 @@ public class AssetsHistoryDeserializer extends JsonDeserializer<AssetsHistory> {
                 );
 
                 var asset = this.assets.get(assetId);
-                var snapshotType = asset.getSnapshotType();
-                var parsedSnapshot = mapper.convertValue(unparsedSnapshot, snapshotType);
+                var assetType = asset.getType();
+                var parsedSnapshot = mapper.convertValue(unparsedSnapshot, assetType.getSnapshotClass());
                 parsedSnapshotsForAsset.put(assetId, parsedSnapshot);
             }
             parsedAssetSnapshots.put(date, parsedSnapshotsForAsset);

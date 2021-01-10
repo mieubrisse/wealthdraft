@@ -1,11 +1,9 @@
 package com.strangegrotto.wealthdraft.assetallocation.datamodel.filters;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
-import com.strangegrotto.wealthdraft.assetimpls.AssetTypeTagValue;
+import com.strangegrotto.wealthdraft.assetimpls.AssetType;
 import com.strangegrotto.wealthdraft.assets.definition.Asset;
 import com.strangegrotto.wealthdraft.assets.definition.CustomTagDefinition;
 import com.strangegrotto.wealthdraft.assets.definition.IntrinsicAssetTag;
@@ -29,7 +27,7 @@ public abstract class TagAssetFilter implements AssetFilter {
     public abstract String getValue();
 
     @Override
-    public final Set<String> apply(Map<String, Asset<?, ?>> allAssets, Set<String> currentSelection) {
+    public final Set<String> apply(Map<String, Asset> allAssets, Set<String> currentSelection) {
         var tagName = getTag();
         var tagValue = getValue();
         return allAssets.entrySet().stream()
@@ -68,7 +66,7 @@ public abstract class TagAssetFilter implements AssetFilter {
                 //  object with allowed values that both CustomAssetTagDefinition and IntrinsicAssetTagDefinition
                 //  implement
                 try {
-                    AssetTypeTagValue.valueOf(tagValue);
+                    AssetType.valueOf(tagValue);
                 } catch (IllegalArgumentException e) {
                     throw new IllegalStateException(Strings.lenientFormat(
                             "Asset type tag has unrecognized value '%s'",

@@ -1,3 +1,8 @@
+## 0.12.2
+* Color asset allocation rows based on their deviation status
+* Allow users to set the default value of a tag if it's missing
+* Remove the `Asset` class in favor of an `AssetType` enum
+
 ## 0.12.1
 * Add extra tests to ensure nonsensical target asset allocation rules are rejected
 * Add tests to make sure that the TagAssetFilter is using only recognized tags and values, to guard against typos

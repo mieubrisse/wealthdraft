@@ -12,10 +12,10 @@ class AssetAllocationTable {
         "Denominator",
         "Numerator ($)",
         "Denominator ($)",
-        "Current Num/Denom %",
-        "Target Num/Denom %",
+        "Current Num/Denom",
+        "Target Num/Denom",
         "Change Needed",
-        "Deviation %",
+        "Deviation",
         "Deviation Status"
     );
     private static final TextAlignment TEXT_ALIGNMENT = TextAlignment.MiddleCenter;

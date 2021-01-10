@@ -1,7 +1,6 @@
 package com.strangegrotto.wealthdraft.assets.definition;
 
-import com.strangegrotto.wealthdraft.assetimpls.AssetTypeTagValue;
-import com.strangegrotto.wealthdraft.assetimpls.bankaccount.ImmBankAccountAsset;
+import com.strangegrotto.wealthdraft.assetimpls.AssetType;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -13,7 +12,7 @@ public class AssetTest {
         String customTagName = "customTag";
         String customTagValue = "customValue";
 
-        var asset = ImmBankAccountAsset.of("Test").withCustomTags(Map.of(
+        var asset = ImmAsset.of("Test", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
                 customTagName,
                 customTagValue
         ));
@@ -22,6 +21,6 @@ public class AssetTest {
         Assert.assertEquals(customTagValue, tags.get(customTagName));
 
         Assert.assertTrue(tags.containsKey(IntrinsicAssetTag.ASSET_TYPE.getTagName()));
-        Assert.assertEquals(AssetTypeTagValue.BANK_ACCOUNT.name(), tags.get(IntrinsicAssetTag.ASSET_TYPE.getTagName()));
+        Assert.assertEquals(AssetType.BANK_ACCOUNT.name(), tags.get(IntrinsicAssetTag.ASSET_TYPE.getTagName()));
     }
 }
