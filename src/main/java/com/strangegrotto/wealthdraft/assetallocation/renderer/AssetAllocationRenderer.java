@@ -41,6 +41,8 @@ public class AssetAllocationRenderer {
             var row = ImmAssetAllocationTableRow.of(
                     numeratorStr,
                     denominatorStr,
+                    formatCurrencyValue(calcResult.getCurrentNumeratorValue()),
+                    formatCurrencyValue(calcResult.getCurrentDenominatorValue()),
                     formatFractionAsPercent(calcResult.getCurrentFraction()),
                     formatFractionAsPercent(calcResult.getTargetFraction()),
                     formatCurrencyValue(calcResult.getCorrectionNeeded()),

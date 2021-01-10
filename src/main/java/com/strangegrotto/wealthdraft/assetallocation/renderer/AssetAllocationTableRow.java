@@ -8,6 +8,8 @@ import org.immutables.value.Value;
 abstract class AssetAllocationTableRow {
     abstract String getNumeratorStr();
     abstract String getDenominatorStr();
+    abstract String getNumeratorValue();
+    abstract String getDenominatorValue();
     abstract String getCurrentNumDenomPct();
     abstract String getTargetNumDenomPct();
     abstract String getCorrectionNeeded();
