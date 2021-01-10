@@ -5,6 +5,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
 import org.immutables.value.Value;
 
 import java.io.IOException;
@@ -13,21 +15,23 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class AssetDefinitionsDeserializer extends JsonDeserializer<AssetDefinitions> {
-    private static class RawAssetDefinitions {
+    @WealthdraftImmutableStyle
+    @Value.Immutable
+    @JsonDeserialize(as = ImmRawAssetDefinitions.class)
+    // Package-private because private isn't allowed with immutables, but we want to minimize exposure
+    interface RawAssetDefinitions {
         @JsonProperty("assets")
-        private Map<String, Asset> assets;
+        Map<String, Asset> getAssets();
 
         @JsonProperty("customTags")
-        private Map<String, CustomTagDefinition> customTags;
+        Map<String, CustomTagDefinition> getCustomTags();
     }
 
     @Override
     public AssetDefinitions deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-        return null;
-        /*
         var rawAssetDefs = p.readValueAs(RawAssetDefinitions.class);
 
-        var customTagDefaultValues = rawAssetDefs.customTags.entrySet().stream()
+        var customTagDefaultValues = rawAssetDefs.getCustomTags().entrySet().stream()
                 .filter(entry -> entry.getValue().getDefaultValue().isPresent())
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
@@ -35,18 +39,22 @@ public class AssetDefinitionsDeserializer extends JsonDeserializer<AssetDefiniti
                 ));
 
         // Use default values to populate missing tags
-        for (var assetEntry : rawAssetDefs.assets.entrySet()) {
+        var newAssets = new HashMap<String, Asset>();
+        for (var assetEntry : rawAssetDefs.getAssets().entrySet()) {
             var assetId = assetEntry.getKey();
             var asset = assetEntry.getValue();
-            var assetTags = asset.getCustomTags();
+            var assetCustomTags = asset.getCustomTags();
 
-            var newTags = new HashMap<>(asset.getCustomTags());
-            for (var tagDefaultValueEntry : customTagDefaultValues.entrySet()) {
-                if ()
+            var newTags = new HashMap<>(customTagDefaultValues);
+            newTags.putAll(assetCustomTags);
+            var newAsset = ImmAsset.copyOf(asset).withCustomTags(newTags);
 
-            }
+            newAssets.put(assetId, newAsset);
         }
 
-         */
+        return ImmAssetDefinitions.builder()
+                .putAllAssets(newAssets)
+                .putAllCustomTags(rawAssetDefs.getCustomTags())
+                .build();
     }
 }

@@ -10,6 +10,7 @@ public enum AssetDefinitionsTestFiles implements TestFileProvider  {
     EVERY_ASSET_TYPE("every-asset-type.yml"),
     UNSPECIFIED_TAGS_IS_EMPTY_MAP("unspecified-tags-is-empty-map.yml"),
     MISSING_REQUIRED_TAG("missing-required-tag.yml"),
+    TEST_DEFAULT_TAGS("test-default-tags.yml"),
     EXAMPLE(TestResourceDirnames.EXAMPLES.getDirname(), "assets.yml");
 
     private final String containingDirname;

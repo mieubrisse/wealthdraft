@@ -39,28 +39,41 @@ public class AssetDefinitionsTest {
     }
 
     @Test
+    public void testDefaultTags() throws IOException {
+        var definitions = parseAssetsFile(AssetDefinitionsTestFiles.TEST_DEFAULT_TAGS);
+        var assets = definitions.getAssets();
+        var myAsset = assets.get("myAsset");
+        var myAssetCustomTags = myAsset.getCustomTags();
+
+        var tagName = "tagWithDefault";
+
+        Assert.assertTrue(myAssetCustomTags.containsKey(tagName));
+        Assert.assertEquals("someValue", myAssetCustomTags.get(tagName));
+    }
+
+    @Test
     public void unspecifiedTagsIsEmptyMap() throws IOException {
         var definitions = parseAssetsFile(AssetDefinitionsTestFiles.UNSPECIFIED_TAGS_IS_EMPTY_MAP);
         var asset = definitions.getAssets().get(ExpectedExampleAssetDefinitions.RETIREMENT_ACCOUNT_ID);
         Assert.assertEquals(asset.getCustomTags().size(), 0);
     }
 
-    @Test(expected = ValueInstantiationException.class)
+    @Test(expected = IllegalStateException.class)
     public void testErrorOnInvalidTagValue() throws IOException {
         parseAssetsFile(AssetDefinitionsTestFiles.DISALLOWED_TAG_VALUES);
     }
 
-    @Test(expected = ValueInstantiationException.class)
+    @Test(expected = IllegalStateException.class)
     public void testErrorOnCollisionWithIntrinsicTag() throws IOException {
         parseAssetsFile(AssetDefinitionsTestFiles.INTRINSIC_TAG_COLLISION);
     }
 
-    @Test(expected = ValueInstantiationException.class)
+    @Test(expected = IllegalStateException.class)
     public void testErrorOnUnrecognizedTag() throws IOException {
         parseAssetsFile(AssetDefinitionsTestFiles.UNRECOGNIZED_TAG);
     }
 
-    @Test(expected = ValueInstantiationException.class)
+    @Test(expected = IllegalStateException.class)
     public void testErrorOnMissingRequiredTag() throws IOException {
         parseAssetsFile(AssetDefinitionsTestFiles.MISSING_REQUIRED_TAG);
     }
