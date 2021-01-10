@@ -1,11 +1,7 @@
 package com.strangegrotto.wealthdraft.assetallocation.datamodel.filters;
 
 import com.strangegrotto.wealthdraft.assetimpls.AssetType;
-import com.strangegrotto.wealthdraft.assetimpls.bankaccount.ImmBankAccountAsset;
-import com.strangegrotto.wealthdraft.assets.definition.Asset;
-import com.strangegrotto.wealthdraft.assets.definition.CustomTagDefinition;
-import com.strangegrotto.wealthdraft.assets.definition.ImmCustomTagDefinition;
-import com.strangegrotto.wealthdraft.assets.definition.IntrinsicAssetTag;
+import com.strangegrotto.wealthdraft.assets.definition.*;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.Assert;
 import org.junit.Test;
@@ -23,15 +19,15 @@ public class TagAssetFilterTest {
         var matchingAssetId2 = "matches2";
 
         var assets = Map.<String, Asset>of(
-                matchingAssetId1, ImmBankAccountAsset.of("Matches 1").withCustomTags(Map.of(
+                matchingAssetId1, ImmAsset.of("Matches 1", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
                         selectedTagName, selectedTagValue
                 )),
-                "right-name-wrong-values", ImmBankAccountAsset.of("Right name, wrong values").withCustomTags(Map.of(
+                "right-name-wrong-values", ImmAsset.of("Right name, wrong values", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
                         selectedTagName, "wrong-value"
                 )),
-                "unmatching-tags", ImmBankAccountAsset.of("Unmatching tags").withCustomTags(Map.of("foo", "bar")),
-                "no-tags", ImmBankAccountAsset.of("No tags"),
-                matchingAssetId2, ImmBankAccountAsset.of("Matches 2").withCustomTags(Map.of(
+                "unmatching-tags", ImmAsset.of("Unmatching tags", AssetType.BANK_ACCOUNT).withCustomTags(Map.of("foo", "bar")),
+                "no-tags", ImmAsset.of("No tags", AssetType.BANK_ACCOUNT),
+                matchingAssetId2, ImmAsset.of("Matches 2", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
                         selectedTagName, selectedTagValue
                 ))
         );

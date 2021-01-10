@@ -1,8 +1,8 @@
 package com.strangegrotto.wealthdraft.assetallocation.datamodel.filters;
 
-import com.strangegrotto.wealthdraft.assetimpls.bankaccount.ImmBankAccountAsset;
+import com.strangegrotto.wealthdraft.assetimpls.AssetType;
 import com.strangegrotto.wealthdraft.assets.definition.Asset;
-import com.strangegrotto.wealthdraft.assets.definition.CustomTagDefinition;
+import com.strangegrotto.wealthdraft.assets.definition.ImmAsset;
 import com.strangegrotto.wealthdraft.assets.definition.ImmCustomTagDefinition;
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,20 +34,20 @@ public class DisjunctionAssetFilterTest {
         );
 
         var haystack = Map.<String, Asset>of(
-                matchingAssetId1, ImmBankAccountAsset.of("Match 1").withCustomTags(Map.of(
+                matchingAssetId1, ImmAsset.of("Match 1", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
                         needle1Name, needle1Value
                 )),
-                matchingAssetId2, ImmBankAccountAsset.of("Match 2").withCustomTags(Map.of(
+                matchingAssetId2, ImmAsset.of("Match 2", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
                         needle1Name, needle1Value,
                         needle2Name, needle2Value
                 )),
-                matchingAssetId3, ImmBankAccountAsset.of("Match 3").withCustomTags(Map.of(
+                matchingAssetId3, ImmAsset.of("Match 3", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
                         needle2Name, needle2Value
                 )),
-                "unmatching-tags", ImmBankAccountAsset.of("Unmatching tags").withCustomTags(Map.of(
+                "unmatching-tags", ImmAsset.of("Unmatching tags", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
                         unrelatedTagName, unrelatedTagValue
                 )),
-                "no-tags", ImmBankAccountAsset.of("No tags")
+                "no-tags", ImmAsset.of("No tags", AssetType.BANK_ACCOUNT)
         );
 
         var needle1Filter = ImmTagAssetFilter.of(customTags, needle1Name, needle1Value);

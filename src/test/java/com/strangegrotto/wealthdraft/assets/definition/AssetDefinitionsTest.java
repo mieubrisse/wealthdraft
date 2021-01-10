@@ -32,7 +32,7 @@ public class AssetDefinitionsTest {
 
         // Verify that we do indeed have one of every class
         var distinctAssetClasses = assets.stream()
-                .map(Object::getClass)
+                .map(Asset::getType)
                 .distinct()
                 .count();
         Assert.assertEquals(expectedDistinctAssets, distinctAssetClasses);
