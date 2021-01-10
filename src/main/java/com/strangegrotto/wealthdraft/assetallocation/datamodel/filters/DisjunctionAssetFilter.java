@@ -4,10 +4,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Sets;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
+import com.strangegrotto.wealthdraft.assets.definition.Asset;
 import org.immutables.value.Value;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @WealthdraftImmutableStyle
 @Value.Immutable
@@ -23,7 +28,22 @@ public abstract class DisjunctionAssetFilter extends AbstractCompoundAssetFilter
     }
 
     @Override
-    protected final Set<String> combineFilterMatches(Set<String> filterResultA, Set<String> filterResultB) {
-        return Sets.union(filterResultA, filterResultB);
+    protected Map<String, Asset> combineFilterMatches(Map<String, Asset> filterResultA, Map<String, Asset> filterResultB) {
+        var matchingIds = Sets.union(filterResultA.keySet(), filterResultB.keySet());
+        var matchingAEntries = filterResultA.entrySet().stream()
+                .filter(entry -> matchingIds.contains(entry.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        var matchingBEntries = filterResultB.entrySet().stream()
+                .filter(entry -> matchingIds.contains(entry.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        // We put A entries second so that if A and B contain the same ID, the A version is the one that
+        //  ends up in the final map. It shouldn't make a difference because A and B should have the exact same
+        //  asset for the same assetId, but just in case
+        var result = new HashMap<String, Asset>();
+        result.putAll(matchingBEntries);
+        result.putAll(matchingAEntries);
+
+        return Map.copyOf(result);
     }
 }

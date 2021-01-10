@@ -111,9 +111,9 @@ public class AssetAllocationCalculator {
             Map<String, Asset> assets,
             Map<String, AssetSnapshot<?>> latestAssetSnapshots,
             AssetFilter filter) {
-        var matchingAssetIds = filter.apply(assets, assets.keySet());
+        var matchingAssetIds = filter.apply(assets);
         return latestAssetSnapshots.entrySet().stream()
-                .filter(entry -> matchingAssetIds.contains(entry.getKey()))
+                .filter(entry -> matchingAssetIds.containsKey(entry.getKey()))
                 .map(Map.Entry::getValue)
                 .map(AssetSnapshot::getValue)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);

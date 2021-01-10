@@ -27,17 +27,16 @@ public abstract class TagAssetFilter implements AssetFilter {
     public abstract String getValue();
 
     @Override
-    public final Set<String> apply(Map<String, Asset> allAssets, Set<String> currentSelection) {
+    public Map<String, Asset> apply(Map<String, Asset> input) {
         var tagName = getTag();
         var tagValue = getValue();
-        return allAssets.entrySet().stream()
+        return input.entrySet().stream()
                 .filter(entry -> {
                     var asset = entry.getValue();
                     var assetTags = asset.getTags();
                     return assetTags.containsKey(tagName) && tagValue.equals(assetTags.get(tagName));
                 })
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     @Value.Check

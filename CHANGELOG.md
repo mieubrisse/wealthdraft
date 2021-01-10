@@ -1,3 +1,6 @@
+## TBD
+* Remove negation filter now that default tags are available, to guarantee that filters strictly reduce the number of assets
+
 ## 0.12.2
 * Color asset allocation rows based on their deviation status
 * Allow users to set the default value of a tag if it's missing
