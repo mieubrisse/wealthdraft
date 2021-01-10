@@ -6,7 +6,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
 import com.strangegrotto.wealthdraft.assets.definition.Asset;
-import com.strangegrotto.wealthdraft.assetfilters.filters.ImmEmbeddedFilterAssetFilter;
 import org.immutables.value.Value;
 
 import java.util.*;

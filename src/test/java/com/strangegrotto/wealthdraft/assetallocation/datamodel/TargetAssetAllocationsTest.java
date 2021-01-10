@@ -8,7 +8,6 @@ import com.strangegrotto.wealthdraft.assetfilters.AssetFilter;
 import com.strangegrotto.wealthdraft.assetfilters.FiltersTestFiles;
 import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitions;
 import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitionsTestFiles;
-import com.strangegrotto.wealthdraft.assets.definition.ExpectedExampleAssetDefinitions;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -23,22 +22,22 @@ public class TargetAssetAllocationsTest {
         Assert.assertEquals(targetAssetAllocations, ExpectedExampleTargetAssetAllocations.ASSET_ALLOCATIONS);
     }
 
-    @Test(expected = ValueInstantiationException.class)
+    @Test(expected = IllegalStateException.class)
     public void testErrorOnNonexistentNumeratorFilter() throws IOException {
         parseAssetAllocationsFile(TargetAssetAllocationsTestFiles.NONEXISTENT_NUMERATOR_FILTER);
     }
 
-    @Test(expected = ValueInstantiationException.class)
+    @Test(expected = IllegalStateException.class)
     public void testErrorOnNonexistentDenominatorFilter() throws IOException {
         parseAssetAllocationsFile(TargetAssetAllocationsTestFiles.NONEXISTENT_DENOMINATOR_FILTER);
     }
 
-    @Test(expected = ValueInstantiationException.class)
+    @Test(expected = IllegalStateException.class)
     public void testErrorOnFractionGreaterThan1() throws IOException {
         parseAssetAllocationsFile(TargetAssetAllocationsTestFiles.FRACTION_GREATER_THAN_1);
     }
 
-    @Test(expected = ValueInstantiationException.class)
+    @Test(expected = IllegalStateException.class)
     public void testErrorOnFractionLessThan0() throws IOException {
         parseAssetAllocationsFile(TargetAssetAllocationsTestFiles.FRACTION_LESS_THAN_0);
     }

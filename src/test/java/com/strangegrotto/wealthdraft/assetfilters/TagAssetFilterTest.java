@@ -2,7 +2,6 @@ package com.strangegrotto.wealthdraft.assetfilters;
 
 import com.strangegrotto.wealthdraft.assetimpls.AssetType;
 import com.strangegrotto.wealthdraft.assets.definition.*;
-import com.strangegrotto.wealthdraft.assetfilters.filters.ImmTagAssetFilter;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.Assert;
 import org.junit.Test;

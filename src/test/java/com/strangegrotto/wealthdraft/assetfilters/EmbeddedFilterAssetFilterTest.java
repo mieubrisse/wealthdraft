@@ -1,17 +1,15 @@
 package com.strangegrotto.wealthdraft.assetfilters;
 
-import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
-import com.strangegrotto.wealthdraft.assetallocation.TargetAssetAllocationsTestFiles;
+import com.google.common.collect.Sets;
 import com.strangegrotto.wealthdraft.assetimpls.AssetType;
 import com.strangegrotto.wealthdraft.assets.definition.Asset;
 import com.strangegrotto.wealthdraft.assets.definition.ImmAsset;
 import com.strangegrotto.wealthdraft.assets.definition.ImmCustomTagDefinition;
-import com.strangegrotto.wealthdraft.assetfilters.filters.ImmEmbeddedFilterAssetFilter;
-import com.strangegrotto.wealthdraft.assetfilters.filters.ImmTagAssetFilter;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 public class EmbeddedFilterAssetFilterTest {
@@ -53,6 +51,24 @@ public class EmbeddedFilterAssetFilterTest {
         Assert.assertEquals(expected, actual);
     }
 
+    @Test
+    public void testCycleDetection() throws IOException {
+        var filterId1 = "filter1";
+        var filterId2 = "filter2";
+        var filterId3 = "filter3";
+
+        var filter1 = ImmEmbeddedFilterAssetFilter.of(filterId2);
+
+        Map<String, AssetFilter> filters = Map.of(
+                filterId1, filter1,
+                filterId2, ImmEmbeddedFilterAssetFilter.of(filterId3),
+                filterId3, ImmEmbeddedFilterAssetFilter.of(filterId1)
+        );
+
+        var parentFilters = Sets.newLinkedHashSet(List.of(filterId1));
+        filter1.checkForCycles(filters, parentFilters);
+    }
+
     @Test(expected = IllegalStateException.class)
     public void testErrorOnNonexistentEmbeddedFilter() {
         var embeddingFilterId = "embedding";
@@ -68,24 +84,4 @@ public class EmbeddedFilterAssetFilterTest {
         embeddingFilter.apply(filters, assets);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testErrorOnFilterCycle() throws IOException {
-        var filterId1 = "filter1";
-        var filterId2 = "filter2";
-        var filterId3 = "filter3";
-
-        var filter1 = ImmEmbeddedFilterAssetFilter.of(filterId2);
-
-        Map<String, AssetFilter> filters = Map.of(
-                filterId1, filter1,
-                filterId2, ImmEmbeddedFilterAssetFilter.of(filterId3),
-                filterId3, ImmEmbeddedFilterAssetFilter.of(filterId1)
-        );
-
-        Map<String, Asset> assets = Map.of(
-                "someAsset", ImmAsset.of("Some random asset", AssetType.BANK_ACCOUNT)
-        );
-
-        filter1.apply(filters, assets);
-    }
 }

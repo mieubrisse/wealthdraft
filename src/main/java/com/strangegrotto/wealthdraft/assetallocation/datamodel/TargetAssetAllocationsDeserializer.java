@@ -31,7 +31,7 @@ public class TargetAssetAllocationsDeserializer extends JsonDeserializer<TargetA
 
     @Override
     public TargetAssetAllocations deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-        var rawAssetAllocations = p.readValuesAs(RawTargetAssetAllocations.class);
+        var rawAssetAllocations = p.readValueAs(RawTargetAssetAllocations.class);
 
         return ImmTargetAssetAllocations.of(
                 this.filters,

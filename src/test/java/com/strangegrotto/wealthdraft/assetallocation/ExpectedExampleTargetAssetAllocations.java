@@ -5,8 +5,8 @@ import com.strangegrotto.wealthdraft.assetallocation.datamodel.ImmTargetAssetAll
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocation;
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocations;
 import com.strangegrotto.wealthdraft.assetfilters.AssetFilter;
-import com.strangegrotto.wealthdraft.assetfilters.filters.ImmConjunctionAssetFilter;
-import com.strangegrotto.wealthdraft.assetfilters.filters.ImmTagAssetFilter;
+import com.strangegrotto.wealthdraft.assetfilters.ImmConjunctionAssetFilter;
+import com.strangegrotto.wealthdraft.assetfilters.ImmTagAssetFilter;
 import com.strangegrotto.wealthdraft.assetimpls.AssetType;
 import com.strangegrotto.wealthdraft.assets.definition.ExpectedExampleAssetDefinitions;
 import com.strangegrotto.wealthdraft.assets.definition.IntrinsicAssetTag;

@@ -5,8 +5,6 @@ public enum ExampleInputFile implements TestFileProvider {
     SCENARIOS("scenarios.yml"),
     GOV_CONSTANTS("gov-constants.yml");
 
-    private static final String CONTAINING_DIRNAME = "examples";
-
     private final String filename;
 
     ExampleInputFile(String filename) {
@@ -15,7 +13,7 @@ public enum ExampleInputFile implements TestFileProvider {
 
     @Override
     public TestResourceDirnames getContainingDirname() {
-        return CONTAINING_DIRNAME;
+        return TestResourceDirnames.EXAMPLES;
     }
 
     @Override
