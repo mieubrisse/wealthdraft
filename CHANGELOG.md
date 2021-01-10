@@ -1,5 +1,6 @@
 ## TBD
 * Color asset allocation rows based on their deviation status
+* Allow users to set the default value of a tag if it's missing
 
 ## 0.12.1
 * Add extra tests to ensure nonsensical target asset allocation rules are rejected
