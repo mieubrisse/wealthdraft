@@ -12,22 +12,22 @@ enum ProjectionsTestFiles implements TestFileProvider {
     PAST_DATE_IN_PROJECTION("past-date-in-projection.yml"),
     TWO_CHNAGES_ON_SAME_DATE("two-changes-on-same-date.yml"),
     TWO_CHANGES_ON_SAME_DATE_FROM_DIFF_SCENARIOS("two-changes-on-same-date-from-diff-scenarios.yml"),
-    EXAMPLE(TestResourceDirnames.EXAMPLES.getDirname(), "projections.yml");
+    EXAMPLE(TestResourceDirnames.EXAMPLES, "projections.yml");
 
-    private final String containingDirname;
+    private final TestResourceDirnames containingDirname;
     private final String filename;
 
-    ProjectionsTestFiles(String containingDirname, String filename) {
+    ProjectionsTestFiles(TestResourceDirnames containingDirname, String filename) {
         this.containingDirname = containingDirname;
         this.filename = filename;
     }
 
     ProjectionsTestFiles(String filename) {
-        this(TestResourceDirnames.PROJECTIONS_DESERIALIZATION_TESTS.getDirname(), filename);
+        this(TestResourceDirnames.PROJECTIONS_DESERIALIZATION_TESTS, filename);
     }
 
     @Override
-    public String getContainingDirname() {
+    public TestResourceDirnames getContainingDirname() {
         return this.containingDirname;
     }
 

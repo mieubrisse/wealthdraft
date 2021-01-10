@@ -11,25 +11,25 @@ public enum AssetDefinitionsTestFiles implements TestFileProvider  {
     UNSPECIFIED_TAGS_IS_EMPTY_MAP("unspecified-tags-is-empty-map.yml"),
     MISSING_REQUIRED_TAG("missing-required-tag.yml"),
     TEST_DEFAULT_TAGS("test-default-tags.yml"),
-    EXAMPLE(TestResourceDirnames.EXAMPLES.getDirname(), "assets.yml");
+    EXAMPLE(TestResourceDirnames.EXAMPLES, "assets.yml");
 
-    private final String containingDirname;
+    private final TestResourceDirnames containingDirname;
     private final String filename;
 
-    AssetDefinitionsTestFiles(String containingDirname, String filename) {
+    AssetDefinitionsTestFiles(TestResourceDirnames containingDirname, String filename) {
         this.containingDirname = containingDirname;
         this.filename = filename;
     }
 
     AssetDefinitionsTestFiles(String filename) {
         this(
-                TestResourceDirnames.ASSET_DEFINITIONS_DESERIALIZATION_TESTS.getDirname(),
+                TestResourceDirnames.ASSET_DEFINITIONS_DESERIALIZATION_TESTS,
                 filename
         );
     }
 
     @Override
-    public String getContainingDirname() {
+    public TestResourceDirnames getContainingDirname() {
         return this.containingDirname;
     }
 

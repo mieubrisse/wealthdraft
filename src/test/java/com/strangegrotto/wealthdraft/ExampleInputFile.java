@@ -1,9 +1,5 @@
 package com.strangegrotto.wealthdraft;
 
-import com.strangegrotto.wealthdraft.TestFileProvider;
-
-import java.net.URL;
-
 // TODO Split these up into AssetsFile, GovConstantsFile, etc. like we've done with ProjectionsFile enum
 public enum ExampleInputFile implements TestFileProvider {
     SCENARIOS("scenarios.yml"),
@@ -18,7 +14,7 @@ public enum ExampleInputFile implements TestFileProvider {
     }
 
     @Override
-    public String getContainingDirname() {
+    public TestResourceDirnames getContainingDirname() {
         return CONTAINING_DIRNAME;
     }
 

@@ -1,10 +1,11 @@
-package com.strangegrotto.wealthdraft.assetallocation.datamodel.filters;
+package com.strangegrotto.wealthdraft.assetfilters;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Sets;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
 import com.strangegrotto.wealthdraft.assets.definition.Asset;
+import com.strangegrotto.wealthdraft.assetfilters.filters.ImmDisjunctionAssetFilter;
 import org.immutables.value.Value;
 
 import java.util.HashMap;

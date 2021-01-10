@@ -11,23 +11,22 @@ public enum TargetAssetAllocationsTestFiles implements TestFileProvider {
     FRACTION_LESS_THAN_0("fraction-less-than-0.yml"),
     FILTER_CYCLE("filter-cycle.yml"),
     NONEXISTENT_EMBEDDED_FILTER("nonexistent-embedded-filter.yml"),
-    EXAMPLE(TestResourceDirnames.EXAMPLES.getDirname(), "asset-allocations.yml");
+    EXAMPLE(TestResourceDirnames.EXAMPLES, "asset-allocations.yml");
 
-    private final String containingDirname;
+    private final TestResourceDirnames containingDirname;
     private final String filename;
 
-    TargetAssetAllocationsTestFiles(String containingDirname, String filename) {
+    TargetAssetAllocationsTestFiles(TestResourceDirnames containingDirname, String filename) {
         this.containingDirname = containingDirname;
         this.filename = filename;
     }
 
     TargetAssetAllocationsTestFiles(String filename) {
-        this.containingDirname = TestResourceDirnames.ASSET_ALLOCATION_DESERIALIZATION_TESTS.getDirname();
-        this.filename = filename;
+        this(TestResourceDirnames.ASSET_ALLOCATION_DESERIALIZATION_TESTS, filename);
     }
 
     @Override
-    public String getContainingDirname() {
+    public TestResourceDirnames getContainingDirname() {
         return this.containingDirname;
     }
 

@@ -1,7 +1,5 @@
 package com.strangegrotto.wealthdraft;
 
-import java.net.URL;
-
 public enum MainTestFiles implements TestFileProvider {
     DUPLICATE_KEYS("duplicate-keys.yml");
 
@@ -19,7 +17,7 @@ public enum MainTestFiles implements TestFileProvider {
 
 
     @Override
-    public String getContainingDirname() {
+    public TestResourceDirnames getContainingDirname() {
         return this.containingDirname;
     }
 

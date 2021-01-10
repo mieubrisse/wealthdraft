@@ -1,9 +1,11 @@
-package com.strangegrotto.wealthdraft.assetallocation.datamodel.filters;
+package com.strangegrotto.wealthdraft.assetfilters;
 
 import com.strangegrotto.wealthdraft.assetimpls.AssetType;
 import com.strangegrotto.wealthdraft.assets.definition.Asset;
 import com.strangegrotto.wealthdraft.assets.definition.ImmAsset;
 import com.strangegrotto.wealthdraft.assets.definition.ImmCustomTagDefinition;
+import com.strangegrotto.wealthdraft.assetfilters.filters.ImmEmbeddedFilterAssetFilter;
+import com.strangegrotto.wealthdraft.assetfilters.filters.ImmTagAssetFilter;
 import org.junit.Assert;
 import org.junit.Test;
 
