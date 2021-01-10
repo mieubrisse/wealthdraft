@@ -16,10 +16,13 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.google.common.collect.Ordering;
 import com.strangegrotto.wealthdraft.assetallocation.calculator.AssetAllocationCalculator;
-import com.strangegrotto.wealthdraft.assetallocation.datamodel.filters.TagAssetFilter;
-import com.strangegrotto.wealthdraft.assetallocation.datamodel.filters.TagAssetFilterDeserializer;
+import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocationsDeserializer;
+import com.strangegrotto.wealthdraft.assetfilters.AssetFilter;
+import com.strangegrotto.wealthdraft.assetfilters.TagAssetFilter;
+import com.strangegrotto.wealthdraft.assetfilters.TagAssetFilterDeserializer;
 import com.strangegrotto.wealthdraft.assetallocation.renderer.AssetAllocationRenderer;
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocations;
 import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitions;
@@ -68,6 +71,7 @@ public class Main {
     private static final String ASSETS_HISTORY_FILEPATH_ARG = "assets-history";
     private static final String PROJECTIONS_FILEPATH_ARG = "projections";
     private static final String ASSET_ALLOCATIONS_FILEPATH_ARG = "asset-allocations";
+    private static final String FILTERS_FILEPATH_ARG = "filters";
     private static final String LOG_LEVEL_ARG = "log-level";
     private static final String ALL_SCENARIOS_ARG = "all";
 
@@ -128,6 +132,10 @@ public class Main {
                 .dest(ASSET_ALLOCATIONS_FILEPATH_ARG)
                 .required(true)
                 .help("YAML file of target asset allocations");
+        parser.addArgument("--" + FILTERS_FILEPATH_ARG)
+                .dest(FILTERS_FILEPATH_ARG)
+                .required(true)
+                .help("YAML file of saved asset filers");
         parser.addArgument("--" + LOG_LEVEL_ARG)
                 .dest(LOG_LEVEL_ARG)
                 .type(Level.class)
@@ -154,6 +162,7 @@ public class Main {
         var mapper = getObjectMapper();
         TypeFactory typeFactory = mapper.getTypeFactory();
 
+        // TODO Clean up this whole nasty chain of YAML-parsing - it's a mess
         String taxScenariosFilepath = parsedArgs.getString(TAX_SCENARIOS_FILEPATH_ARG);
         log.debug("Scenarios filepath: {}", taxScenariosFilepath);
         MapType taxScenariosMapType = typeFactory.constructMapType(HashMap.class, String.class, TaxScenario.class);
@@ -192,17 +201,6 @@ public class Main {
 
         addDeserializersNeedingAssetDefs(mapper, assetDefinitions);
 
-        String assetAllocationsFilepath = parsedArgs.getString(ASSET_ALLOCATIONS_FILEPATH_ARG);
-        log.debug("Asset allocations filepath: {}", assetAllocationsFilepath);
-        TargetAssetAllocations targetAssetAllocations;
-        try {
-            targetAssetAllocations = mapper.readValue(new File(assetAllocationsFilepath), TargetAssetAllocations.class);
-        } catch (IOException e) {
-            log.error("An error occurred parsing the asset allocations file '{}'", assetAllocationsFilepath, e);
-            System.exit(FAILURE_EXIT_CODE);
-            return;
-        }
-
         String assetsHistoryFilepath = parsedArgs.getString(ASSETS_HISTORY_FILEPATH_ARG);
         log.debug("Assets history filepath: {}", assetsHistoryFilepath);
         AssetsHistory assetsHistory;
@@ -224,6 +222,47 @@ public class Main {
             System.exit(FAILURE_EXIT_CODE);
             return;
         }
+
+        String filtersFilepath = parsedArgs.getString(FILTERS_FILEPATH_ARG);
+        log.debug("Filters filepath: {}", filtersFilepath);
+        MapType filtersMapType = typeFactory.constructMapType(HashMap.class, String.class, AssetFilter.class);
+        Map<String, AssetFilter> filters;
+        try {
+            filters = mapper.readValue(new File(filtersFilepath), filtersMapType);
+        } catch (IOException e) {
+            log.error("An error occurred parsing the filters file '{}'", filtersFilepath, e);
+            System.exit(FAILURE_EXIT_CODE);
+            return;
+        }
+        // TODO This is a terrible spot to do error-checking!!
+        for (var filterEntry : filters.entrySet()) {
+            var filterName = filterEntry.getKey();
+            var filter = filterEntry.getValue();
+
+            var parentFilters = new LinkedHashSet<>(List.of(filterName));
+            var cycleOpt = filter.checkForCycles(filters, parentFilters);
+            if (cycleOpt.isPresent()) {
+                throw new IllegalStateException(Strings.lenientFormat(
+                        "Found an asset filter cycle: %s",
+                        filterName,
+                        String.join(" -> ", cycleOpt.get())
+                ));
+            }
+        }
+
+        addDeserializersNeedingFilters(mapper, filters);
+
+        String assetAllocationsFilepath = parsedArgs.getString(ASSET_ALLOCATIONS_FILEPATH_ARG);
+        log.debug("Asset allocations filepath: {}", assetAllocationsFilepath);
+        TargetAssetAllocations targetAssetAllocations;
+        try {
+            targetAssetAllocations = mapper.readValue(new File(assetAllocationsFilepath), TargetAssetAllocations.class);
+        } catch (IOException e) {
+            log.error("An error occurred parsing the asset allocations file '{}'", assetAllocationsFilepath, e);
+            System.exit(FAILURE_EXIT_CODE);
+            return;
+        }
+
 
 
         Display display = new Display(
@@ -287,6 +326,16 @@ public class Main {
         deserializerModule.addDeserializer(Projections.class, new ProjectionsDeserializer(assets));
         deserializerModule.addDeserializer(AssetsHistory.class, new AssetsHistoryDeserializer(assets));
         deserializerModule.addDeserializer(TagAssetFilter.class, new TagAssetFilterDeserializer(customTags));
+        mapper.registerModule(deserializerModule);
+    }
+
+    @VisibleForTesting
+    public static void addDeserializersNeedingFilters(ObjectMapper mapper, Map<String, AssetFilter> filters) {
+        var deserializerModule = new SimpleModule();
+        deserializerModule.addDeserializer(
+                TargetAssetAllocations.class,
+                new TargetAssetAllocationsDeserializer(filters)
+        );
         mapper.registerModule(deserializerModule);
     }
 

@@ -1,18 +1,3 @@
-filters:
-  domesticAssets:
-    tag: domOrIntl
-    value: domestic
-  internationalAssets:
-    tag: domOrIntl
-    value: international
-  domesticBankAssets:
-    # Some filters can be composed of other filters
-    all:
-      - tag: domOrIntl
-        value: domestic
-      - tag: assetType
-        value: BANK_ACCOUNT
-
 targets:
   - numerator: domesticAssets
     # If no denominator is specified, the entire portfolio is assumed to be the denominator

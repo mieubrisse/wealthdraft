@@ -1,5 +1,3 @@
-filters: {}
-
 targets:
   - numerator: this-filter-doesn't-exist
     fraction: 0.7

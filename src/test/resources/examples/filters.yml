@@ -1,0 +1,15 @@
+domesticAssets:
+  tag: domOrIntl
+  value: domestic
+
+internationalAssets:
+  tag: domOrIntl
+  value: international
+
+domesticBankAssets:
+  # Some filters can be composed of other filters
+  all:
+    - tag: domOrIntl
+      value: domestic
+    - tag: assetType
+      value: BANK_ACCOUNT
