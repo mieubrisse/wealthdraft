@@ -2,6 +2,8 @@ package com.strangegrotto.wealthdraft.assetallocation.datamodel.filters;
 
 import com.strangegrotto.wealthdraft.assetimpls.bankaccount.ImmBankAccountAsset;
 import com.strangegrotto.wealthdraft.assets.definition.Asset;
+import com.strangegrotto.wealthdraft.assets.definition.CustomTagDefinition;
+import com.strangegrotto.wealthdraft.assets.definition.ImmCustomTagDefinition;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -22,6 +24,15 @@ public class DisjunctionAssetFilterTest {
         var matchingAssetId2 = "matches2";
         var matchingAssetId3 = "matches3";
 
+        var unrelatedTagName = "foo";
+        var unrelatedTagValue = "bar";
+
+        var customTags = Map.of(
+                needle1Name, ImmCustomTagDefinition.builder().build(),
+                needle2Name, ImmCustomTagDefinition.builder().build(),
+                unrelatedTagName, ImmCustomTagDefinition.builder().build()
+        );
+
         var haystack = Map.<String, Asset<?, ?>>of(
                 matchingAssetId1, ImmBankAccountAsset.of("Match 1").withCustomTags(Map.of(
                         needle1Name, needle1Value
@@ -33,12 +44,14 @@ public class DisjunctionAssetFilterTest {
                 matchingAssetId3, ImmBankAccountAsset.of("Match 3").withCustomTags(Map.of(
                         needle2Name, needle2Value
                 )),
-                "unmatching-tags", ImmBankAccountAsset.of("Unmatching tags").withCustomTags(Map.of("foo", "bar")),
+                "unmatching-tags", ImmBankAccountAsset.of("Unmatching tags").withCustomTags(Map.of(
+                        unrelatedTagName, unrelatedTagValue
+                )),
                 "no-tags", ImmBankAccountAsset.of("No tags")
         );
 
-        var needle1Filter = ImmTagAssetFilter.of(needle1Name, needle1Value);
-        var needle2Filter = ImmTagAssetFilter.of(needle2Name, needle2Value);
+        var needle1Filter = ImmTagAssetFilter.of(customTags, needle1Name, needle1Value);
+        var needle2Filter = ImmTagAssetFilter.of(customTags, needle2Name, needle2Value);
         var disjunctionFilter = ImmDisjunctionAssetFilter.of(List.of(
                 needle1Filter,
                 needle2Filter

@@ -16,7 +16,7 @@ plugins {
     // Get latest Git tag so we can put it in the JAR name
     id 'com.palantir.git-version' version "${palantirGitVersionPlugin}"
 
-    id "com.github.spotbugs" version "${spotBugsVersion}"
+    id "com.github.spotbugs" version "${spotBugsPluginVersion}"
 }
 
 version = gitVersion()
@@ -47,6 +47,9 @@ dependencies {
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
 
     implementation "com.jakewharton.picnic:picnic:${picnicVersion}"
+
+    // Frustratingly, this has to be 'implementation' for IntelliJ to work, even though 'compileOnly' *should* work
+    implementation "com.github.spotbugs:spotbugs-annotations:${spotBugsAnnotationsVersion}"
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'

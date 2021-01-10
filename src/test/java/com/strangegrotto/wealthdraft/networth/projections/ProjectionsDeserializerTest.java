@@ -65,10 +65,10 @@ public class ProjectionsDeserializerTest {
         var mapper = Main.getObjectMapper();
         var assetsUrl = AssetDefinitionsTestFiles.EXAMPLE.getResource();
         var assetDefinitions = mapper.readValue(assetsUrl, AssetDefinitions.class);
-        Main.addDeserializersNeedingAssets(mapper, assetDefinitions.getAssets());
+        Main.addDeserializersNeedingAssetDefs(mapper, assetDefinitions);
 
         var projectionsUrl = ProjectionsTestFiles.INVALID_YML.getResource();
-        Main.addDeserializersNeedingAssets(mapper, assetDefinitions.getAssets());
+        Main.addDeserializersNeedingAssetDefs(mapper, assetDefinitions);
 
         Optional<IOException> invalidYmlExceptionOpt = Optional.empty();
         try {
@@ -88,7 +88,7 @@ public class ProjectionsDeserializerTest {
 
         var projectionsUrl = ProjectionsTestFiles.EXAMPLE.getResource();
 
-        Main.addDeserializersNeedingAssets(mapper, assetDefinitions.getAssets());
+        Main.addDeserializersNeedingAssetDefs(mapper, assetDefinitions);
         var projections = mapper.readValue(projectionsUrl, Projections.class);
 
         var projectionScenariosOrErr = projections.getScenarios();
@@ -202,7 +202,7 @@ public class ProjectionsDeserializerTest {
         var mapper = Main.getObjectMapper();
         var assetsUrl = AssetDefinitionsTestFiles.EXAMPLE.getResource();
         var assetDefinitions = mapper.readValue(assetsUrl, AssetDefinitions.class);
-        Main.addDeserializersNeedingAssets(mapper, assetDefinitions.getAssets());
+        Main.addDeserializersNeedingAssetDefs(mapper, assetDefinitions);
 
         var projectionsUrl = testFile.getResource();
         return mapper.readValue(projectionsUrl, Projections.class);

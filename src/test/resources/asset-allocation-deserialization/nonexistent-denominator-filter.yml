@@ -1,0 +1,9 @@
+filters:
+  domesticAssets:
+    tag: domOrIntl
+    value: domestic
+
+targets:
+  - numerator: domesticAssets
+    fraction: 0.7
+    denominator: this-filter-doesnt-exist
