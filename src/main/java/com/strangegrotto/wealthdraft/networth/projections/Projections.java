@@ -9,6 +9,7 @@ import java.util.Map;
 
 @WealthdraftImmutableStyle
 @Value.Immutable
+// Deserialized via custom deserializer
 public interface Projections {
     BigDecimal getDefaultAnnualGrowth();
 

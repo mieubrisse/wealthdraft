@@ -32,7 +32,7 @@ public class AssetsHistoryTest {
         var mapper = Main.getObjectMapper();
         var assetsUrl = AssetDefinitionsTestFiles.EXAMPLE.getResource();
         var assetDefinitions = mapper.readValue(assetsUrl, AssetDefinitions.class);
-        Main.addDeserializersNeedingAssets(mapper, assetDefinitions.getAssets());
+        Main.addDeserializersNeedingAssetDefs(mapper, assetDefinitions);
 
         var assetsHistoryUrl = testFile.getResource();
         return mapper.readValue(assetsHistoryUrl, AssetsHistory.class);

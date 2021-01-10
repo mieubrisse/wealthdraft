@@ -5,6 +5,10 @@ import com.strangegrotto.wealthdraft.TestResourceDirnames;
 
 public enum TargetAssetAllocationsTestFiles implements TestFileProvider {
     ALL_SET_MATH_OPERATORS("all-set-math-operators.yml"),
+    NONEXISTENT_NUMERATOR_FILTER("nonexistent-numerator-filter.yml"),
+    NONEXISTENT_DENOMINATOR_FILTER("nonexistent-denominator-filter.yml"),
+    FRACTION_GREATER_THAN_1("fraction-greater-than-1.yml"),
+    FRACTION_LESS_THAN_0("fraction-less-than-0.yml"),
     EXAMPLE(TestResourceDirnames.EXAMPLES.getDirname(), "asset-allocations.yml");
 
     private final String containingDirname;

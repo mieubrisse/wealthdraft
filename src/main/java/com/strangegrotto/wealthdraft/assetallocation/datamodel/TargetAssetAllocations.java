@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.filters.AssetFilter;
+import com.strangegrotto.wealthdraft.assets.definition.CustomTagDefinition;
 import org.immutables.value.Value;
 
 import java.math.BigDecimal;
@@ -16,17 +17,16 @@ import java.util.Map;
 @JsonDeserialize(as = ImmTargetAssetAllocations.class)
 public interface TargetAssetAllocations {
     @Value.Parameter
-    @JsonProperty("filters")
     Map<String, AssetFilter> getFilters();
 
     @Value.Parameter
-    @JsonProperty("targets")
     List<TargetAssetAllocation> getTargets();
 
     @Value.Check
     default void check() {
         var filters = getFilters();
         var targets = getTargets();
+
         for (int i = 0; i < targets.size(); i++) {
             var target = targets.get(i);
 

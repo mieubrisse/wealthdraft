@@ -1,3 +1,7 @@
+## TBD
+* Add extra tests to ensure nonsensical target asset allocation rules are rejected
+* Add tests to make sure that the TagAssetFilter is using only recognized tags and values, to guard against typos
+
 ## 0.12.0
 * Refactor assets history from `assetId -> (date -> assetSnapshot)` to `date -> (assetId -> assetSnapshot)`
 
