@@ -16,6 +16,7 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.google.common.collect.Ordering;
 import com.strangegrotto.wealthdraft.assetallocation.calculator.AssetAllocationCalculator;
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocationsDeserializer;
@@ -232,6 +233,21 @@ public class Main {
             log.error("An error occurred parsing the filters file '{}'", filtersFilepath, e);
             System.exit(FAILURE_EXIT_CODE);
             return;
+        }
+        // TODO This is a terrible spot to do error-checking!!
+        for (var filterEntry : filters.entrySet()) {
+            var filterName = filterEntry.getKey();
+            var filter = filterEntry.getValue();
+
+            var parentFilters = new LinkedHashSet<>(List.of(filterName));
+            var cycleOpt = filter.checkForCycles(filters, parentFilters);
+            if (cycleOpt.isPresent()) {
+                throw new IllegalStateException(Strings.lenientFormat(
+                        "Found an asset filter cycle: %s",
+                        filterName,
+                        String.join(" -> ", cycleOpt.get())
+                ));
+            }
         }
 
         addDeserializersNeedingFilters(mapper, filters);

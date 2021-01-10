@@ -1,5 +1,0 @@
-filters:
-  filter1:
-    filter: this-filter-doesnt-exist
-
-targets: []

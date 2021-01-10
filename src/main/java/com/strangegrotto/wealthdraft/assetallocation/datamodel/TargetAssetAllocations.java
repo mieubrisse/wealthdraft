@@ -30,21 +30,6 @@ public interface TargetAssetAllocations {
         var filters = getFilters();
         var targets = getTargets();
 
-        for (var filterEntry : filters.entrySet()) {
-            var filterName = filterEntry.getKey();
-            var filter = filterEntry.getValue();
-
-            var parentFilters = new LinkedHashSet<>(List.of(filterName));
-            var cycleOpt = filter.checkForCycles(filters, parentFilters);
-            if (cycleOpt.isPresent()) {
-                throw new IllegalStateException(Strings.lenientFormat(
-                        "Found an asset filter cycle: %s",
-                        filterName,
-                        String.join(" -> ", cycleOpt.get())
-                ));
-            }
-        }
-
         for (int i = 0; i < targets.size(); i++) {
             var target = targets.get(i);
 
