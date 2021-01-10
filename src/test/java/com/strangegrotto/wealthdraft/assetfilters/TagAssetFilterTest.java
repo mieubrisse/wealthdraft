@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.assetallocation.datamodel.filters;
+package com.strangegrotto.wealthdraft.assetfilters;
 
 import com.strangegrotto.wealthdraft.assetimpls.AssetType;
 import com.strangegrotto.wealthdraft.assets.definition.*;

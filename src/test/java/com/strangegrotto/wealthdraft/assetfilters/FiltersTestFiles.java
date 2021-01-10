@@ -1,25 +1,22 @@
-package com.strangegrotto.wealthdraft.networth.history;
+package com.strangegrotto.wealthdraft.assetfilters;
 
 import com.strangegrotto.wealthdraft.TestFileProvider;
 import com.strangegrotto.wealthdraft.TestResourceDirnames;
 
-public enum AssetsHistoryTestFiles implements TestFileProvider {
-    NONEXISTENT_ASSET("nonexistent-asset.yml"),
-    FUTURE_DATE("future-date.yml"),
-    EXAMPLE(TestResourceDirnames.EXAMPLES, "assets-history.yml");
+public enum FiltersTestFiles implements TestFileProvider {
+    EXAMPLE(TestResourceDirnames.EXAMPLES, "filters.yml");
 
     private final TestResourceDirnames containingDirname;
     private final String filename;
 
-    AssetsHistoryTestFiles(TestResourceDirnames containingDirname, String filename) {
+    FiltersTestFiles(TestResourceDirnames containingDirname, String filename) {
         this.containingDirname = containingDirname;
         this.filename = filename;
     }
 
-    AssetsHistoryTestFiles(String filename) {
-        this(TestResourceDirnames.ASSETS_HISTORY_DESERIALIZATION_TESTS, filename);
+    FiltersTestFiles(String filename) {
+        this(TestResourceDirnames.ASSET_FILTERS_DESERIALIZATION_TESTS, filename);
     }
-
 
     @Override
     public TestResourceDirnames getContainingDirname() {

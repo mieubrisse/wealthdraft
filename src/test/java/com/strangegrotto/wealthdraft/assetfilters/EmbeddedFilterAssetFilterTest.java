@@ -1,5 +1,6 @@
-package com.strangegrotto.wealthdraft.assetallocation.datamodel.filters;
+package com.strangegrotto.wealthdraft.assetfilters;
 
+import com.google.common.collect.Sets;
 import com.strangegrotto.wealthdraft.assetimpls.AssetType;
 import com.strangegrotto.wealthdraft.assets.definition.Asset;
 import com.strangegrotto.wealthdraft.assets.definition.ImmAsset;
@@ -7,6 +8,8 @@ import com.strangegrotto.wealthdraft.assets.definition.ImmCustomTagDefinition;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 public class EmbeddedFilterAssetFilterTest {
@@ -47,4 +50,38 @@ public class EmbeddedFilterAssetFilterTest {
 
         Assert.assertEquals(expected, actual);
     }
+
+    @Test
+    public void testCycleDetection() throws IOException {
+        var filterId1 = "filter1";
+        var filterId2 = "filter2";
+        var filterId3 = "filter3";
+
+        var filter1 = ImmEmbeddedFilterAssetFilter.of(filterId2);
+
+        Map<String, AssetFilter> filters = Map.of(
+                filterId1, filter1,
+                filterId2, ImmEmbeddedFilterAssetFilter.of(filterId3),
+                filterId3, ImmEmbeddedFilterAssetFilter.of(filterId1)
+        );
+
+        var parentFilters = Sets.newLinkedHashSet(List.of(filterId1));
+        filter1.checkForCycles(filters, parentFilters);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testErrorOnNonexistentEmbeddedFilter() {
+        var embeddingFilterId = "embedding";
+        var embeddingFilter = ImmEmbeddedFilterAssetFilter.of("this-filter-id-doesnt-exist");
+        Map<String, AssetFilter> filters = Map.of(
+                embeddingFilterId, embeddingFilter
+        );
+
+        Map<String, Asset> assets = Map.of(
+                "someAsset", ImmAsset.of("Some ranodm asset", AssetType.BANK_ACCOUNT)
+        );
+
+        embeddingFilter.apply(filters, assets);
+    }
+
 }

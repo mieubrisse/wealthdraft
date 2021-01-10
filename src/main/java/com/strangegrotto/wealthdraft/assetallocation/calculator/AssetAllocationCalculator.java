@@ -3,7 +3,7 @@ package com.strangegrotto.wealthdraft.assetallocation.calculator;
 import com.google.common.annotations.VisibleForTesting;
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocation;
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocations;
-import com.strangegrotto.wealthdraft.assetallocation.datamodel.filters.AssetFilter;
+import com.strangegrotto.wealthdraft.assetfilters.AssetFilter;
 import com.strangegrotto.wealthdraft.assets.definition.Asset;
 import com.strangegrotto.wealthdraft.assets.temporal.AssetSnapshot;
 
