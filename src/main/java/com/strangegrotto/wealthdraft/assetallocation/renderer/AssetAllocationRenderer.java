@@ -38,16 +38,18 @@ public class AssetAllocationRenderer {
             var denominatorFilterNameOpt = target.getDenominatorFilterOpt();
             var denominatorStr = denominatorFilterNameOpt.orElse(TOTAL_PORTFOLIO_STR);
 
+            var colorWrapper = new DeviationStatusColorWrapper(calcResult.getDeviationStatus());
+
             var row = ImmAssetAllocationTableRow.of(
-                    numeratorStr,
-                    denominatorStr,
-                    formatCurrencyValue(calcResult.getCurrentNumeratorValue()),
-                    formatCurrencyValue(calcResult.getCurrentDenominatorValue()),
-                    formatFractionAsPercent(calcResult.getCurrentFraction()),
-                    formatFractionAsPercent(calcResult.getTargetFraction()),
-                    formatCurrencyValue(calcResult.getCorrectionNeeded()),
-                    formatFractionAsPercent(calcResult.getDeviationFraction()),
-                    calcResult.getDeviationStatus().toString()
+                    colorWrapper.wrap(numeratorStr),
+                    colorWrapper.wrap(denominatorStr),
+                    colorWrapper.wrap(formatCurrencyValue(calcResult.getCurrentNumeratorValue())),
+                    colorWrapper.wrap(formatCurrencyValue(calcResult.getCurrentDenominatorValue())),
+                    colorWrapper.wrap(formatFractionAsPercent(calcResult.getCurrentFraction())),
+                    colorWrapper.wrap(formatFractionAsPercent(calcResult.getTargetFraction())),
+                    colorWrapper.wrap(formatCurrencyValue(calcResult.getCorrectionNeeded())),
+                    colorWrapper.wrap(formatFractionAsPercent(calcResult.getDeviationFraction())),
+                    colorWrapper.wrap(calcResult.getDeviationStatus().toString())
             );
             table.addRow(row);
         }
@@ -55,15 +57,17 @@ public class AssetAllocationRenderer {
     }
 
     private static String formatCurrencyValue(BigDecimal input) {
-        return input.setScale(BIG_DECIMAL_DISPLAY_SCALE, ROUNDING_MODE)
+        var decimalAsStr = input.setScale(BIG_DECIMAL_DISPLAY_SCALE, ROUNDING_MODE)
                 .toString();
+        return "$" + decimalAsStr;
     }
 
     private static String formatFractionAsPercent(BigDecimal input) {
         var scaledUp = input.multiply(BigDecimal.valueOf(100));
-        return scaledUp
+        var decimalAsStr = scaledUp
                 .setScale(BIG_DECIMAL_DISPLAY_SCALE, ROUNDING_MODE)
                 .toString();
+        return decimalAsStr + "%";
     }
 }
 
