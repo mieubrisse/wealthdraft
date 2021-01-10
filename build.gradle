@@ -49,7 +49,7 @@ dependencies {
     implementation "com.jakewharton.picnic:picnic:${picnicVersion}"
 
     // Frustratingly, this has to be 'implementation' for IntelliJ to work, even though 'compileOnly' *should* work
-    implementation "com.github.spotbugs:spotbugs-annotations:${spotBugsVersion}"
+    implementation "com.github.spotbugs:spotbugs-annotations:${spotBugsAnnotationsVersion}"
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
