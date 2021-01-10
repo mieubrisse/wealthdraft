@@ -1,3 +1,6 @@
+## TBD
+* Color asset allocation rows based on their deviation status
+
 ## 0.12.1
 * Add extra tests to ensure nonsensical target asset allocation rules are rejected
 * Add tests to make sure that the TagAssetFilter is using only recognized tags and values, to guard against typos
