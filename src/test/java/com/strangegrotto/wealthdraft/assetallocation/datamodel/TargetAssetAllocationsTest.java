@@ -12,7 +12,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
 
 public class TargetAssetAllocationsTest {
     @Test
@@ -24,8 +23,9 @@ public class TargetAssetAllocationsTest {
     @Test
     public void testAllSetMathOperators() throws IOException {
         var targetAssetAllocations = parseAssetAllocationsFile(TargetAssetAllocationsTestFiles.ALL_SET_MATH_OPERATORS);
+        var filters = targetAssetAllocations.getFilters();
         var megaFilter = targetAssetAllocations.getFilters().get("megaFilter");
-        var filteredAssets = megaFilter.apply(ExpectedExampleAssetDefinitions.EXPECTED_ASSETS);
+        var filteredAssets = megaFilter.apply(filters, ExpectedExampleAssetDefinitions.EXPECTED_ASSETS);
 
         var bankAccountId = ExpectedExampleAssetDefinitions.BANK_ACCOUNT_ID;
         var brokerageAccountId = ExpectedExampleAssetDefinitions.BROKERAGE_ACCOUNT_ID;
@@ -54,6 +54,16 @@ public class TargetAssetAllocationsTest {
     @Test(expected = ValueInstantiationException.class)
     public void testErrorOnFractionLessThan0() throws IOException {
         parseAssetAllocationsFile(TargetAssetAllocationsTestFiles.FRACTION_LESS_THAN_0);
+    }
+
+    @Test(expected = ValueInstantiationException.class)
+    public void testErrorOnFilterCycle() throws IOException {
+        parseAssetAllocationsFile(TargetAssetAllocationsTestFiles.FILTER_CYCLE);
+    }
+
+    @Test(expected = ValueInstantiationException.class)
+    public void testErrorOnNonexistentEmbeddedFilter() throws IOException {
+        parseAssetAllocationsFile(TargetAssetAllocationsTestFiles.NONEXISTENT_EMBEDDED_FILTER);
     }
 
     private static TargetAssetAllocations parseAssetAllocationsFile(TargetAssetAllocationsTestFiles testFile) throws IOException {
