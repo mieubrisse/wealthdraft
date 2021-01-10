@@ -11,6 +11,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 
 public class TargetAssetAllocationsTest {
@@ -24,15 +25,15 @@ public class TargetAssetAllocationsTest {
     public void testAllSetMathOperators() throws IOException {
         var targetAssetAllocations = parseAssetAllocationsFile(TargetAssetAllocationsTestFiles.ALL_SET_MATH_OPERATORS);
         var megaFilter = targetAssetAllocations.getFilters().get("megaFilter");
-        var filteredAssetIds = megaFilter.apply(
-                ExpectedExampleAssetDefinitions.EXPECTED_ASSETS,
-                ExpectedExampleAssetDefinitions.EXPECTED_ASSETS.keySet()
+        var filteredAssets = megaFilter.apply(ExpectedExampleAssetDefinitions.EXPECTED_ASSETS);
+
+        var bankAccountId = ExpectedExampleAssetDefinitions.BANK_ACCOUNT_ID;
+        var brokerageAccountId = ExpectedExampleAssetDefinitions.BROKERAGE_ACCOUNT_ID;
+        var expected = Map.of(
+                bankAccountId, ExpectedExampleAssetDefinitions.EXPECTED_ASSETS.get(bankAccountId),
+                brokerageAccountId, ExpectedExampleAssetDefinitions.EXPECTED_ASSETS.get(brokerageAccountId)
         );
-        var expectedAssetIds = Set.of(
-                ExpectedExampleAssetDefinitions.BROKERAGE_ACCOUNT_ID,
-                ExpectedExampleAssetDefinitions.BITCOIN_HOLDING_ID
-        );
-        Assert.assertEquals(expectedAssetIds, filteredAssetIds);
+        Assert.assertEquals(expected, filteredAssets);
     }
 
     @Test(expected = ValueInstantiationException.class)

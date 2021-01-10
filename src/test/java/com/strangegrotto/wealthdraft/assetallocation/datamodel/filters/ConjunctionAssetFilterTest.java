@@ -55,9 +55,11 @@ public class ConjunctionAssetFilterTest {
                 needle2Filter
         ));
 
-        var result = conjunctiveFilter.apply(haystack, haystack.keySet());
+        var result = conjunctiveFilter.apply(haystack);
 
-        var expected = Set.of(matchingAssetId);
+        var expected = Map.of(
+                matchingAssetId, haystack.get(matchingAssetId)
+        );
         Assert.assertEquals(expected, result);
     }
 }

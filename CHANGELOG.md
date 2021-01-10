@@ -2,6 +2,7 @@
 * Color asset allocation rows based on their deviation status
 * Allow users to set the default value of a tag if it's missing
 * Remove the `Asset` class in favor of an `AssetType` enum
+* Remove negation filter now that default tags are available, to guarantee that filters strictly reduce the number of assets
 
 ## 0.12.1
 * Add extra tests to ensure nonsensical target asset allocation rules are rejected

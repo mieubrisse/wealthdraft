@@ -4,10 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Sets;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
+import com.strangegrotto.wealthdraft.assets.definition.Asset;
 import org.immutables.value.Value;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @WealthdraftImmutableStyle
 @Value.Immutable
@@ -23,7 +26,10 @@ public abstract class ConjunctionAssetFilter extends AbstractCompoundAssetFilter
     }
 
     @Override
-    protected final Set<String> combineFilterMatches(Set<String> filterResultA, Set<String> filterResultB) {
-        return Sets.intersection(filterResultA, filterResultB);
+    protected Map<String, Asset> combineFilterMatches(Map<String, Asset> filterResultA, Map<String, Asset> filterResultB) {
+        var matchingAssetIds = Sets.intersection(filterResultA.keySet(), filterResultB.keySet());
+        return filterResultA.entrySet().stream()
+                .filter(entry -> matchingAssetIds.contains(entry.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }

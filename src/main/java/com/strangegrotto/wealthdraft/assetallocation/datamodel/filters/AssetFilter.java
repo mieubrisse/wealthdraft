@@ -12,8 +12,7 @@ import java.util.Set;
         @JsonSubTypes.Type(TagAssetFilter.class),
         @JsonSubTypes.Type(ConjunctionAssetFilter.class),
         @JsonSubTypes.Type(DisjunctionAssetFilter.class),
-        @JsonSubTypes.Type(NegationAssetFilter.class)
 })
 public interface AssetFilter {
-    Set<String> apply(Map<String, Asset> allAssets, Set<String> currentSelection);
+    Map<String, Asset> apply(Map<String, Asset> input);
 }
