@@ -57,15 +57,17 @@ public class AssetAllocationRenderer {
     }
 
     private static String formatCurrencyValue(BigDecimal input) {
-        return input.setScale(BIG_DECIMAL_DISPLAY_SCALE, ROUNDING_MODE)
+        var decimalAsStr = input.setScale(BIG_DECIMAL_DISPLAY_SCALE, ROUNDING_MODE)
                 .toString();
+        return "$" + decimalAsStr;
     }
 
     private static String formatFractionAsPercent(BigDecimal input) {
         var scaledUp = input.multiply(BigDecimal.valueOf(100));
-        return scaledUp
+        var decimalAsStr = scaledUp
                 .setScale(BIG_DECIMAL_DISPLAY_SCALE, ROUNDING_MODE)
                 .toString();
+        return decimalAsStr + "%";
     }
 }
 
