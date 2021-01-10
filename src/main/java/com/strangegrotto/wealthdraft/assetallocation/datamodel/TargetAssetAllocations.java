@@ -35,7 +35,7 @@ public interface TargetAssetAllocations {
             var numeratorFilterName = target.getNumeratorFilter();
             Preconditions.checkState(
                     filters.containsKey(numeratorFilterName),
-                    "Numerator filter '%s' in allocation target #%i is not defined",
+                    "Numerator filter '%s' in allocation target #%s is not defined",
                     numeratorFilterName,
                     i
             );
@@ -45,7 +45,7 @@ public interface TargetAssetAllocations {
                 var denominatorFilterName = denominatorFilterNameOpt.get();
                 Preconditions.checkState(
                         filters.containsKey(denominatorFilterName),
-                        "Denominator filter '%s' in allocation target #%i is not defined",
+                        "Denominator filter '%s' in allocation target #%s is not defined",
                         denominatorFilterName,
                         i
                 );
@@ -54,11 +54,11 @@ public interface TargetAssetAllocations {
             var targetFraction = target.getFraction();
             Preconditions.checkState(
                     targetFraction.compareTo(BigDecimal.ZERO) >= 0,
-                    "Fraction for allocation target #%i is less than zero",
+                    "Fraction for allocation target #%s is less than zero",
                     i);
             Preconditions.checkState(
                     targetFraction.compareTo(BigDecimal.ONE) <= 0,
-                    "Fraction for allocation target #%i is greater than 1.0",
+                    "Fraction for allocation target #%s is greater than 1.0",
                     i);
         }
     }
