@@ -1,4 +1,4 @@
-## TBD
+## 0.14.0
 * Split asset filters into their own file
 
 ## 0.13.0
