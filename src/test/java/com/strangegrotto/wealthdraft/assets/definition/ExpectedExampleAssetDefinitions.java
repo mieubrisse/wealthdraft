@@ -15,6 +15,7 @@ public class ExpectedExampleAssetDefinitions {
     public static final Map<String, CustomTagDefinition> EXPECTED_CUSTOM_TAGS = Map.of(
             DOM_OR_INTL_TAG, ImmCustomTagDefinition.builder()
                     .addAllowedValues(DOMESTIC_ASSET_TAG_VALUE, INTERNATIONAL_ASSET_TAG_VALUE)
+                    .defaultValue(DOMESTIC_ASSET_TAG_VALUE)
                     .required(true)
                     .build(),
             BROKER_TAG, ImmCustomTagDefinition.builder().build()
