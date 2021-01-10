@@ -244,7 +244,6 @@ public class Main {
             if (cycleOpt.isPresent()) {
                 throw new IllegalStateException(Strings.lenientFormat(
                         "Found an asset filter cycle: %s",
-                        filterName,
                         String.join(" -> ", cycleOpt.get())
                 ));
             }
