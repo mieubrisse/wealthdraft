@@ -7,7 +7,7 @@ import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAlloca
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.filters.AssetFilter;
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.filters.ImmConjunctionAssetFilter;
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.filters.ImmTagAssetFilter;
-import com.strangegrotto.wealthdraft.assetimpls.AssetTypeTagValue;
+import com.strangegrotto.wealthdraft.assetimpls.AssetType;
 import com.strangegrotto.wealthdraft.assets.definition.ExpectedExampleAssetDefinitions;
 import com.strangegrotto.wealthdraft.assets.definition.IntrinsicAssetTag;
 
@@ -39,7 +39,7 @@ public class ExpectedExampleTargetAssetAllocations {
             ImmTagAssetFilter.of(
                     ExpectedExampleAssetDefinitions.EXPECTED_CUSTOM_TAGS,
                     IntrinsicAssetTag.ASSET_TYPE.getTagName(),
-                    AssetTypeTagValue.BANK_ACCOUNT.name()
+                    AssetType.BANK_ACCOUNT.name()
             )
     ));
 

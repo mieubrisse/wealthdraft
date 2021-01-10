@@ -1,13 +1,8 @@
 package com.strangegrotto.wealthdraft.assets.definition;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.ImmutableMap;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
 import com.strangegrotto.wealthdraft.assetimpls.AssetType;
-import com.strangegrotto.wealthdraft.assetimpls.AssetTypeTagValue;
-import com.strangegrotto.wealthdraft.assets.temporal.AssetChange;
-import com.strangegrotto.wealthdraft.assets.temporal.AssetSnapshot;
 import org.immutables.value.Value;
 
 import java.util.Map;

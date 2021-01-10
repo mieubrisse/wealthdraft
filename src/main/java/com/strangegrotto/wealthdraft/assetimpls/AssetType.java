@@ -11,8 +11,8 @@ public enum AssetType {
     BANK_ACCOUNT(BankAccountAssetSnapshot.class, BankAccountAssetChange.class),
     STOCK(StockAssetSnapshot.class, StockAssetChange.class);
 
-    private final Class<?> snapshotClass;
-    private final Class<?> changeClass;
+    private final Class<? extends AssetSnapshot<?>> snapshotClass;
+    private final Class<? extends AssetChange> changeClass;
 
     <SNAPSHOT extends AssetSnapshot<CHANGE>, CHANGE extends AssetChange> AssetType(
             Class<SNAPSHOT> snapshotClass,
@@ -21,11 +21,11 @@ public enum AssetType {
         this.changeClass = changeClass;
     }
 
-    public Class<?> getSnapshotClass() {
+    public Class<? extends AssetSnapshot<?>> getSnapshotClass() {
         return snapshotClass;
     }
 
-    public Class<?> getChangeClass() {
+    public Class<? extends AssetChange> getChangeClass() {
         return changeClass;
     }
 }

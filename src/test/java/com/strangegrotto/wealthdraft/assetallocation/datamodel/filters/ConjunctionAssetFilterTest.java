@@ -30,7 +30,7 @@ public class ConjunctionAssetFilterTest {
                 unrelatedTagName, ImmCustomTagDefinition.builder().build()
         );
 
-        var haystack = Map.<String, Asset<?, ?>>of(
+        var haystack = Map.<String, Asset>of(
                 "needle1-but-not-2", ImmBankAccountAsset.of("Needle 1 but not 2").withCustomTags(Map.of(
                         needle1Name, needle1Value
                 )),

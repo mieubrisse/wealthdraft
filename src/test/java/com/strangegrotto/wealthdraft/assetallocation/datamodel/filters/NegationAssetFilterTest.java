@@ -23,7 +23,7 @@ public class NegationAssetFilterTest {
                 tagName, ImmCustomTagDefinition.builder().build()
         );
 
-        var assets = Map.<String, Asset<?, ?>>of(
+        var assets = Map.<String, Asset>of(
                 assetId1, ImmBankAccountAsset.of("Asset 1").withCustomTags(Map.of(
                         tagName, tagValue
                 )),

@@ -2,7 +2,7 @@ package com.strangegrotto.wealthdraft.assets.definition;
 
 import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import com.strangegrotto.wealthdraft.Main;
-import com.strangegrotto.wealthdraft.assetimpls.AssetTypeTagValue;
+import com.strangegrotto.wealthdraft.assetimpls.AssetType;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -22,14 +22,13 @@ public class AssetDefinitionsTest {
         );
     }
 
-
     @Test
     public void testDeserializingEveryAsset() throws IOException {
         var definitions = parseAssetsFile(AssetDefinitionsTestFiles.EVERY_ASSET_TYPE);
         var assetsMap = definitions.getAssets();
         var assets = assetsMap.values();
 
-        var expectedDistinctAssets = AssetTypeTagValue.values().length;
+        var expectedDistinctAssets = AssetType.values().length;
 
         // Verify that we do indeed have one of every class
         var distinctAssetClasses = assets.stream()
@@ -37,27 +36,6 @@ public class AssetDefinitionsTest {
                 .distinct()
                 .count();
         Assert.assertEquals(expectedDistinctAssets, distinctAssetClasses);
-
-        // Verify no assets are reusing snapshot classes
-        var distinctSnapshotClasses = assets.stream()
-                .map(Asset::getSnapshotType)
-                .distinct()
-                .count();
-        Assert.assertEquals(expectedDistinctAssets, distinctSnapshotClasses);
-
-        // Verify no assets are reusing change classes
-        var distinctChangeClasses = assets.stream()
-                .map(Asset::getChangeType)
-                .distinct()
-                .count();
-        Assert.assertEquals(expectedDistinctAssets, distinctChangeClasses);
-
-        // Verify each asset has a unique asset type tag value
-        var distinctAssetTypeTags = assets.stream()
-                .map(Asset::getAssetTypeTagValue)
-                .distinct()
-                .count();
-        Assert.assertEquals(expectedDistinctAssets, distinctAssetTypeTags);
     }
 
     @Test

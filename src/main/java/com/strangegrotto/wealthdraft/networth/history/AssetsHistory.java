@@ -16,7 +16,7 @@ import java.util.SortedMap;
 public interface AssetsHistory {
 
     @Value.Parameter
-    Map<String, Asset<?, ?>> getAssets();
+    Map<String, Asset> getAssets();
 
     @JsonProperty("history")
     @Value.Parameter

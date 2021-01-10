@@ -33,7 +33,7 @@ public class DisjunctionAssetFilterTest {
                 unrelatedTagName, ImmCustomTagDefinition.builder().build()
         );
 
-        var haystack = Map.<String, Asset<?, ?>>of(
+        var haystack = Map.<String, Asset>of(
                 matchingAssetId1, ImmBankAccountAsset.of("Match 1").withCustomTags(Map.of(
                         needle1Name, needle1Value
                 )),

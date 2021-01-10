@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public class AssetDefinitionsDeserializer extends JsonDeserializer<AssetDefinitions> {
     private static class RawAssetDefinitions {
         @JsonProperty("assets")
-        private Map<String, Asset<?, ?>> assets;
+        private Map<String, Asset> assets;
 
         @JsonProperty("customTags")
         private Map<String, CustomTagDefinition> customTags;
@@ -23,6 +23,8 @@ public class AssetDefinitionsDeserializer extends JsonDeserializer<AssetDefiniti
 
     @Override
     public AssetDefinitions deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+        return null;
+        /*
         var rawAssetDefs = p.readValueAs(RawAssetDefinitions.class);
 
         var customTagDefaultValues = rawAssetDefs.customTags.entrySet().stream()
@@ -44,5 +46,7 @@ public class AssetDefinitionsDeserializer extends JsonDeserializer<AssetDefiniti
 
             }
         }
+
+         */
     }
 }

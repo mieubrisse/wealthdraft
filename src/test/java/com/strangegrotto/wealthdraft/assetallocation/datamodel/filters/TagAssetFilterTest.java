@@ -1,6 +1,6 @@
 package com.strangegrotto.wealthdraft.assetallocation.datamodel.filters;
 
-import com.strangegrotto.wealthdraft.assetimpls.AssetTypeTagValue;
+import com.strangegrotto.wealthdraft.assetimpls.AssetType;
 import com.strangegrotto.wealthdraft.assetimpls.bankaccount.ImmBankAccountAsset;
 import com.strangegrotto.wealthdraft.assets.definition.Asset;
 import com.strangegrotto.wealthdraft.assets.definition.CustomTagDefinition;
@@ -22,7 +22,7 @@ public class TagAssetFilterTest {
         var matchingAssetId1 = "matches1";
         var matchingAssetId2 = "matches2";
 
-        var assets = Map.<String, Asset<?, ?>>of(
+        var assets = Map.<String, Asset>of(
                 matchingAssetId1, ImmBankAccountAsset.of("Matches 1").withCustomTags(Map.of(
                         selectedTagName, selectedTagValue
                 )),
@@ -57,7 +57,7 @@ public class TagAssetFilterTest {
         ImmTagAssetFilter.of(
                 Map.of(),
                 tagName,
-                AssetTypeTagValue.BANK_ACCOUNT.name()
+                AssetType.BANK_ACCOUNT.name()
         );
     }
 

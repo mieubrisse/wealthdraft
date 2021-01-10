@@ -18,7 +18,7 @@ public abstract class NegationAssetFilter implements AssetFilter {
     public abstract AssetFilter getNegated();
 
     @Override
-    public Set<String> apply(Map<String, Asset<?, ?>> allAssets, Set<String> currentSelection) {
+    public Set<String> apply(Map<String, Asset> allAssets, Set<String> currentSelection) {
         var filtered = this.getNegated().apply(allAssets, currentSelection);
         return allAssets.keySet().stream()
                 .filter(assetId -> !filtered.contains(assetId))
