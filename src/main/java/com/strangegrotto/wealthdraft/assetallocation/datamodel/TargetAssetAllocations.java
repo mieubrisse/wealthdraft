@@ -15,14 +15,14 @@ import java.util.Map;
 
 @WealthdraftImmutableStyle
 @Value.Immutable
-@JsonDeserialize(as = ImmTargetAssetAllocations.class)
+// Deserialized using custom deserializer
 public interface TargetAssetAllocations {
+    // TODO add configurable WARN/ERROR thresholds
+
     @Value.Parameter
-    @JsonProperty("filters")
     Map<String, AssetFilter> getFilters();
 
     @Value.Parameter
-    @JsonProperty("targets")
     List<TargetAssetAllocation> getTargets();
 
     @Value.Check
