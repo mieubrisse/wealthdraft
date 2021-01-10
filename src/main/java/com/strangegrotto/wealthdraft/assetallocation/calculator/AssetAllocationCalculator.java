@@ -39,7 +39,7 @@ public class AssetAllocationCalculator {
         for (var target : targets) {
             var numeratorFilterName = target.getNumeratorFilter();
             var numeratorFilter = filters.get(numeratorFilterName);
-            var numeratorValue = getValueOfAssetsMatchingFilter(assets, latestAssetSnapshots, numeratorFilter);
+            var numeratorValue = getValueOfAssetsMatchingFilter(assets, latestAssetSnapshots, filters, numeratorFilter);
 
             var denominatorFilterNameOpt = target.getDenominatorFilterOpt();
             BigDecimal denominatorValue;
@@ -47,7 +47,7 @@ public class AssetAllocationCalculator {
             if (denominatorFilterNameOpt.isPresent()) {
                 var denominatorFilterName = denominatorFilterNameOpt.get();
                 var denominatorFilter = filters.get(denominatorFilterName);
-                denominatorValue = getValueOfAssetsMatchingFilter(assets, latestAssetSnapshots, denominatorFilter);
+                denominatorValue = getValueOfAssetsMatchingFilter(assets, latestAssetSnapshots, filters, denominatorFilter);
                 denominatorStrRepr = denominatorFilterName;
             } else {
                 denominatorValue = totalPortfolioValue;
@@ -110,8 +110,9 @@ public class AssetAllocationCalculator {
     private static BigDecimal getValueOfAssetsMatchingFilter(
             Map<String, Asset> assets,
             Map<String, AssetSnapshot<?>> latestAssetSnapshots,
+            Map<String, AssetFilter> filters,
             AssetFilter filter) {
-        var matchingAssetIds = filter.apply(assets);
+        var matchingAssetIds = filter.apply(filters, assets);
         return latestAssetSnapshots.entrySet().stream()
                 .filter(entry -> matchingAssetIds.containsKey(entry.getKey()))
                 .map(Map.Entry::getValue)

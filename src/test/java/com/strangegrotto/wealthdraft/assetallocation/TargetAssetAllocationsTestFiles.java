@@ -9,6 +9,7 @@ public enum TargetAssetAllocationsTestFiles implements TestFileProvider {
     NONEXISTENT_DENOMINATOR_FILTER("nonexistent-denominator-filter.yml"),
     FRACTION_GREATER_THAN_1("fraction-greater-than-1.yml"),
     FRACTION_LESS_THAN_0("fraction-less-than-0.yml"),
+    FILTER_CYCLE("filter-cycle.yml"),
     EXAMPLE(TestResourceDirnames.EXAMPLES.getDirname(), "asset-allocations.yml");
 
     private final String containingDirname;

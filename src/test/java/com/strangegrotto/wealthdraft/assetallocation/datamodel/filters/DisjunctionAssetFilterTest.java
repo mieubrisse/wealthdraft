@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class DisjunctionAssetFilterTest {
     @Test
@@ -57,7 +56,7 @@ public class DisjunctionAssetFilterTest {
                 needle2Filter
         ));
 
-        var result = disjunctionFilter.apply(haystack);
+        var result = disjunctionFilter.apply(Map.of(), haystack);
 
         var expected = Map.of(
                 matchingAssetId1, haystack.get(matchingAssetId1),
