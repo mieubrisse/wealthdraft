@@ -6,6 +6,7 @@ filters:
     tag: domOrIntl
     value: international
   domesticBankAssets:
+    # Some filters can be composed of other filters
     all:
       - tag: domOrIntl
         value: domestic
