@@ -189,6 +189,9 @@ public class Main {
             return;
         }
 
+
+        addDeserializersNeedingAssetDefs(mapper, assetDefinitions);
+
         String assetAllocationsFilepath = parsedArgs.getString(ASSET_ALLOCATIONS_FILEPATH_ARG);
         log.debug("Asset allocations filepath: {}", assetAllocationsFilepath);
         TargetAssetAllocations targetAssetAllocations;
@@ -199,8 +202,6 @@ public class Main {
             System.exit(FAILURE_EXIT_CODE);
             return;
         }
-
-        addDeserializersNeedingAssetDefs(mapper, assetDefinitions);
 
         String assetsHistoryFilepath = parsedArgs.getString(ASSETS_HISTORY_FILEPATH_ARG);
         log.debug("Assets history filepath: {}", assetsHistoryFilepath);
