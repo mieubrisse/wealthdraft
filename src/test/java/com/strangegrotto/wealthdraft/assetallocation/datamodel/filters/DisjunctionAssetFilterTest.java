@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class DisjunctionAssetFilterTest {
     @Test
@@ -57,9 +56,13 @@ public class DisjunctionAssetFilterTest {
                 needle2Filter
         ));
 
-        var result = disjunctionFilter.apply(haystack, haystack.keySet());
+        var result = disjunctionFilter.apply(Map.of(), haystack);
 
-        var expected = Set.of(matchingAssetId1, matchingAssetId2, matchingAssetId3);
+        var expected = Map.of(
+                matchingAssetId1, haystack.get(matchingAssetId1),
+                matchingAssetId2, haystack.get(matchingAssetId2),
+                matchingAssetId3, haystack.get(matchingAssetId3)
+        );
         Assert.assertEquals(expected, result);
     }
 }

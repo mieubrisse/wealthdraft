@@ -7,7 +7,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Map;
-import java.util.Set;
 
 public class TagAssetFilterTest {
     @Test
@@ -37,8 +36,11 @@ public class TagAssetFilterTest {
         );
 
         var filter = ImmTagAssetFilter.of(customTags, selectedTagName, selectedTagValue);
-        var result = filter.apply(assets, assets.keySet());
-        var expected = Set.of(matchingAssetId1, matchingAssetId2);
+        var result = filter.apply(Map.of(), assets);
+        var expected = Map.of(
+                matchingAssetId1, assets.get(matchingAssetId1),
+                matchingAssetId2, assets.get(matchingAssetId2)
+        );
         Assert.assertEquals(expected, result);
     }
 

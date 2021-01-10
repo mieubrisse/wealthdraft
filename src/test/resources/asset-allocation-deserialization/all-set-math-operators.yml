@@ -1,13 +1,11 @@
 filters:
   megaFilter:
     all:
-      - not:
-          tag: broker
-          value: Fidelity
+      - tag: domOrIntl
+        value: domestic
       - any:
-          - tag: assetType
-            value: STOCK
-          - tag: domOrIntl
-            value: international
-
+          - tag: broker
+            value: Chase
+          - tag: broker
+            value: Vanguard
 targets: []

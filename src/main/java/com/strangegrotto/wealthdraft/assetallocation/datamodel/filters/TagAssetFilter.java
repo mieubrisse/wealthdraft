@@ -9,9 +9,7 @@ import com.strangegrotto.wealthdraft.assets.definition.CustomTagDefinition;
 import com.strangegrotto.wealthdraft.assets.definition.IntrinsicAssetTag;
 import org.immutables.value.Value;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @WealthdraftImmutableStyle
@@ -27,17 +25,21 @@ public abstract class TagAssetFilter implements AssetFilter {
     public abstract String getValue();
 
     @Override
-    public final Set<String> apply(Map<String, Asset> allAssets, Set<String> currentSelection) {
+    public Map<String, Asset> apply(Map<String, AssetFilter> allFilters, Map<String, Asset> input) {
         var tagName = getTag();
         var tagValue = getValue();
-        return allAssets.entrySet().stream()
+        return input.entrySet().stream()
                 .filter(entry -> {
                     var asset = entry.getValue();
                     var assetTags = asset.getTags();
                     return assetTags.containsKey(tagName) && tagValue.equals(assetTags.get(tagName));
                 })
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    @Override
+    public Optional<List<String>> checkForCycles(Map<String, AssetFilter> allFilters, LinkedHashSet<String> parentFilters) {
+        return Optional.empty();
     }
 
     @Value.Check

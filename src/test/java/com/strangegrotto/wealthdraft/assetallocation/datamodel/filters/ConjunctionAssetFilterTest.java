@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class ConjunctionAssetFilterTest {
     @Test
@@ -55,9 +54,11 @@ public class ConjunctionAssetFilterTest {
                 needle2Filter
         ));
 
-        var result = conjunctiveFilter.apply(haystack, haystack.keySet());
+        var result = conjunctiveFilter.apply(Map.of(), haystack);
 
-        var expected = Set.of(matchingAssetId);
+        var expected = Map.of(
+                matchingAssetId, haystack.get(matchingAssetId)
+        );
         Assert.assertEquals(expected, result);
     }
 }
