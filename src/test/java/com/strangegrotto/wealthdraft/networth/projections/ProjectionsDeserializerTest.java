@@ -4,6 +4,9 @@ import com.strangegrotto.wealthdraft.Main;
 import com.strangegrotto.wealthdraft.assets.impl.AssetDefinitions;
 import com.strangegrotto.wealthdraft.assets.impl.AssetDefinitionsTestFiles;
 import com.strangegrotto.wealthdraft.assets.impl.ImmAssetDefinitions;
+import com.strangegrotto.wealthdraft.projections.impl.SerProjectionsDeserializer;
+import com.strangegrotto.wealthdraft.projections.impl.SerProjectionScenario;
+import com.strangegrotto.wealthdraft.projections.impl.SerProjections;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,7 +18,7 @@ import java.util.Optional;
 public class ProjectionsDeserializerTest {
     @Test
     public void testPinnedDate() {
-        var parsedDateOrErr = ProjectionsDeserializer.parseRelativeDateStr("2020-10-31");
+        var parsedDateOrErr = SerProjectionsDeserializer.parseRelativeDateStr("2020-10-31");
         Assert.assertFalse("Relative date parsing should not have thrown an error", parsedDateOrErr.hasGerr());
         Assert.assertEquals(LocalDate.of(2020, 10, 31), parsedDateOrErr.getVal());
     }
@@ -23,7 +26,7 @@ public class ProjectionsDeserializerTest {
     @Test
     public void testRelativeMonths() {
         var today = LocalDate.now();
-        var parsedDateOrErr = ProjectionsDeserializer.parseRelativeDateStr("+3m");
+        var parsedDateOrErr = SerProjectionsDeserializer.parseRelativeDateStr("+3m");
         Assert.assertFalse("Relative date parsing should not have thrown an error", parsedDateOrErr.hasGerr());
         Assert.assertEquals(today.plusMonths(3), parsedDateOrErr.getVal());
     }
@@ -31,14 +34,14 @@ public class ProjectionsDeserializerTest {
     @Test
     public void testRelativeYears() {
         var today = LocalDate.now();
-        var parsedDateOrErr = ProjectionsDeserializer.parseRelativeDateStr("+3y");
+        var parsedDateOrErr = SerProjectionsDeserializer.parseRelativeDateStr("+3y");
         Assert.assertFalse("Relative date parsing should not have thrown an error", parsedDateOrErr.hasGerr());
         Assert.assertEquals(today.plusYears(3), parsedDateOrErr.getVal());
     }
 
     @Test
     public void testInvalidStr() {
-        var parsedDateOrErr = ProjectionsDeserializer.parseRelativeDateStr("3y");
+        var parsedDateOrErr = SerProjectionsDeserializer.parseRelativeDateStr("3y");
         Assert.assertTrue("Parsing of invalid string should have failed", parsedDateOrErr.hasGerr());
     }
 
@@ -46,7 +49,7 @@ public class ProjectionsDeserializerTest {
     public void testValidDeserialization() throws IOException {
         var projections = parseProjectionsFile(ProjectionsTestFiles.EXAMPLE);
         var projectionScenariosOrErr = projections.getScenarios();
-        var projectionScenarios = new HashMap<String, ProjectionScenario>();
+        var projectionScenarios = new HashMap<String, SerProjectionScenario>();
         for (var entry : projectionScenariosOrErr.entrySet()) {
             var scenarioId = entry.getKey();
             var scenarioOrErr = entry.getValue();
@@ -72,7 +75,7 @@ public class ProjectionsDeserializerTest {
 
         Optional<IOException> invalidYmlExceptionOpt = Optional.empty();
         try {
-            mapper.readValue(projectionsUrl, Projections.class);
+            mapper.readValue(projectionsUrl, SerProjections.class);
         } catch (IOException e) {
             invalidYmlExceptionOpt = Optional.of(e);
         }
@@ -89,7 +92,7 @@ public class ProjectionsDeserializerTest {
         var projectionsUrl = ProjectionsTestFiles.EXAMPLE.getResource();
 
         Main.addDeserializersNeedingAssetDefs(mapper, assetDefinitions);
-        var projections = mapper.readValue(projectionsUrl, Projections.class);
+        var projections = mapper.readValue(projectionsUrl, SerProjections.class);
 
         var projectionScenariosOrErr = projections.getScenarios();
         for (var entry : projectionScenariosOrErr.entrySet()) {
@@ -198,13 +201,13 @@ public class ProjectionsDeserializerTest {
         );
     }
 
-    private static Projections parseProjectionsFile(ProjectionsTestFiles testFile) throws IOException {
+    private static SerProjections parseProjectionsFile(ProjectionsTestFiles testFile) throws IOException {
         var mapper = Main.getObjectMapper();
         var assetsUrl = AssetDefinitionsTestFiles.EXAMPLE.getResource();
         var assetDefinitions = mapper.readValue(assetsUrl, AssetDefinitions.class);
         Main.addDeserializersNeedingAssetDefs(mapper, assetDefinitions);
 
         var projectionsUrl = testFile.getResource();
-        return mapper.readValue(projectionsUrl, Projections.class);
+        return mapper.readValue(projectionsUrl, SerProjections.class);
     }
 }

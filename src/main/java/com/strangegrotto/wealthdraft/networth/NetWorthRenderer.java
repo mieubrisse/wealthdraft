@@ -4,9 +4,9 @@ import com.strangegrotto.wealthdraft.Display;
 import com.strangegrotto.wealthdraft.assethistory.impl.SerAssetsHistory;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.assethistory.api.types.AssetSnapshot;
+import com.strangegrotto.wealthdraft.projections.impl.SerProjections;
+import com.strangegrotto.wealthdraft.projections.impl.SerProjectionScenario;
 import com.strangegrotto.wealthdraft.projections.impl.temporal.AssetChange;
-import com.strangegrotto.wealthdraft.networth.projections.ProjectionScenario;
-import com.strangegrotto.wealthdraft.networth.projections.Projections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +29,7 @@ public class NetWorthRenderer {
         this.maxYearsToProject = maxYearsToProject;
     }
 
-    public ValOrGerr<Void> renderNetWorthCalculations(SerAssetsHistory assetsHistory, Projections projections) {
+    public ValOrGerr<Void> renderNetWorthCalculations(SerAssetsHistory assetsHistory, SerProjections projections) {
         SortedMap<LocalDate, Map<String, AssetSnapshot<?>>> histAssetSnapshotsByDate = assetsHistory.getHistory();
         display.printEmptyLine();
         display.printBannerHeader("Historical Net Worth");
@@ -60,7 +60,7 @@ public class NetWorthRenderer {
     private static ValOrGerr<Void> renderProjectionNetWorths(
             Display display,
             Map<String, AssetSnapshot<?>> latestHistAssetSnapshots,
-            Projections projections,
+            SerProjections projections,
             int maxYearsToProject,
             int projectionDisplayIncrementYears) {
         var projectionsParseResults = projections.getScenarios();
@@ -102,7 +102,7 @@ public class NetWorthRenderer {
 
     private static ValOrGerr<SortedMap<LocalDate, Map<String, AssetSnapshot<?>>>> calculateSingleScenarioAssetSnapshots(
             Map<String, AssetSnapshot<?>> latestHistAssetSnapshots,
-            ProjectionScenario scenario,
+            SerProjectionScenario scenario,
             int maxYearsToProject,
             int projectionDisplayIncrementYears) {
         var assetChanges = scenario.getAssetChanges();

@@ -1,6 +1,7 @@
 package com.strangegrotto.wealthdraft.networth.projections;
 
 import com.strangegrotto.wealthdraft.assets.impl.ExpectedExampleAssetDefinitions;
+import com.strangegrotto.wealthdraft.projections.impl.SerProjectionScenario;
 import com.strangegrotto.wealthdraft.projections.impl.temporal.AssetChange;
 import com.strangegrotto.wealthdraft.projections.impl.temporal.AssetParameterChangeValueOperation;
 import com.strangegrotto.wealthdraft.assetimpls.bankaccount.ImmBankAccountAssetChange;
@@ -19,11 +20,11 @@ public class ExpectedExampleProjections {
     public static final String SELL_HALF_BTC_1Y_ID = "half-btc-1y";
     public static final String SELL_OTHER_HALF_BTC_2Y_ID = "half-btc-2y";
 
-    public static final ProjectionScenario SELL_ALL_BTC_3Y_SCENARIO;
-    public static final ProjectionScenario SELL_HALF_BTC_1Y_SCENARIO;
-    public static final ProjectionScenario SELL_OTHER_HALF_BTC_2Y_SCENARIO;
+    public static final SerProjectionScenario SELL_ALL_BTC_3Y_SCENARIO;
+    public static final SerProjectionScenario SELL_HALF_BTC_1Y_SCENARIO;
+    public static final SerProjectionScenario SELL_OTHER_HALF_BTC_2Y_SCENARIO;
 
-    public static final Map<String, ProjectionScenario> EXPECTED_SCENARIOS;
+    public static final Map<String, SerProjectionScenario> EXPECTED_SCENARIOS;
 
     static {
         var today = LocalDate.now();

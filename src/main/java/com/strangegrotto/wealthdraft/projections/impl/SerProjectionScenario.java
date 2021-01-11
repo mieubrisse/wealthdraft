@@ -1,6 +1,7 @@
-package com.strangegrotto.wealthdraft.networth.projections;
+package com.strangegrotto.wealthdraft.projections.impl;
 
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
+import com.strangegrotto.wealthdraft.projections.api.types.ProjectionScenario;
 import com.strangegrotto.wealthdraft.projections.impl.temporal.AssetChange;
 import org.immutables.value.Value;
 
@@ -11,10 +12,4 @@ import java.util.SortedMap;
 
 @WealthdraftImmutableStyle
 @Value.Immutable
-public interface ProjectionScenario {
-    String getName();
-
-    Optional<String> getBase();
-
-    SortedMap<LocalDate, Map<String, AssetChange>> getAssetChanges();
-}
+public interface SerProjectionScenario extends ProjectionScenario  { }

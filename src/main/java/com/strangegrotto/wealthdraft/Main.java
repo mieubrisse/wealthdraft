@@ -16,7 +16,6 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Strings;
 import com.google.common.collect.Ordering;
 import com.strangegrotto.wealthdraft.assetallocation.calculator.AssetAllocationCalculator;
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocationsDeserializer;
@@ -31,11 +30,11 @@ import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.govconstants.RetirementConstants;
 import com.strangegrotto.wealthdraft.networth.NetWorthRenderer;
 import com.strangegrotto.wealthdraft.assethistory.impl.SerAssetsHistory;
+import com.strangegrotto.wealthdraft.projections.impl.SerProjections;
 import com.strangegrotto.wealthdraft.projections.impl.temporal.AssetParameterChange;
 import com.strangegrotto.wealthdraft.projections.impl.temporal.AssetParameterChangeDeserializer;
 import com.strangegrotto.wealthdraft.assethistory.impl.SerAssetsHistoryDeserializer;
-import com.strangegrotto.wealthdraft.networth.projections.Projections;
-import com.strangegrotto.wealthdraft.networth.projections.ProjectionsDeserializer;
+import com.strangegrotto.wealthdraft.projections.impl.SerProjectionsDeserializer;
 import com.strangegrotto.wealthdraft.scenarios.IncomeStreams;
 import com.strangegrotto.wealthdraft.scenarios.TaxScenario;
 import com.strangegrotto.wealthdraft.tax.ScenarioTaxCalculator;
@@ -214,9 +213,9 @@ public class Main {
 
         String projectionsFilepath = parsedArgs.getString(PROJECTIONS_FILEPATH_ARG);
         log.debug("Projections filepath: {}", projectionsFilepath);
-        Projections projections;
+        SerProjections projections;
         try {
-            projections = mapper.readValue(new File(projectionsFilepath), Projections.class);
+            projections = mapper.readValue(new File(projectionsFilepath), SerProjections.class);
         } catch (IOException e) {
             log.error("An error occurred parsing the projections file '{}'", projectionsFilepath, e);
             System.exit(FAILURE_EXIT_CODE);
@@ -308,7 +307,7 @@ public class Main {
         var assets = assetDefs.getAssets();
 
         var deserializerModule = new SimpleModule();
-        deserializerModule.addDeserializer(Projections.class, new ProjectionsDeserializer(assets));
+        deserializerModule.addDeserializer(SerProjections.class, new SerProjectionsDeserializer(assets));
         deserializerModule.addDeserializer(SerAssetsHistory.class, new SerAssetsHistoryDeserializer(assets));
         deserializerModule.addDeserializer(TagAssetFilter.class, new TagAssetFilterDeserializer(customTags));
         mapper.registerModule(deserializerModule);

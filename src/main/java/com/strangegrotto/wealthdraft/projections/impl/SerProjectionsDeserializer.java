@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.networth.projections;
+package com.strangegrotto.wealthdraft.projections.impl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
@@ -10,6 +10,10 @@ import com.google.common.base.Preconditions;
 import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
 import com.strangegrotto.wealthdraft.errors.Gerr;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
+import com.strangegrotto.wealthdraft.networth.projections.ImmProjectionScenario;
+import com.strangegrotto.wealthdraft.networth.projections.ImmProjections;
+import com.strangegrotto.wealthdraft.projections.impl.SerProjectionScenario;
+import com.strangegrotto.wealthdraft.projections.impl.SerProjections;
 import com.strangegrotto.wealthdraft.projections.impl.temporal.AssetChange;
 
 import javax.annotation.Nullable;
@@ -21,7 +25,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
+public class SerProjectionsDeserializer extends JsonDeserializer<SerProjections> {
     // TODO Add support for "w" and "d"????
     private static final Pattern RELATIVE_DATE_PATTERN = Pattern.compile("^\\+([0-9]+)([ym])$");
 
@@ -67,12 +71,12 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
 
     private final Map<String, SerAsset> assets;
 
-    public ProjectionsDeserializer(Map<String, SerAsset> assets) {
+    public SerProjectionsDeserializer(Map<String, SerAsset> assets) {
         this.assets = assets;
     }
 
     @Override
-    public Projections deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+    public SerProjections deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         RawjProjections rawjProjections = p.readValueAs(RawjProjections.class);
 
         // It's VERY unclear to me how to call the needed convertValue function without doing
@@ -86,7 +90,7 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
             notUnrolledParsedScenarios.put(scenarioId, parsedScenarioOrErr);
         });
 
-        Map<String, ValOrGerr<ProjectionScenario>> unrolledParsedScenarios = new HashMap<>();
+        Map<String, ValOrGerr<SerProjectionScenario>> unrolledParsedScenarios = new HashMap<>();
         for (String scenarioId : notUnrolledParsedScenarios.keySet()) {
             var unrolledScenarioOrErr = unrollScenarioAssetChanges(scenarioId, notUnrolledParsedScenarios);
             unrolledParsedScenarios.put(scenarioId, unrolledScenarioOrErr);
@@ -179,7 +183,7 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
      * For scenarios that are based on other scenarios, recursively unrolls the asset changes all the way
      *  through the dependency tree.
      */
-    private static ValOrGerr<ProjectionScenario> unrollScenarioAssetChanges(
+    private static ValOrGerr<SerProjectionScenario> unrollScenarioAssetChanges(
             String scenarioId,
             Map<String, ValOrGerr<NotUnrolledParsedScenario>> notUnrolledScenarios) {
         // We can't unroll a scenario if an error occurred trying to parse it
@@ -243,7 +247,7 @@ public class ProjectionsDeserializer extends JsonDeserializer<Projections> {
         }
 
         NotUnrolledParsedScenario notUnrolledScenario = notUnrolledScenarioOrErr.getVal();
-        ProjectionScenario result = ImmProjectionScenario.of(
+        SerProjectionScenario result = ImmProjectionScenario.of(
                 notUnrolledScenario.name,
                 unrolledAssetChanges
         ).withBase(notUnrolledScenario.base);
