@@ -15,5 +15,5 @@ public interface SerProjections {
     BigDecimal getDefaultAnnualGrowth();
 
     @Value.Parameter
-    Map<String, ValOrGerr<SerProjectionScenario>> getScenarios();
+    Map<String, SerProjectionScenario> getScenarios();
 }

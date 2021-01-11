@@ -1,5 +1,6 @@
 package com.strangegrotto.wealthdraft.projections.impl;
 
+import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.projections.api.ProjectionsStore;
 import com.strangegrotto.wealthdraft.projections.api.types.ProjectionScenario;
 
@@ -13,7 +14,7 @@ public class SimpleProjectionsStore implements ProjectionsStore {
     }
 
     @Override
-    public Map<String, SerProjectionScenario> getScenarios() {
+    public Map<String, ProjectionScenario> getScenarios() {
         return this.scenarios;
     }
 }

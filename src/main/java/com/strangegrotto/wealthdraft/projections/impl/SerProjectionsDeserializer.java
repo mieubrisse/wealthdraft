@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.strangegrotto.wealthdraft.assets.api.AssetsStore;
+import com.strangegrotto.wealthdraft.assets.api.types.Asset;
 import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
 import com.strangegrotto.wealthdraft.errors.Gerr;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
@@ -29,6 +31,7 @@ public class SerProjectionsDeserializer extends JsonDeserializer<SerProjections>
     // TODO Add support for "w" and "d"????
     private static final Pattern RELATIVE_DATE_PATTERN = Pattern.compile("^\\+([0-9]+)([ym])$");
 
+    // TODO swap this to immutables-generated interface
     private static class RawProjectionScenario {
         @JsonProperty
         public String name;
@@ -42,6 +45,7 @@ public class SerProjectionsDeserializer extends JsonDeserializer<SerProjections>
         public Map<String, Map<String, Map<String, String>>> changes;
     }
 
+    // TODO swap this to immutables-generated interface
     private static class RawjProjections {
         @JsonProperty
         public BigDecimal defaultAnnualGrowth;
@@ -50,29 +54,10 @@ public class SerProjectionsDeserializer extends JsonDeserializer<SerProjections>
         public Map<String, RawProjectionScenario> scenarios;
     }
 
-    private static class NotUnrolledParsedScenario {
-        public final String name;
-        @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-        public final Optional<String> base;
-        public final Map<String, SerAsset> assets;
-        public final Map<LocalDate, Map<String, AssetChange>> assetChanges;
+    private final AssetsStore assetsStore;
 
-        private NotUnrolledParsedScenario(
-                String name,
-                @SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<String> base,
-                Map<String, SerAsset> assets,
-                Map<LocalDate, Map<String, AssetChange>> assetChanges) {
-            this.name = name;
-            this.base = base;
-            this.assets = assets;
-            this.assetChanges = assetChanges;
-        }
-    }
-
-    private final Map<String, SerAsset> assets;
-
-    public SerProjectionsDeserializer(Map<String, SerAsset> assets) {
-        this.assets = assets;
+    public SerProjectionsDeserializer(AssetsStore assetsStore) {
+        this.assetsStore = assetsStore;
     }
 
     @Override
@@ -83,29 +68,32 @@ public class SerProjectionsDeserializer extends JsonDeserializer<SerProjections>
         //  this hacky cast
         ObjectMapper mapper = (ObjectMapper) p.getCodec();
 
-        Map<String, RawProjectionScenario> rawScenarios = rawjProjections.scenarios;
-        Map<String, ValOrGerr<NotUnrolledParsedScenario>> notUnrolledParsedScenarios = new HashMap<>();
-        rawScenarios.forEach((scenarioId, rawScenario) -> {
-            ValOrGerr<NotUnrolledParsedScenario> parsedScenarioOrErr = parseProjectionScenario(scenarioId, rawScenario, this.assets, mapper);
-            notUnrolledParsedScenarios.put(scenarioId, parsedScenarioOrErr);
-        });
-
-        Map<String, ValOrGerr<SerProjectionScenario>> unrolledParsedScenarios = new HashMap<>();
-        for (String scenarioId : notUnrolledParsedScenarios.keySet()) {
-            var unrolledScenarioOrErr = unrollScenarioAssetChanges(scenarioId, notUnrolledParsedScenarios);
-            unrolledParsedScenarios.put(scenarioId, unrolledScenarioOrErr);
+        var rawScenarios = rawjProjections.scenarios;
+        Map<String, SerProjectionScenario> notUnrolledParsedScenarios = new HashMap<>();
+        for (var rawScenarioEntry : rawScenarios.entrySet()) {
+            var scenarioId = rawScenarioEntry.getKey();
+            var rawScenario = rawScenarioEntry.getValue();
+            var parsedScenarioOrErr = parseProjectionScenario(
+                    scenarioId,
+                    rawScenario,
+                    this.assetsStore.getAssets(),
+                    mapper);
+            if (parsedScenarioOrErr.hasGerr()) {
+                throw new IllegalStateException(parsedScenarioOrErr.getGerr().toString());
+            }
+            notUnrolledParsedScenarios.put(scenarioId, parsedScenarioOrErr.getVal());
         }
 
-        return ImmProjections.of(rawjProjections.defaultAnnualGrowth, unrolledParsedScenarios);
+        return ImmSerProjections.of(rawjProjections.defaultAnnualGrowth, notUnrolledParsedScenarios);
     }
 
     /**
      * Parses & validates the JSON for a projection scenario into the type of object that we need
      */
-    private static ValOrGerr<NotUnrolledParsedScenario> parseProjectionScenario(
+    private static ValOrGerr<SerProjectionScenario> parseProjectionScenario(
             String scenarioId,
             RawProjectionScenario rawScenario,
-            Map<String, SerAsset> assets,
+            Map<String, Asset> assets,
             ObjectMapper mapper) {
         Map<LocalDate, Map<String, AssetChange>> parsedAssetChanges = new HashMap<>();
         for (String relativeDateStr : rawScenario.changes.keySet()) {
@@ -171,126 +159,11 @@ public class SerProjectionsDeserializer extends JsonDeserializer<SerProjections>
             }
         }
 
-        return ValOrGerr.val(new NotUnrolledParsedScenario(
+        return ValOrGerr.val(ImmSerProjectionScenario.of(
                 rawScenario.name,
                 Optional.ofNullable(rawScenario.base),
-                assets,
                 parsedAssetChanges
         ));
-    }
-
-    /**
-     * For scenarios that are based on other scenarios, recursively unrolls the asset changes all the way
-     *  through the dependency tree.
-     */
-    private static ValOrGerr<SerProjectionScenario> unrollScenarioAssetChanges(
-            String scenarioId,
-            Map<String, ValOrGerr<NotUnrolledParsedScenario>> notUnrolledScenarios) {
-        // We can't unroll a scenario if an error occurred trying to parse it
-        ValOrGerr<NotUnrolledParsedScenario> notUnrolledScenarioOrErr = notUnrolledScenarios.get(scenarioId);
-        if (notUnrolledScenarioOrErr.hasGerr()) {
-            return ValOrGerr.propGerr(
-                    notUnrolledScenarioOrErr.getGerr(),
-                    "Couldn't unroll dependencies for scenario '{}' because an error occurred during parsing",
-                    scenarioId
-            );
-        }
-
-        ValOrGerr<Stack<String>> scenarioIdsToVisitOrErr = getScenarioIdsToVisit(scenarioId, notUnrolledScenarios);
-        if (scenarioIdsToVisitOrErr.hasGerr()) {
-            return ValOrGerr.propGerr(
-                    scenarioIdsToVisitOrErr.getGerr(),
-                    "An error occurred getting the list of dependency scenarios for scenario '{}'",
-                    scenarioId
-            );
-        }
-        Stack<String> scenarioIdsToVisit = scenarioIdsToVisitOrErr.getVal();
-
-        // Now that we have the full list of dependency scenarios to visit, in order, loop through them and build a list
-        //  asset changes that we'll return
-        var unrolledAssetChanges = new TreeMap<LocalDate, Map<String, AssetChange>>();
-        for (String scenarioIdToVisit : scenarioIdsToVisit) {
-            ValOrGerr<NotUnrolledParsedScenario> scenarioToVisitOrErr = notUnrolledScenarios.get(scenarioIdToVisit);
-            Preconditions.checkState(
-                    !scenarioToVisitOrErr.hasGerr(),
-                    "Our list of scenarios to visit somehow contains an errored scenario; this is a code bug, " +
-                            "since we shouldn't have even received the list of scenarios to visit if any of the " +
-                            "dependency scenarios had parse errors");
-            NotUnrolledParsedScenario scenarioToVisit = scenarioToVisitOrErr.getVal();
-
-            Map<LocalDate, Map<String, AssetChange>> scenarioAssetChanges = scenarioToVisit.assetChanges;
-            for (var changesForDateEntry : scenarioAssetChanges.entrySet()) {
-                var date = changesForDateEntry.getKey();
-                var scenarioChangesForDate = changesForDateEntry.getValue();
-
-                Map<String, AssetChange> unrolledChangesForDate = unrolledAssetChanges.getOrDefault(
-                        date,
-                        new HashMap<>()
-                );
-                for (var assetChangeEntry : scenarioChangesForDate.entrySet()) {
-                    var assetId = assetChangeEntry.getKey();
-                    var assetChange = assetChangeEntry.getValue();
-
-                    if (unrolledChangesForDate.containsKey(assetId)) {
-                        return ValOrGerr.newGerr(
-                                "Scenario {} depends on scenario {}, which results in a duplicate change for {} on date {}",
-                                scenarioId,
-                                scenarioIdToVisit,
-                                assetId,
-                                date
-                        );
-                    }
-                    unrolledChangesForDate.put(assetId, assetChange);
-                }
-                unrolledAssetChanges.put(date, unrolledChangesForDate);
-            }
-        }
-
-        NotUnrolledParsedScenario notUnrolledScenario = notUnrolledScenarioOrErr.getVal();
-        SerProjectionScenario result = ImmProjectionScenario.of(
-                notUnrolledScenario.name,
-                unrolledAssetChanges
-        ).withBase(notUnrolledScenario.base);
-        return ValOrGerr.val(result);
-    }
-
-    private static ValOrGerr<Stack<String>> getScenarioIdsToVisit(String scenarioId, Map<String, ValOrGerr<NotUnrolledParsedScenario>> notUnrolledScenarios) {
-        Optional<String> baseIdOpt = Optional.of(scenarioId);
-        Stack<String> scenarioIdsToVisit = new Stack<>();
-        Set<String> visitedScenarioIds = new HashSet<>();
-        while (baseIdOpt.isPresent()) {
-            String baseId = baseIdOpt.get();
-            if (visitedScenarioIds.contains(baseId)) {
-                return ValOrGerr.newGerr(
-                        "Could not get list of dependency scenarios for scenario {} due to a dependency cycle; dependency {} is visited twice",
-                        scenarioId,
-                        baseId
-                );
-            }
-
-            if (!notUnrolledScenarios.containsKey(baseId)) {
-                return ValOrGerr.newGerr(
-                        "Could not get list of dependency scenarios for scenario {} due to a dependency on a nonexistent scenario ID {}",
-                        scenarioId,
-                        baseId
-                );
-            }
-
-            ValOrGerr<NotUnrolledParsedScenario> notUnrolledBaseScenarioOrErr = notUnrolledScenarios.get(baseId);
-            if (notUnrolledBaseScenarioOrErr.hasGerr()) {
-                return ValOrGerr.newGerr(
-                        "Could not get list of dependency scenarios for scenario '{}'; it depends on scenario '{}' which has a parsing error",
-                        scenarioId,
-                        baseId
-                );
-            }
-            NotUnrolledParsedScenario notUnrolledBaseScenario = notUnrolledBaseScenarioOrErr.getVal();
-
-            scenarioIdsToVisit.push(baseId);
-            visitedScenarioIds.add(baseId);
-            baseIdOpt = notUnrolledBaseScenario.base;
-        }
-        return ValOrGerr.val(scenarioIdsToVisit);
     }
 
     @VisibleForTesting
