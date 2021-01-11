@@ -87,6 +87,7 @@ public class SerProjectionsDeserializer extends JsonDeserializer<SerProjections>
         return ImmSerProjections.of(rawjProjections.defaultAnnualGrowth, notUnrolledParsedScenarios);
     }
 
+    // TODO Move the not-strictly-necessary validation to the validation func in SimpleProjectionsStoreFactory
     /**
      * Parses & validates the JSON for a projection scenario into the type of object that we need
      */

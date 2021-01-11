@@ -3,10 +3,8 @@ package com.strangegrotto.wealthdraft.projections.impl;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.google.common.base.Preconditions;
 import com.strangegrotto.wealthdraft.AbstractYmlBackedStoreFactory;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
-import com.strangegrotto.wealthdraft.networth.projections.ImmProjectionScenario;
 import com.strangegrotto.wealthdraft.projections.api.types.ProjectionScenario;
 import com.strangegrotto.wealthdraft.projections.impl.temporal.AssetChange;
 
@@ -29,13 +27,25 @@ public class SimpleProjectionsStoreFactory implements AbstractYmlBackedStoreFact
     }
 
     @Override
-    protected SerProjections postprocess(SerProjections projections) {
-        var notUnrolledScenarios = projections.getScenarios();
+    protected ValOrGerr<SerProjections> postprocess(SerProjections deserialized) {
+        var notUnrolledScenarios = deserialized.getScenarios();
         Map<String, ProjectionScenario> unrolledScenarios = new HashMap<>();
         for (String scenarioId : notUnrolledScenarios.keySet()) {
-            var unrolledScenario = unrollScenarioAssetChanges(scenarioId, notUnrolledScenarios);
-            unrolledScenarios.put(scenarioId, unrolledScenario);
+            var unrolledScenarioOrErr = unrollScenarioAssetChanges(scenarioId, notUnrolledScenarios);
+            if (unrolledScenarioOrErr.hasGerr()) {
+                return ValOrGerr.propGerr(
+                        unrolledScenarioOrErr.getGerr(),
+                        "An error occurred unrolling scenario '{}'",
+                        scenarioId
+                );
+            }
+            unrolledScenarios.put(scenarioId, unrolledScenarioOrErr.getVal());
         }
+        var postprocessed = ImmSerProjections.of(
+                deserialized.getDefaultAnnualGrowth(),
+                unrolledScenarios
+        );
+        return ValOrGerr.val(postprocessed);
     }
 
     @Override
@@ -69,13 +79,7 @@ public class SimpleProjectionsStoreFactory implements AbstractYmlBackedStoreFact
         //  asset changes that we'll return
         var unrolledAssetChanges = new TreeMap<LocalDate, Map<String, AssetChange>>();
         for (String scenarioIdToVisit : scenarioIdsToVisit) {
-            ValOrGerr<SerProjectionScenario> scenarioToVisitOrErr = notUnrolledScenarios.get(scenarioIdToVisit);
-            Preconditions.checkState(
-                    !scenarioToVisitOrErr.hasGerr(),
-                    "Our list of scenarios to visit somehow contains an errored scenario; this is a code bug, " +
-                            "since we shouldn't have even received the list of scenarios to visit if any of the " +
-                            "dependency scenarios had parse errors");
-            SerProjectionScenario scenarioToVisit = scenarioToVisitOrErr.getVal();
+            SerProjectionScenario scenarioToVisit = notUnrolledScenarios.get(scenarioIdToVisit);
 
             Map<LocalDate, Map<String, AssetChange>> scenarioAssetChanges = scenarioToVisit.getAssetChanges();
             for (var changesForDateEntry : scenarioAssetChanges.entrySet()) {
@@ -105,12 +109,12 @@ public class SimpleProjectionsStoreFactory implements AbstractYmlBackedStoreFact
             }
         }
 
-        SerProjectionScenario notUnrolledScenario = notUnrolledScenarioOrErr.getVal();
-        SerProjectionScenario result = ImmProjectionScenario.of(
-                notUnrolledScenario.name,
+        SerProjectionScenario notUnrolledScenario = notUnrolledScenarios.get(scenarioId);
+        SerProjectionScenario unrolledScenario = ImmSerProjectionScenario.of(
+                notUnrolledScenario.getName(),
                 unrolledAssetChanges
-        ).withBase(notUnrolledScenario.base);
-        return ValOrGerr.val(result);
+        ).withBase(notUnrolledScenario.getBase());
+        return ValOrGerr.val(unrolledScenario);
     }
 
     private static ValOrGerr<Stack<String>> getScenarioIdsToVisit(String scenarioId, Map<String, SerProjectionScenario> notUnrolledScenarios) {
