@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
-import com.strangegrotto.wealthdraft.assetfilters.AssetFilter;
+import com.strangegrotto.wealthdraft.filters.impl.SerAssetFilter;
 import org.immutables.value.Value;
 
 import java.io.IOException;
@@ -23,9 +23,9 @@ public class TargetAssetAllocationsDeserializer extends JsonDeserializer<TargetA
         List<TargetAssetAllocation> getTargets();
     }
 
-    private final Map<String, AssetFilter> filters;
+    private final Map<String, SerAssetFilter> filters;
 
-    public TargetAssetAllocationsDeserializer(Map<String, AssetFilter> filters) {
+    public TargetAssetAllocationsDeserializer(Map<String, SerAssetFilter> filters) {
         this.filters = filters;
     }
 

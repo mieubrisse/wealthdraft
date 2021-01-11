@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.assetfilters;
+package com.strangegrotto.wealthdraft.filters;
 
 import com.strangegrotto.wealthdraft.assets.api.types.AssetType;
 import com.strangegrotto.wealthdraft.assets.impl.*;

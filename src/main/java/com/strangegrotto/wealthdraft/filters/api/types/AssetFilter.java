@@ -1,18 +1,13 @@
-package com.strangegrotto.wealthdraft.assetfilters;
+package com.strangegrotto.wealthdraft.filters.api.types;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
+import com.strangegrotto.wealthdraft.filters.impl.SerAssetFilter;
 
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
-@JsonSubTypes({
-        @JsonSubTypes.Type(TagAssetFilter.class),
-        @JsonSubTypes.Type(ConjunctionAssetFilter.class),
-        @JsonSubTypes.Type(DisjunctionAssetFilter.class),
-        @JsonSubTypes.Type(EmbeddedFilterAssetFilter.class)
-})
 public interface AssetFilter {
     // NOTE: We need to pass the allFilters argument so that the EmbeddedFilterAssetFilter class can work,
     //  but I'm not super happy with needing to do this. Ideally, rather than needing to pass this as an argument

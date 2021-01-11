@@ -3,8 +3,8 @@ package com.strangegrotto.wealthdraft.assetallocation.datamodel;
 import com.strangegrotto.wealthdraft.Main;
 import com.strangegrotto.wealthdraft.assetallocation.ExpectedExampleTargetAssetAllocations;
 import com.strangegrotto.wealthdraft.assetallocation.TargetAssetAllocationsTestFiles;
-import com.strangegrotto.wealthdraft.assetfilters.AssetFilter;
-import com.strangegrotto.wealthdraft.assetfilters.FiltersTestFiles;
+import com.strangegrotto.wealthdraft.filters.impl.SerAssetFilter;
+import com.strangegrotto.wealthdraft.filters.FiltersTestFiles;
 import com.strangegrotto.wealthdraft.assets.impl.AssetDefinitions;
 import com.strangegrotto.wealthdraft.assets.impl.AssetDefinitionsTestFiles;
 import org.junit.Assert;
@@ -48,8 +48,8 @@ public class TargetAssetAllocationsTest {
         Main.addDeserializersNeedingAssetDefs(mapper, assetDefinitions);
 
         var filtersUrl = FiltersTestFiles.EXAMPLE.getResource();
-        var mapType = mapper.getTypeFactory().constructMapType(HashMap.class, String.class, AssetFilter.class);
-        Map<String, AssetFilter> filters = mapper.readValue(filtersUrl, mapType);
+        var mapType = mapper.getTypeFactory().constructMapType(HashMap.class, String.class, SerAssetFilter.class);
+        Map<String, SerAssetFilter> filters = mapper.readValue(filtersUrl, mapType);
         Main.addDeserializersNeedingFilters(mapper, filters);
 
         var assetAllocationsUrl = testFile.getResource();

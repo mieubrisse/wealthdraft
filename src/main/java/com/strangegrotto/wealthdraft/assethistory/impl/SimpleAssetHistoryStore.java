@@ -1,5 +1,6 @@
 package com.strangegrotto.wealthdraft.assethistory.impl;
 
+import com.google.common.collect.ImmutableSortedMap;
 import com.strangegrotto.wealthdraft.assethistory.api.AssetHistoryStore;
 import com.strangegrotto.wealthdraft.assethistory.api.types.AssetSnapshot;
 
@@ -11,11 +12,11 @@ public class SimpleAssetHistoryStore implements AssetHistoryStore {
     private final SortedMap<LocalDate, Map<String, AssetSnapshot<?>>> history;
 
     public SimpleAssetHistoryStore(SortedMap<LocalDate, Map<String, AssetSnapshot<?>>> history) {
-        this.history = history;
+        this.history = ImmutableSortedMap.copyOf(history);
     }
 
     @Override
     public SortedMap<LocalDate, Map<String, AssetSnapshot<?>>> getHistory() {
-        return null;
+        return this.history;
     }
 }

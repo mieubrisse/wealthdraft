@@ -1,10 +1,11 @@
-package com.strangegrotto.wealthdraft.assetfilters;
+package com.strangegrotto.wealthdraft.filters.impl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Sets;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
 import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
+import com.strangegrotto.wealthdraft.filters.ImmDisjunctionAssetFilter;
 import org.immutables.value.Value;
 
 import java.util.HashMap;
@@ -18,10 +19,10 @@ import java.util.stream.Collectors;
 public abstract class DisjunctionAssetFilter extends AbstractCompoundAssetFilter {
     @Value.Parameter
     @JsonProperty("any")
-    public abstract List<AssetFilter> getTags();
+    public abstract List<SerAssetFilter> getTags();
 
     @Override
-    protected final List<AssetFilter> getConstituentFilters() {
+    protected final List<SerAssetFilter> getConstituentFilters() {
         return this.getTags();
     }
 

@@ -3,7 +3,7 @@ package com.strangegrotto.wealthdraft.assetallocation.calculator;
 import com.google.common.annotations.VisibleForTesting;
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocation;
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocations;
-import com.strangegrotto.wealthdraft.assetfilters.AssetFilter;
+import com.strangegrotto.wealthdraft.filters.impl.SerAssetFilter;
 import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
 import com.strangegrotto.wealthdraft.assethistory.api.types.AssetSnapshot;
 
@@ -110,8 +110,8 @@ public class AssetAllocationCalculator {
     private static BigDecimal getValueOfAssetsMatchingFilter(
             Map<String, SerAsset> assets,
             Map<String, AssetSnapshot<?>> latestAssetSnapshots,
-            Map<String, AssetFilter> filters,
-            AssetFilter filter) {
+            Map<String, SerAssetFilter> filters,
+            SerAssetFilter filter) {
         var matchingAssetIds = filter.apply(filters, assets);
         return latestAssetSnapshots.entrySet().stream()
                 .filter(entry -> matchingAssetIds.containsKey(entry.getKey()))

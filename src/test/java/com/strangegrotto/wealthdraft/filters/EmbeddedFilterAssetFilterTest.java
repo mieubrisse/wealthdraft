@@ -1,10 +1,11 @@
-package com.strangegrotto.wealthdraft.assetfilters;
+package com.strangegrotto.wealthdraft.filters;
 
 import com.google.common.collect.Sets;
 import com.strangegrotto.wealthdraft.assets.api.types.AssetType;
 import com.strangegrotto.wealthdraft.assets.impl.ImmSerAsset;
 import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
 import com.strangegrotto.wealthdraft.assets.impl.ImmCustomTagDefinition;
+import com.strangegrotto.wealthdraft.filters.impl.SerAssetFilter;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -59,7 +60,7 @@ public class EmbeddedFilterAssetFilterTest {
 
         var filter1 = ImmEmbeddedFilterAssetFilter.of(filterId2);
 
-        Map<String, AssetFilter> filters = Map.of(
+        Map<String, SerAssetFilter> filters = Map.of(
                 filterId1, filter1,
                 filterId2, ImmEmbeddedFilterAssetFilter.of(filterId3),
                 filterId3, ImmEmbeddedFilterAssetFilter.of(filterId1)
@@ -73,7 +74,7 @@ public class EmbeddedFilterAssetFilterTest {
     public void testErrorOnNonexistentEmbeddedFilter() {
         var embeddingFilterId = "embedding";
         var embeddingFilter = ImmEmbeddedFilterAssetFilter.of("this-filter-id-doesnt-exist");
-        Map<String, AssetFilter> filters = Map.of(
+        Map<String, SerAssetFilter> filters = Map.of(
                 embeddingFilterId, embeddingFilter
         );
 

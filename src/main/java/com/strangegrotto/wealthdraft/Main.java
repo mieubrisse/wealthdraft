@@ -20,9 +20,9 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Ordering;
 import com.strangegrotto.wealthdraft.assetallocation.calculator.AssetAllocationCalculator;
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocationsDeserializer;
-import com.strangegrotto.wealthdraft.assetfilters.AssetFilter;
-import com.strangegrotto.wealthdraft.assetfilters.TagAssetFilter;
-import com.strangegrotto.wealthdraft.assetfilters.TagAssetFilterDeserializer;
+import com.strangegrotto.wealthdraft.filters.impl.SerAssetFilter;
+import com.strangegrotto.wealthdraft.filters.impl.TagAssetFilter;
+import com.strangegrotto.wealthdraft.filters.impl.TagAssetFilterDeserializer;
 import com.strangegrotto.wealthdraft.assetallocation.renderer.AssetAllocationRenderer;
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocations;
 import com.strangegrotto.wealthdraft.assets.impl.AssetDefinitions;
@@ -225,28 +225,14 @@ public class Main {
 
         String filtersFilepath = parsedArgs.getString(FILTERS_FILEPATH_ARG);
         log.debug("Filters filepath: {}", filtersFilepath);
-        MapType filtersMapType = typeFactory.constructMapType(HashMap.class, String.class, AssetFilter.class);
-        Map<String, AssetFilter> filters;
+        MapType filtersMapType = typeFactory.constructMapType(HashMap.class, String.class, SerAssetFilter.class);
+        Map<String, SerAssetFilter> filters;
         try {
             filters = mapper.readValue(new File(filtersFilepath), filtersMapType);
         } catch (IOException e) {
             log.error("An error occurred parsing the filters file '{}'", filtersFilepath, e);
             System.exit(FAILURE_EXIT_CODE);
             return;
-        }
-        // TODO This is a terrible spot to do error-checking!!
-        for (var filterEntry : filters.entrySet()) {
-            var filterName = filterEntry.getKey();
-            var filter = filterEntry.getValue();
-
-            var parentFilters = new LinkedHashSet<>(List.of(filterName));
-            var cycleOpt = filter.checkForCycles(filters, parentFilters);
-            if (cycleOpt.isPresent()) {
-                throw new IllegalStateException(Strings.lenientFormat(
-                        "Found an asset filter cycle: %s",
-                        String.join(" -> ", cycleOpt.get())
-                ));
-            }
         }
 
         addDeserializersNeedingFilters(mapper, filters);
@@ -329,7 +315,7 @@ public class Main {
     }
 
     @VisibleForTesting
-    public static void addDeserializersNeedingFilters(ObjectMapper mapper, Map<String, AssetFilter> filters) {
+    public static void addDeserializersNeedingFilters(ObjectMapper mapper, Map<String, SerAssetFilter> filters) {
         var deserializerModule = new SimpleModule();
         deserializerModule.addDeserializer(
                 TargetAssetAllocations.class,

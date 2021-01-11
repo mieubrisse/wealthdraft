@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.assetfilters;
+package com.strangegrotto.wealthdraft.filters;
 
 import com.strangegrotto.wealthdraft.assets.api.types.AssetType;
 import com.strangegrotto.wealthdraft.assets.impl.ImmSerAsset;
@@ -10,7 +10,7 @@ import org.junit.Test;
 import java.util.List;
 import java.util.Map;
 
-public class DisjunctionAssetFilterTest {
+public class ConjunctionAssetFilterTest {
     @Test
     public void testVanilla() {
         var needle1Name = "tag1";
@@ -19,9 +19,7 @@ public class DisjunctionAssetFilterTest {
         var needle2Name = "tag2";
         var needle2Value = "tag2value";
 
-        var matchingAssetId1 = "matches1";
-        var matchingAssetId2 = "matches2";
-        var matchingAssetId3 = "matches3";
+        var matchingAssetId = "matches";
 
         var unrelatedTagName = "foo";
         var unrelatedTagValue = "bar";
@@ -33,14 +31,14 @@ public class DisjunctionAssetFilterTest {
         );
 
         var haystack = Map.<String, SerAsset>of(
-                matchingAssetId1, ImmSerAsset.of("Match 1", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
+                "needle1-but-not-2", ImmSerAsset.of("Needle 1 but not 2", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
                         needle1Name, needle1Value
                 )),
-                matchingAssetId2, ImmSerAsset.of("Match 2", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
+                matchingAssetId, ImmSerAsset.of("Matches", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
                         needle1Name, needle1Value,
                         needle2Name, needle2Value
                 )),
-                matchingAssetId3, ImmSerAsset.of("Match 3", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
+                "needle2-but-not-1", ImmSerAsset.of("Needle 2 but not 1", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
                         needle2Name, needle2Value
                 )),
                 "unmatching-tags", ImmSerAsset.of("Unmatching tags", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
@@ -51,17 +49,15 @@ public class DisjunctionAssetFilterTest {
 
         var needle1Filter = ImmTagAssetFilter.of(customTags, needle1Name, needle1Value);
         var needle2Filter = ImmTagAssetFilter.of(customTags, needle2Name, needle2Value);
-        var disjunctionFilter = ImmDisjunctionAssetFilter.of(List.of(
+        var conjunctiveFilter = ImmConjunctionAssetFilter.of(List.of(
                 needle1Filter,
                 needle2Filter
         ));
 
-        var result = disjunctionFilter.apply(Map.of(), haystack);
+        var result = conjunctiveFilter.apply(Map.of(), haystack);
 
         var expected = Map.of(
-                matchingAssetId1, haystack.get(matchingAssetId1),
-                matchingAssetId2, haystack.get(matchingAssetId2),
-                matchingAssetId3, haystack.get(matchingAssetId3)
+                matchingAssetId, haystack.get(matchingAssetId)
         );
         Assert.assertEquals(expected, result);
     }

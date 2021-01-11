@@ -4,9 +4,9 @@ import com.strangegrotto.wealthdraft.assetallocation.datamodel.ImmTargetAssetAll
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.ImmTargetAssetAllocations;
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocation;
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocations;
-import com.strangegrotto.wealthdraft.assetfilters.AssetFilter;
-import com.strangegrotto.wealthdraft.assetfilters.ImmConjunctionAssetFilter;
-import com.strangegrotto.wealthdraft.assetfilters.ImmTagAssetFilter;
+import com.strangegrotto.wealthdraft.filters.impl.SerAssetFilter;
+import com.strangegrotto.wealthdraft.filters.ImmConjunctionAssetFilter;
+import com.strangegrotto.wealthdraft.filters.ImmTagAssetFilter;
 import com.strangegrotto.wealthdraft.assets.api.types.AssetType;
 import com.strangegrotto.wealthdraft.assets.impl.ExpectedExampleAssetDefinitions;
 import com.strangegrotto.wealthdraft.tagstores.intrinsic.IntrinsicAssetTag;
@@ -20,17 +20,17 @@ public class ExpectedExampleTargetAssetAllocations {
     public static final String INTERNATIONAL_ASSETS_FILTER_ID = "internationalAssets";
     public static final String DOMESTIC_BANK_ASSETS_FILTER_ID = "domesticBankAssets";
 
-    public static final AssetFilter DOMESTIC_ASSETS_FILTER = ImmTagAssetFilter.of(
+    public static final SerAssetFilter DOMESTIC_ASSETS_FILTER = ImmTagAssetFilter.of(
             ExpectedExampleAssetDefinitions.EXPECTED_CUSTOM_TAGS,
             ExpectedExampleAssetDefinitions.DOM_OR_INTL_TAG,
             ExpectedExampleAssetDefinitions.DOMESTIC_ASSET_TAG_VALUE
     );
-    public static final AssetFilter INTERNATIONAL_ASSETS_FILTER = ImmTagAssetFilter.of(
+    public static final SerAssetFilter INTERNATIONAL_ASSETS_FILTER = ImmTagAssetFilter.of(
             ExpectedExampleAssetDefinitions.EXPECTED_CUSTOM_TAGS,
             ExpectedExampleAssetDefinitions.DOM_OR_INTL_TAG,
             ExpectedExampleAssetDefinitions.INTERNATIONAL_ASSET_TAG_VALUE
     );
-    public static final AssetFilter DOMESTIC_BANK_ASSETS_FILTER = ImmConjunctionAssetFilter.of(List.of(
+    public static final SerAssetFilter DOMESTIC_BANK_ASSETS_FILTER = ImmConjunctionAssetFilter.of(List.of(
             ImmTagAssetFilter.of(
                     ExpectedExampleAssetDefinitions.EXPECTED_CUSTOM_TAGS,
                     ExpectedExampleAssetDefinitions.DOM_OR_INTL_TAG,

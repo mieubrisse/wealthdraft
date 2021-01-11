@@ -1,15 +1,11 @@
 package com.strangegrotto.wealthdraft.assetallocation.datamodel;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
-import com.strangegrotto.wealthdraft.assetfilters.AssetFilter;
+import com.strangegrotto.wealthdraft.filters.impl.SerAssetFilter;
 import org.immutables.value.Value;
 
 import java.math.BigDecimal;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -20,7 +16,7 @@ public interface TargetAssetAllocations {
     // TODO add configurable WARN/ERROR thresholds
 
     @Value.Parameter
-    Map<String, AssetFilter> getFilters();
+    Map<String, SerAssetFilter> getFilters();
 
     @Value.Parameter
     List<TargetAssetAllocation> getTargets();
