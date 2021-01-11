@@ -1,7 +1,7 @@
 package com.strangegrotto.wealthdraft.networth.projections;
 
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
-import com.strangegrotto.wealthdraft.assets.temporal.AssetChange;
+import com.strangegrotto.wealthdraft.projections.impl.temporal.AssetChange;
 import org.immutables.value.Value;
 
 import java.time.LocalDate;

@@ -1,6 +1,5 @@
-package com.strangegrotto.wealthdraft.assets.temporal;
+package com.strangegrotto.wealthdraft.projections.impl.temporal;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import org.immutables.value.Value;

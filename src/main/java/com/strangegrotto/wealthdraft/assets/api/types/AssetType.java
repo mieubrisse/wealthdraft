@@ -4,8 +4,8 @@ import com.strangegrotto.wealthdraft.assetimpls.bankaccount.BankAccountAssetChan
 import com.strangegrotto.wealthdraft.assetimpls.bankaccount.BankAccountAssetSnapshot;
 import com.strangegrotto.wealthdraft.assetimpls.stock.StockAssetChange;
 import com.strangegrotto.wealthdraft.assetimpls.stock.StockAssetSnapshot;
-import com.strangegrotto.wealthdraft.assets.temporal.AssetChange;
-import com.strangegrotto.wealthdraft.assets.temporal.AssetSnapshot;
+import com.strangegrotto.wealthdraft.projections.impl.temporal.AssetChange;
+import com.strangegrotto.wealthdraft.assethistory.api.types.AssetSnapshot;
 
 public enum AssetType {
     // TODO need to remove the snapshot/change from this

@@ -11,6 +11,7 @@ import org.immutables.value.Value;
 import java.util.HashSet;
 import java.util.Map;
 
+// TODO Delete
 @WealthdraftImmutableStyle
 @Value.Immutable
 @JsonDeserialize(using = AssetDefinitionsDeserializer.class)

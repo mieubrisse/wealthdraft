@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.assets.temporal;
+package com.strangegrotto.wealthdraft.projections.impl.temporal;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;

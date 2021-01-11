@@ -1,5 +1,7 @@
-package com.strangegrotto.wealthdraft.assets.temporal;
+package com.strangegrotto.wealthdraft.assethistory.api.types;
 
+import com.strangegrotto.wealthdraft.assethistory.impl.AbstractAssetSnapshot;
+import com.strangegrotto.wealthdraft.projections.impl.temporal.AssetChange;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 
 import java.math.BigDecimal;

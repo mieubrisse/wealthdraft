@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.assets.temporal;
+package com.strangegrotto.wealthdraft.projections.impl.temporal;
 
 import com.strangegrotto.wealthdraft.assetimpls.bankaccount.BankAccountAssetChange;
 import com.strangegrotto.wealthdraft.assetimpls.bankaccount.ImmBankAccountAssetChange;

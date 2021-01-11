@@ -1,6 +1,7 @@
 package com.strangegrotto.wealthdraft.networth.history;
 
 import com.strangegrotto.wealthdraft.Main;
+import com.strangegrotto.wealthdraft.assethistory.impl.SerAssetsHistory;
 import com.strangegrotto.wealthdraft.assets.impl.AssetDefinitions;
 import com.strangegrotto.wealthdraft.assets.impl.AssetDefinitionsTestFiles;
 import org.junit.Assert;
@@ -8,10 +9,10 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-public class AssetsHistoryTest {
+public class SerAssetsHistoryTest {
     @Test
     public void testValidDeserialization() throws IOException {
-        AssetsHistory assetsHistory = parseAssetsHistoryFile(AssetsHistoryTestFiles.EXAMPLE);
+        SerAssetsHistory assetsHistory = parseAssetsHistoryFile(AssetsHistoryTestFiles.EXAMPLE);
         Assert.assertEquals(
                 ExpectedExampleAssetsHistory.EXPECTED_ASSETS_HISTORY,
                 assetsHistory.getHistory()
@@ -28,13 +29,13 @@ public class AssetsHistoryTest {
         parseAssetsHistoryFile(AssetsHistoryTestFiles.FUTURE_DATE);
     }
 
-    private static AssetsHistory parseAssetsHistoryFile(AssetsHistoryTestFiles testFile) throws IOException {
+    private static SerAssetsHistory parseAssetsHistoryFile(AssetsHistoryTestFiles testFile) throws IOException {
         var mapper = Main.getObjectMapper();
         var assetsUrl = AssetDefinitionsTestFiles.EXAMPLE.getResource();
         var assetDefinitions = mapper.readValue(assetsUrl, AssetDefinitions.class);
         Main.addDeserializersNeedingAssetDefs(mapper, assetDefinitions);
 
         var assetsHistoryUrl = testFile.getResource();
-        return mapper.readValue(assetsHistoryUrl, AssetsHistory.class);
+        return mapper.readValue(assetsHistoryUrl, SerAssetsHistory.class);
     }
 }

@@ -30,10 +30,10 @@ import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.govconstants.RetirementConstants;
 import com.strangegrotto.wealthdraft.networth.NetWorthRenderer;
-import com.strangegrotto.wealthdraft.networth.history.AssetsHistory;
-import com.strangegrotto.wealthdraft.assets.temporal.AssetParameterChange;
-import com.strangegrotto.wealthdraft.assets.temporal.AssetParameterChangeDeserializer;
-import com.strangegrotto.wealthdraft.networth.history.AssetsHistoryDeserializer;
+import com.strangegrotto.wealthdraft.assethistory.impl.SerAssetsHistory;
+import com.strangegrotto.wealthdraft.projections.impl.temporal.AssetParameterChange;
+import com.strangegrotto.wealthdraft.projections.impl.temporal.AssetParameterChangeDeserializer;
+import com.strangegrotto.wealthdraft.assethistory.impl.SerAssetsHistoryDeserializer;
 import com.strangegrotto.wealthdraft.networth.projections.Projections;
 import com.strangegrotto.wealthdraft.networth.projections.ProjectionsDeserializer;
 import com.strangegrotto.wealthdraft.scenarios.IncomeStreams;
@@ -203,9 +203,9 @@ public class Main {
 
         String assetsHistoryFilepath = parsedArgs.getString(ASSETS_HISTORY_FILEPATH_ARG);
         log.debug("Assets history filepath: {}", assetsHistoryFilepath);
-        AssetsHistory assetsHistory;
+        SerAssetsHistory assetsHistory;
         try {
-            assetsHistory = mapper.readValue(new File(assetsHistoryFilepath), AssetsHistory.class);
+            assetsHistory = mapper.readValue(new File(assetsHistoryFilepath), SerAssetsHistory.class);
         } catch (IOException e) {
             log.error("An error occurred parsing the assets history file '{}'", assetsHistoryFilepath, e);
             System.exit(FAILURE_EXIT_CODE);
@@ -323,7 +323,7 @@ public class Main {
 
         var deserializerModule = new SimpleModule();
         deserializerModule.addDeserializer(Projections.class, new ProjectionsDeserializer(assets));
-        deserializerModule.addDeserializer(AssetsHistory.class, new AssetsHistoryDeserializer(assets));
+        deserializerModule.addDeserializer(SerAssetsHistory.class, new SerAssetsHistoryDeserializer(assets));
         deserializerModule.addDeserializer(TagAssetFilter.class, new TagAssetFilterDeserializer(customTags));
         mapper.registerModule(deserializerModule);
     }

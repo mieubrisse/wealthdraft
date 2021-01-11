@@ -5,7 +5,7 @@ import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAlloca
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocations;
 import com.strangegrotto.wealthdraft.assetfilters.AssetFilter;
 import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
-import com.strangegrotto.wealthdraft.assets.temporal.AssetSnapshot;
+import com.strangegrotto.wealthdraft.assethistory.api.types.AssetSnapshot;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

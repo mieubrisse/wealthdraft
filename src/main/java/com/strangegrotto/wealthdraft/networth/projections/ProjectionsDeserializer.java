@@ -10,7 +10,7 @@ import com.google.common.base.Preconditions;
 import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
 import com.strangegrotto.wealthdraft.errors.Gerr;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
-import com.strangegrotto.wealthdraft.assets.temporal.AssetChange;
+import com.strangegrotto.wealthdraft.projections.impl.temporal.AssetChange;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
