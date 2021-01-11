@@ -1,9 +1,10 @@
-package com.strangegrotto.wealthdraft.assets.definition;
+package com.strangegrotto.wealthdraft.tagstores.custom.impl;
 
+import com.strangegrotto.wealthdraft.assets.impl.ImmCustomTagDefinition;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.Test;
 
-public class CustomTagDefinitionTest {
+public class SerCustomTagDefinitionTest {
     @SuppressFBWarnings(
             value = "RV_RETURN_VALUE_IGNORED",
             justification = "Testing Immutables check method; return value not used"

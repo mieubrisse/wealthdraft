@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Sets;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
-import com.strangegrotto.wealthdraft.assets.definition.Asset;
+import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
 import org.immutables.value.Value;
 
 import java.util.HashMap;
@@ -26,7 +26,7 @@ public abstract class DisjunctionAssetFilter extends AbstractCompoundAssetFilter
     }
 
     @Override
-    protected Map<String, Asset> combineFilterMatches(Map<String, Asset> filterResultA, Map<String, Asset> filterResultB) {
+    protected Map<String, SerAsset> combineFilterMatches(Map<String, SerAsset> filterResultA, Map<String, SerAsset> filterResultB) {
         var matchingIds = Sets.union(filterResultA.keySet(), filterResultB.keySet());
         var matchingAEntries = filterResultA.entrySet().stream()
                 .filter(entry -> matchingIds.contains(entry.getKey()))
@@ -38,7 +38,7 @@ public abstract class DisjunctionAssetFilter extends AbstractCompoundAssetFilter
         // We put A entries second so that if A and B contain the same ID, the A version is the one that
         //  ends up in the final map. It shouldn't make a difference because A and B should have the exact same
         //  asset for the same assetId, but just in case
-        var result = new HashMap<String, Asset>();
+        var result = new HashMap<String, SerAsset>();
         result.putAll(matchingBEntries);
         result.putAll(matchingAEntries);
 

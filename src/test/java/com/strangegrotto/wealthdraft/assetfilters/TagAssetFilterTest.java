@@ -1,7 +1,9 @@
 package com.strangegrotto.wealthdraft.assetfilters;
 
-import com.strangegrotto.wealthdraft.assetimpls.AssetType;
-import com.strangegrotto.wealthdraft.assets.definition.*;
+import com.strangegrotto.wealthdraft.assets.api.types.AssetType;
+import com.strangegrotto.wealthdraft.assets.impl.*;
+import com.strangegrotto.wealthdraft.tagstores.custom.api.types.CustomTagDefinition;
+import com.strangegrotto.wealthdraft.tagstores.intrinsic.IntrinsicAssetTag;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.Assert;
 import org.junit.Test;
@@ -17,16 +19,16 @@ public class TagAssetFilterTest {
         var matchingAssetId1 = "matches1";
         var matchingAssetId2 = "matches2";
 
-        var assets = Map.<String, Asset>of(
-                matchingAssetId1, ImmAsset.of("Matches 1", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
+        var assets = Map.<String, SerAsset>of(
+                matchingAssetId1, ImmSerAsset.of("Matches 1", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
                         selectedTagName, selectedTagValue
                 )),
-                "right-name-wrong-values", ImmAsset.of("Right name, wrong values", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
+                "right-name-wrong-values", ImmSerAsset.of("Right name, wrong values", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
                         selectedTagName, "wrong-value"
                 )),
-                "unmatching-tags", ImmAsset.of("Unmatching tags", AssetType.BANK_ACCOUNT).withCustomTags(Map.of("foo", "bar")),
-                "no-tags", ImmAsset.of("No tags", AssetType.BANK_ACCOUNT),
-                matchingAssetId2, ImmAsset.of("Matches 2", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
+                "unmatching-tags", ImmSerAsset.of("Unmatching tags", AssetType.BANK_ACCOUNT).withCustomTags(Map.of("foo", "bar")),
+                "no-tags", ImmSerAsset.of("No tags", AssetType.BANK_ACCOUNT),
+                matchingAssetId2, ImmSerAsset.of("Matches 2", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
                         selectedTagName, selectedTagValue
                 ))
         );

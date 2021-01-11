@@ -2,7 +2,7 @@ package com.strangegrotto.wealthdraft.assetfilters;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.strangegrotto.wealthdraft.assets.definition.Asset;
+import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
 
 import java.util.*;
 
@@ -19,7 +19,7 @@ public interface AssetFilter {
     //  to *every* call, it would be instance-specific data given only to the embedded filter class
     //  at time of instantion.. but this would require writing custom deserializers for the TargetAssetAllocations
     //  and AssetFilter classes
-    Map<String, Asset> apply(Map<String, AssetFilter> allFilters, Map<String, Asset> input);
+    Map<String, SerAsset> apply(Map<String, AssetFilter> allFilters, Map<String, SerAsset> input);
 
     /**
      * Checks for cycles in the filter and any child filters

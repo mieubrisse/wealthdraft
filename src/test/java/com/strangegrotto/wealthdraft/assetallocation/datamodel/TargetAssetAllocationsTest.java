@@ -1,13 +1,12 @@
 package com.strangegrotto.wealthdraft.assetallocation.datamodel;
 
-import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import com.strangegrotto.wealthdraft.Main;
 import com.strangegrotto.wealthdraft.assetallocation.ExpectedExampleTargetAssetAllocations;
 import com.strangegrotto.wealthdraft.assetallocation.TargetAssetAllocationsTestFiles;
 import com.strangegrotto.wealthdraft.assetfilters.AssetFilter;
 import com.strangegrotto.wealthdraft.assetfilters.FiltersTestFiles;
-import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitions;
-import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitionsTestFiles;
+import com.strangegrotto.wealthdraft.assets.impl.AssetDefinitions;
+import com.strangegrotto.wealthdraft.assets.impl.AssetDefinitionsTestFiles;
 import org.junit.Assert;
 import org.junit.Test;
 

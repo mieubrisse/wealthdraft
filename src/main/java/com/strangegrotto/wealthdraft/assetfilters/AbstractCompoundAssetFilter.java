@@ -2,14 +2,14 @@ package com.strangegrotto.wealthdraft.assetfilters;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Preconditions;
-import com.strangegrotto.wealthdraft.assets.definition.Asset;
+import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
 
 import java.util.*;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
 public abstract class AbstractCompoundAssetFilter implements AssetFilter {
     @Override
-    public final Map<String, Asset> apply(Map<String, AssetFilter> allFilters, Map<String, Asset> input) {
+    public final Map<String, SerAsset> apply(Map<String, AssetFilter> allFilters, Map<String, SerAsset> input) {
         var constituentFilters = getConstituentFilters();
         Preconditions.checkState(constituentFilters.size() > 0, "Compound filter requires >= 1 constituent filter");
 
@@ -37,5 +37,5 @@ public abstract class AbstractCompoundAssetFilter implements AssetFilter {
     protected abstract List<AssetFilter> getConstituentFilters();
 
     // Reduce function used for deciding
-    protected abstract Map<String, Asset> combineFilterMatches(Map<String, Asset> filterResultA, Map<String, Asset> filterResultB);
+    protected abstract Map<String, SerAsset> combineFilterMatches(Map<String, SerAsset> filterResultA, Map<String, SerAsset> filterResultB);
 }

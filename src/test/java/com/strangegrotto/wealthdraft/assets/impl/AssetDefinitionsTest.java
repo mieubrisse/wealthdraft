@@ -1,8 +1,7 @@
-package com.strangegrotto.wealthdraft.assets.definition;
+package com.strangegrotto.wealthdraft.assets.impl;
 
-import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import com.strangegrotto.wealthdraft.Main;
-import com.strangegrotto.wealthdraft.assetimpls.AssetType;
+import com.strangegrotto.wealthdraft.assets.api.types.AssetType;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -32,7 +31,7 @@ public class AssetDefinitionsTest {
 
         // Verify that we do indeed have one of every class
         var distinctAssetClasses = assets.stream()
-                .map(Asset::getType)
+                .map(SerAsset::getType)
                 .distinct()
                 .count();
         Assert.assertEquals(expectedDistinctAssets, distinctAssetClasses);

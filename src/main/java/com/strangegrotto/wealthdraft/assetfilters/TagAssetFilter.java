@@ -3,10 +3,10 @@ package com.strangegrotto.wealthdraft.assetfilters;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
-import com.strangegrotto.wealthdraft.assetimpls.AssetType;
-import com.strangegrotto.wealthdraft.assets.definition.Asset;
-import com.strangegrotto.wealthdraft.assets.definition.CustomTagDefinition;
-import com.strangegrotto.wealthdraft.assets.definition.IntrinsicAssetTag;
+import com.strangegrotto.wealthdraft.assets.api.types.AssetType;
+import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
+import com.strangegrotto.wealthdraft.tagstores.custom.api.types.CustomTagDefinition;
+import com.strangegrotto.wealthdraft.tagstores.intrinsic.IntrinsicAssetTag;
 import org.immutables.value.Value;
 
 import java.util.*;
@@ -25,7 +25,7 @@ public abstract class TagAssetFilter implements AssetFilter {
     public abstract String getValue();
 
     @Override
-    public Map<String, Asset> apply(Map<String, AssetFilter> allFilters, Map<String, Asset> input) {
+    public Map<String, SerAsset> apply(Map<String, AssetFilter> allFilters, Map<String, SerAsset> input) {
         var tagName = getTag();
         var tagValue = getValue();
         return input.entrySet().stream()

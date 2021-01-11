@@ -6,20 +6,19 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
-import com.strangegrotto.wealthdraft.assets.definition.Asset;
+import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
 import com.strangegrotto.wealthdraft.assets.temporal.AssetSnapshot;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.SortedMap;
 import java.util.TreeMap;
 
 public class AssetsHistoryDeserializer extends JsonDeserializer<AssetsHistory> {
-    private final Map<String, Asset> assets;
+    private final Map<String, SerAsset> assets;
 
-    public AssetsHistoryDeserializer(Map<String, Asset> assets) {
+    public AssetsHistoryDeserializer(Map<String, SerAsset> assets) {
         this.assets = assets;
     }
 

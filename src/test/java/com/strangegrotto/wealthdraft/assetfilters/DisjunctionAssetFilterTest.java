@@ -1,9 +1,9 @@
 package com.strangegrotto.wealthdraft.assetfilters;
 
-import com.strangegrotto.wealthdraft.assetimpls.AssetType;
-import com.strangegrotto.wealthdraft.assets.definition.Asset;
-import com.strangegrotto.wealthdraft.assets.definition.ImmAsset;
-import com.strangegrotto.wealthdraft.assets.definition.ImmCustomTagDefinition;
+import com.strangegrotto.wealthdraft.assets.api.types.AssetType;
+import com.strangegrotto.wealthdraft.assets.impl.ImmSerAsset;
+import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
+import com.strangegrotto.wealthdraft.assets.impl.ImmCustomTagDefinition;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -32,21 +32,21 @@ public class DisjunctionAssetFilterTest {
                 unrelatedTagName, ImmCustomTagDefinition.builder().build()
         );
 
-        var haystack = Map.<String, Asset>of(
-                matchingAssetId1, ImmAsset.of("Match 1", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
+        var haystack = Map.<String, SerAsset>of(
+                matchingAssetId1, ImmSerAsset.of("Match 1", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
                         needle1Name, needle1Value
                 )),
-                matchingAssetId2, ImmAsset.of("Match 2", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
+                matchingAssetId2, ImmSerAsset.of("Match 2", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
                         needle1Name, needle1Value,
                         needle2Name, needle2Value
                 )),
-                matchingAssetId3, ImmAsset.of("Match 3", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
+                matchingAssetId3, ImmSerAsset.of("Match 3", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
                         needle2Name, needle2Value
                 )),
-                "unmatching-tags", ImmAsset.of("Unmatching tags", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
+                "unmatching-tags", ImmSerAsset.of("Unmatching tags", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
                         unrelatedTagName, unrelatedTagValue
                 )),
-                "no-tags", ImmAsset.of("No tags", AssetType.BANK_ACCOUNT)
+                "no-tags", ImmSerAsset.of("No tags", AssetType.BANK_ACCOUNT)
         );
 
         var needle1Filter = ImmTagAssetFilter.of(customTags, needle1Name, needle1Value);

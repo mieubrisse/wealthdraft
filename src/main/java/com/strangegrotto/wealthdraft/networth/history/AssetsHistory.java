@@ -3,7 +3,7 @@ package com.strangegrotto.wealthdraft.networth.history;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
-import com.strangegrotto.wealthdraft.assets.definition.Asset;
+import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
 import com.strangegrotto.wealthdraft.assets.temporal.AssetSnapshot;
 import org.immutables.value.Value;
 
@@ -17,7 +17,7 @@ public abstract class AssetsHistory {
 
     @Value.Parameter
     // Protected because this is only used during validation
-    protected abstract Map<String, Asset> getAssets();
+    protected abstract Map<String, SerAsset> getAssets();
 
     @JsonProperty("history")
     @Value.Parameter

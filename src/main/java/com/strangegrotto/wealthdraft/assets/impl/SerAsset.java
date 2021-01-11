@@ -1,10 +1,12 @@
-package com.strangegrotto.wealthdraft.assets.definition;
+package com.strangegrotto.wealthdraft.assets.impl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableMap;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
-import com.strangegrotto.wealthdraft.assetimpls.AssetType;
+import com.strangegrotto.wealthdraft.assets.api.types.Asset;
+import com.strangegrotto.wealthdraft.assets.api.types.AssetType;
+import com.strangegrotto.wealthdraft.tagstores.intrinsic.IntrinsicAssetTag;
 import org.immutables.value.Value;
 
 import java.util.Map;
@@ -12,14 +14,14 @@ import java.util.stream.Collectors;
 
 @WealthdraftImmutableStyle
 @Value.Immutable
-@JsonDeserialize(as = ImmAsset.class)
-public abstract class Asset {
+@JsonDeserialize(as = ImmSerAsset.class)
+public abstract class SerAsset implements Asset {
     public abstract String getName();
 
     public abstract AssetType getType();
 
     @JsonProperty("tags")
-    protected abstract Map<String, String> getCustomTags();
+    abstract Map<String, String> getCustomTags();
 
     public final Map<String, String> getTags() {
         var intrinsicTagsAsStr = getIntrinsicTags().entrySet().stream()

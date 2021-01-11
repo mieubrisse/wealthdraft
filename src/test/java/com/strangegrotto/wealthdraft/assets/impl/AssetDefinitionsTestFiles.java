@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.assets.definition;
+package com.strangegrotto.wealthdraft.assets.impl;
 
 import com.strangegrotto.wealthdraft.TestFileProvider;
 import com.strangegrotto.wealthdraft.TestResourceDirnames;

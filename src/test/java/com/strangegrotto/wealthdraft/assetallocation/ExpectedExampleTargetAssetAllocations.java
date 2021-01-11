@@ -7,9 +7,9 @@ import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAlloca
 import com.strangegrotto.wealthdraft.assetfilters.AssetFilter;
 import com.strangegrotto.wealthdraft.assetfilters.ImmConjunctionAssetFilter;
 import com.strangegrotto.wealthdraft.assetfilters.ImmTagAssetFilter;
-import com.strangegrotto.wealthdraft.assetimpls.AssetType;
-import com.strangegrotto.wealthdraft.assets.definition.ExpectedExampleAssetDefinitions;
-import com.strangegrotto.wealthdraft.assets.definition.IntrinsicAssetTag;
+import com.strangegrotto.wealthdraft.assets.api.types.AssetType;
+import com.strangegrotto.wealthdraft.assets.impl.ExpectedExampleAssetDefinitions;
+import com.strangegrotto.wealthdraft.tagstores.intrinsic.IntrinsicAssetTag;
 
 import java.math.BigDecimal;
 import java.util.List;

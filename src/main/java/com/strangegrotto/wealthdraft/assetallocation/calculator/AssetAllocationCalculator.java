@@ -4,7 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocation;
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocations;
 import com.strangegrotto.wealthdraft.assetfilters.AssetFilter;
-import com.strangegrotto.wealthdraft.assets.definition.Asset;
+import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
 import com.strangegrotto.wealthdraft.assets.temporal.AssetSnapshot;
 
 import java.math.BigDecimal;
@@ -26,7 +26,7 @@ public class AssetAllocationCalculator {
 
     public LinkedHashMap<TargetAssetAllocation, AssetAllocationCalcResult> calculate(
             TargetAssetAllocations targetAssetAllocations,
-            Map<String, Asset> assets,
+            Map<String, SerAsset> assets,
             Map<String, AssetSnapshot<?>> latestAssetSnapshots) {
         var totalPortfolioValue = latestAssetSnapshots.values().stream()
                 .map(AssetSnapshot::getValue)
@@ -108,7 +108,7 @@ public class AssetAllocationCalculator {
     }
 
     private static BigDecimal getValueOfAssetsMatchingFilter(
-            Map<String, Asset> assets,
+            Map<String, SerAsset> assets,
             Map<String, AssetSnapshot<?>> latestAssetSnapshots,
             Map<String, AssetFilter> filters,
             AssetFilter filter) {

@@ -25,7 +25,7 @@ import com.strangegrotto.wealthdraft.assetfilters.TagAssetFilter;
 import com.strangegrotto.wealthdraft.assetfilters.TagAssetFilterDeserializer;
 import com.strangegrotto.wealthdraft.assetallocation.renderer.AssetAllocationRenderer;
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocations;
-import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitions;
+import com.strangegrotto.wealthdraft.assets.impl.AssetDefinitions;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.govconstants.RetirementConstants;

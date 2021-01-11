@@ -1,9 +1,11 @@
-package com.strangegrotto.wealthdraft.assets.definition;
+package com.strangegrotto.wealthdraft.assets.impl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
+import com.strangegrotto.wealthdraft.tagstores.custom.api.types.CustomTagDefinition;
+import com.strangegrotto.wealthdraft.tagstores.intrinsic.IntrinsicAssetTag;
 import org.immutables.value.Value;
 
 import java.util.HashSet;
@@ -16,7 +18,7 @@ import java.util.Map;
 public interface AssetDefinitions {
     @Value.Parameter
     @JsonProperty("assets")
-    Map<String, Asset> getAssets();
+    Map<String, SerAsset> getAssets();
 
     @JsonProperty("customTags")
     Map<String, CustomTagDefinition> getCustomTags();

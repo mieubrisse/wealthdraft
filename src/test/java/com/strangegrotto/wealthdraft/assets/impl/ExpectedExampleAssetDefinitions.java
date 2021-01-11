@@ -1,6 +1,7 @@
-package com.strangegrotto.wealthdraft.assets.definition;
+package com.strangegrotto.wealthdraft.assets.impl;
 
-import com.strangegrotto.wealthdraft.assetimpls.AssetType;
+import com.strangegrotto.wealthdraft.assets.api.types.AssetType;
+import com.strangegrotto.wealthdraft.tagstores.custom.api.types.CustomTagDefinition;
 
 import java.util.Map;
 
@@ -28,23 +29,23 @@ public class ExpectedExampleAssetDefinitions {
 
 
 
-    public static final Asset RETIREMENT_ASSET = ImmAsset.of("Retirement account", AssetType.STOCK).withCustomTags(Map.of(
+    public static final SerAsset RETIREMENT_ASSET = ImmSerAsset.of("Retirement account", AssetType.STOCK).withCustomTags(Map.of(
             BROKER_TAG, "Fidelity",
             DOM_OR_INTL_TAG, DOMESTIC_ASSET_TAG_VALUE
     ));
-    public static final Asset BROKERAGE_ACCOUNT_ASSET = ImmAsset.of("Personal brokerage account", AssetType.STOCK).withCustomTags(Map.of(
+    public static final SerAsset BROKERAGE_ACCOUNT_ASSET = ImmSerAsset.of("Personal brokerage account", AssetType.STOCK).withCustomTags(Map.of(
             BROKER_TAG, "Vanguard",
             DOM_OR_INTL_TAG, DOMESTIC_ASSET_TAG_VALUE
     ));
-    public static final Asset BANK_ACCOUNT_ASSET = ImmAsset.of("Bank account", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
+    public static final SerAsset BANK_ACCOUNT_ASSET = ImmSerAsset.of("Bank account", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
             BROKER_TAG, "Chase",
             DOM_OR_INTL_TAG, DOMESTIC_ASSET_TAG_VALUE
     ));
-    public static final Asset BITCOIN_ASSET = ImmAsset.of("BTC holdings", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
+    public static final SerAsset BITCOIN_ASSET = ImmSerAsset.of("BTC holdings", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
             DOM_OR_INTL_TAG, INTERNATIONAL_ASSET_TAG_VALUE
     ));
 
-    public static final Map<String, Asset> EXPECTED_ASSETS = Map.of(
+    public static final Map<String, SerAsset> EXPECTED_ASSETS = Map.of(
             RETIREMENT_ACCOUNT_ID, RETIREMENT_ASSET,
             BROKERAGE_ACCOUNT_ID, BROKERAGE_ACCOUNT_ASSET,
             BANK_ACCOUNT_ID, BANK_ACCOUNT_ASSET,

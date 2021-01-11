@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Sets;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
-import com.strangegrotto.wealthdraft.assets.definition.Asset;
+import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -25,7 +25,7 @@ public abstract class ConjunctionAssetFilter extends AbstractCompoundAssetFilter
     }
 
     @Override
-    protected Map<String, Asset> combineFilterMatches(Map<String, Asset> filterResultA, Map<String, Asset> filterResultB) {
+    protected Map<String, SerAsset> combineFilterMatches(Map<String, SerAsset> filterResultA, Map<String, SerAsset> filterResultB) {
         var matchingAssetIds = Sets.intersection(filterResultA.keySet(), filterResultB.keySet());
         return filterResultA.entrySet().stream()
                 .filter(entry -> matchingAssetIds.contains(entry.getKey()))

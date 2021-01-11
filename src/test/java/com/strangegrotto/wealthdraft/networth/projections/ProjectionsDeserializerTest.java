@@ -1,9 +1,9 @@
 package com.strangegrotto.wealthdraft.networth.projections;
 
 import com.strangegrotto.wealthdraft.Main;
-import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitions;
-import com.strangegrotto.wealthdraft.assets.definition.AssetDefinitionsTestFiles;
-import com.strangegrotto.wealthdraft.assets.definition.ImmAssetDefinitions;
+import com.strangegrotto.wealthdraft.assets.impl.AssetDefinitions;
+import com.strangegrotto.wealthdraft.assets.impl.AssetDefinitionsTestFiles;
+import com.strangegrotto.wealthdraft.assets.impl.ImmAssetDefinitions;
 import org.junit.Assert;
 import org.junit.Test;
 

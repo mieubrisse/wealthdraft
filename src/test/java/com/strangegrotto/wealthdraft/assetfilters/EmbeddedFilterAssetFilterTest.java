@@ -1,10 +1,10 @@
 package com.strangegrotto.wealthdraft.assetfilters;
 
 import com.google.common.collect.Sets;
-import com.strangegrotto.wealthdraft.assetimpls.AssetType;
-import com.strangegrotto.wealthdraft.assets.definition.Asset;
-import com.strangegrotto.wealthdraft.assets.definition.ImmAsset;
-import com.strangegrotto.wealthdraft.assets.definition.ImmCustomTagDefinition;
+import com.strangegrotto.wealthdraft.assets.api.types.AssetType;
+import com.strangegrotto.wealthdraft.assets.impl.ImmSerAsset;
+import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
+import com.strangegrotto.wealthdraft.assets.impl.ImmCustomTagDefinition;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -36,11 +36,11 @@ public class EmbeddedFilterAssetFilterTest {
         );
 
         var matchingAssetId = "matching";
-        Map<String, Asset> haystack = Map.of(
-                matchingAssetId, ImmAsset.of("Matching", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
+        Map<String, SerAsset> haystack = Map.of(
+                matchingAssetId, ImmSerAsset.of("Matching", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
                         needleName, needleValue
                 )),
-                "unmatchingAsset", ImmAsset.of("Doesn't match", AssetType.BANK_ACCOUNT)
+                "unmatchingAsset", ImmSerAsset.of("Doesn't match", AssetType.BANK_ACCOUNT)
         );
 
         var expected = Map.of(
@@ -77,8 +77,8 @@ public class EmbeddedFilterAssetFilterTest {
                 embeddingFilterId, embeddingFilter
         );
 
-        Map<String, Asset> assets = Map.of(
-                "someAsset", ImmAsset.of("Some ranodm asset", AssetType.BANK_ACCOUNT)
+        Map<String, SerAsset> assets = Map.of(
+                "someAsset", ImmSerAsset.of("Some ranodm asset", AssetType.BANK_ACCOUNT)
         );
 
         embeddingFilter.apply(filters, assets);

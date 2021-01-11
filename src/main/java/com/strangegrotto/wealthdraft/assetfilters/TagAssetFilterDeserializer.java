@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.strangegrotto.wealthdraft.assets.definition.CustomTagDefinition;
+import com.strangegrotto.wealthdraft.tagstores.custom.api.types.CustomTagDefinition;
 
 import java.io.IOException;
 import java.util.Map;

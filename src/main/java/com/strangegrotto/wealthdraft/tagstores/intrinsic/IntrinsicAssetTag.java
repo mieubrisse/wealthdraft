@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.assets.definition;
+package com.strangegrotto.wealthdraft.tagstores.intrinsic;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -17,6 +17,7 @@ public enum IntrinsicAssetTag {
         return name;
     }
 
+    // TODO Delete??
     public static Set<String> getAllTagNames() {
         return Arrays.stream(IntrinsicAssetTag.values())
                 .map(IntrinsicAssetTag::getTagName)
