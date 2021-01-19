@@ -3,8 +3,10 @@ package com.strangegrotto.wealthdraft.filters.impl;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
+import com.strangegrotto.wealthdraft.assets.api.types.Asset;
 import com.strangegrotto.wealthdraft.assets.api.types.AssetType;
 import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
+import com.strangegrotto.wealthdraft.filters.api.types.AssetFilter;
 import com.strangegrotto.wealthdraft.tagstores.custom.api.types.CustomTagDefinition;
 import com.strangegrotto.wealthdraft.tagstores.intrinsic.IntrinsicAssetTag;
 import org.immutables.value.Value;
@@ -21,7 +23,7 @@ public abstract class TagAssetFilter implements SerAssetFilter {
     public abstract String getValue();
 
     @Override
-    public Map<String, SerAsset> apply(Map<String, SerAssetFilter> allFilters, Map<String, SerAsset> input) {
+    public Map<String, Asset> apply(Map<String, AssetFilter> allFilters, Map<String, Asset> input) {
         var tagName = getTag();
         var tagValue = getValue();
         return input.entrySet().stream()
@@ -34,7 +36,7 @@ public abstract class TagAssetFilter implements SerAssetFilter {
     }
 
     @Override
-    public Optional<List<String>> checkForCycles(Map<String, SerAssetFilter> allFilters, LinkedHashSet<String> parentFilters) {
+    public Optional<List<String>> checkForCycles(Map<String, AssetFilter> allFilters, LinkedHashSet<String> parentFilters) {
         return Optional.empty();
     }
 }

@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Sets;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
+import com.strangegrotto.wealthdraft.assets.api.types.Asset;
 import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
 import com.strangegrotto.wealthdraft.filters.ImmConjunctionAssetFilter;
+import com.strangegrotto.wealthdraft.filters.api.types.AssetFilter;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -18,15 +20,15 @@ import java.util.stream.Collectors;
 public abstract class ConjunctionAssetFilter extends AbstractCompoundAssetFilter {
     @Value.Parameter
     @JsonProperty("all")
-    public abstract List<SerAssetFilter> getFilters();
+    public abstract List<AssetFilter> getFilters();
 
     @Override
-    protected final List<SerAssetFilter> getConstituentFilters() {
+    protected final List<AssetFilter> getConstituentFilters() {
         return getFilters();
     }
 
     @Override
-    protected Map<String, SerAsset> combineFilterMatches(Map<String, SerAsset> filterResultA, Map<String, SerAsset> filterResultB) {
+    protected Map<String, Asset> combineFilterMatches(Map<String, Asset> filterResultA, Map<String, Asset> filterResultB) {
         var matchingAssetIds = Sets.intersection(filterResultA.keySet(), filterResultB.keySet());
         return filterResultA.entrySet().stream()
                 .filter(entry -> matchingAssetIds.contains(entry.getKey()))

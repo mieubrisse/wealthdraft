@@ -15,7 +15,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
-public class SimpleFilterStoreFactory implements AbstractYmlBackedStoreFactory<
+public class SimpleFilterStoreFactory extends AbstractYmlBackedStoreFactory<
         Map<String, AssetFilter>,
         Map<String, AssetFilter>,
         SimpleFiltersStore> {

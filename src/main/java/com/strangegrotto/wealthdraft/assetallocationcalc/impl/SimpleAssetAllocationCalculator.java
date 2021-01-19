@@ -9,7 +9,9 @@ import com.strangegrotto.wealthdraft.assetallocation.impl.SerTargetAssetAllocati
 import com.strangegrotto.wealthdraft.assetallocation.impl.SerTargetAssetAllocations;
 import com.strangegrotto.wealthdraft.assethistory.api.AssetHistoryStore;
 import com.strangegrotto.wealthdraft.assets.api.AssetsStore;
+import com.strangegrotto.wealthdraft.assets.api.types.Asset;
 import com.strangegrotto.wealthdraft.filters.api.FiltersStore;
+import com.strangegrotto.wealthdraft.filters.api.types.AssetFilter;
 import com.strangegrotto.wealthdraft.filters.impl.SerAssetFilter;
 import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
 import com.strangegrotto.wealthdraft.assethistory.api.types.AssetSnapshot;
@@ -39,45 +41,43 @@ public class SimpleAssetAllocationCalculator implements AssetAllocationCalculato
 
     @Override
     public AssetAllocationCalcResult calculate(TargetAssetAllocation target) {
+        var assets = this.assetsStore.getAssets();
 
-
-
+        var assetHistory = this.assetHistoryStore.getHistory();
+        var latestDate = assetHistory.lastKey();
+        var latestAssetSnapshots = assetHistory.get(latestDate);
 
         var totalPortfolioValue = latestAssetSnapshots.values().stream()
                 .map(AssetSnapshot::getValue)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        var filters = targetAssetAllocations.getFilters();
-        var targets = targetAssetAllocations.getTargets();
+        var filters = this.filtersStore.getFilters();
 
-        var results = new LinkedHashMap<SerTargetAssetAllocation, SerAssetAllocationCalcResult>();
-        for (var target : targets) {
-            var numeratorFilterName = target.getNumeratorFilter();
-            var numeratorFilter = filters.get(numeratorFilterName);
-            var numeratorValue = getValueOfAssetsMatchingFilter(assets, latestAssetSnapshots, filters, numeratorFilter);
+        var numeratorFilterId = target.getNumeratorFilterId();
+        var numeratorFilter = filters.get(numeratorFilterId);
+        var numeratorValue = getValueOfAssetsMatchingFilter(assets, latestAssetSnapshots, filters, numeratorFilter);
 
-            var denominatorFilterNameOpt = target.getDenominatorFilterOpt();
-            BigDecimal denominatorValue;
-            String denominatorStrRepr;
-            if (denominatorFilterNameOpt.isPresent()) {
-                var denominatorFilterName = denominatorFilterNameOpt.get();
-                var denominatorFilter = filters.get(denominatorFilterName);
-                denominatorValue = getValueOfAssetsMatchingFilter(assets, latestAssetSnapshots, filters, denominatorFilter);
-                denominatorStrRepr = denominatorFilterName;
-            } else {
-                denominatorValue = totalPortfolioValue;
-                denominatorStrRepr = "Total Portfolio";
-            }
-
-            var calcResult = calcSingleAssetAllocation(
-                    numeratorValue,
-                    denominatorValue,
-                    target.getFraction(),
-                    this.deviationFractionWarn,
-                    this.deviationFractionErr
-            );
-            results.put(target, calcResult);
+        var denominatorFilterIdOpt = target.getDenominatorFilterOpt();
+        BigDecimal denominatorValue;
+        String denominatorStrRepr;
+        if (denominatorFilterIdOpt.isPresent()) {
+            var denominatorFilterName = denominatorFilterIdOpt.get();
+            var denominatorFilter = filters.get(denominatorFilterName);
+            denominatorValue = getValueOfAssetsMatchingFilter(assets, latestAssetSnapshots, filters, denominatorFilter);
+            denominatorStrRepr = denominatorFilterName;
+        } else {
+            denominatorValue = totalPortfolioValue;
+            denominatorStrRepr = "Total Portfolio";
         }
+
+        var calcResult = calcSingleAssetAllocation(
+                numeratorValue,
+                denominatorValue,
+                target.getFraction(),
+                this.deviationFractionWarn,
+                this.deviationFractionErr
+        );
+        results.put(target, calcResult);
         return results;
     }
 
@@ -123,9 +123,9 @@ public class SimpleAssetAllocationCalculator implements AssetAllocationCalculato
     }
 
     private static BigDecimal getValueOfAssetsMatchingFilter(
-            Map<String, SerAsset> assets,
+            Map<String, Asset> assets,
             Map<String, AssetSnapshot<?>> latestAssetSnapshots,
-            Map<String, SerAssetFilter> filters,
+            Map<String, AssetFilter> filters,
             SerAssetFilter filter) {
         var matchingAssetIds = filter.apply(filters, assets);
         return latestAssetSnapshots.entrySet().stream()

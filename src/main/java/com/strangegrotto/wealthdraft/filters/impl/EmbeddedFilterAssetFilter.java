@@ -5,8 +5,10 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
+import com.strangegrotto.wealthdraft.assets.api.types.Asset;
 import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
 import com.strangegrotto.wealthdraft.filters.ImmEmbeddedFilterAssetFilter;
+import com.strangegrotto.wealthdraft.filters.api.types.AssetFilter;
 import org.immutables.value.Value;
 
 import java.util.*;
@@ -19,7 +21,7 @@ public abstract class EmbeddedFilterAssetFilter implements SerAssetFilter {
     public abstract String getFilterId();
 
     @Override
-    public Map<String, SerAsset> apply(Map<String, SerAssetFilter> allFilters, Map<String, SerAsset> input) {
+    public Map<String, Asset> apply(Map<String, AssetFilter> allFilters, Map<String, Asset> input) {
         var embeddedFilterName = getFilterId();
         Preconditions.checkState(
                 allFilters.containsKey(embeddedFilterName),
@@ -31,7 +33,7 @@ public abstract class EmbeddedFilterAssetFilter implements SerAssetFilter {
     }
 
     @Override
-    public Optional<List<String>> checkForCycles(Map<String, SerAssetFilter> allFilters, LinkedHashSet<String> parentFilters) {
+    public Optional<List<String>> checkForCycles(Map<String, AssetFilter> allFilters, LinkedHashSet<String> parentFilters) {
         var embeddedFilterName = getFilterId();
         Preconditions.checkState(
                 allFilters.containsKey(embeddedFilterName),

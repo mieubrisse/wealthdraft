@@ -2,14 +2,16 @@ package com.strangegrotto.wealthdraft.filters.impl;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Preconditions;
+import com.strangegrotto.wealthdraft.assets.api.types.Asset;
 import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
+import com.strangegrotto.wealthdraft.filters.api.types.AssetFilter;
 
 import java.util.*;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
 public abstract class AbstractCompoundAssetFilter implements SerAssetFilter {
     @Override
-    public final Map<String, SerAsset> apply(Map<String, SerAssetFilter> allFilters, Map<String, SerAsset> input) {
+    public final Map<String, Asset> apply(Map<String, AssetFilter> allFilters, Map<String, Asset> input) {
         var constituentFilters = getConstituentFilters();
         Preconditions.checkState(constituentFilters.size() > 0, "Compound filter requires >= 1 constituent filter");
 
@@ -24,7 +26,7 @@ public abstract class AbstractCompoundAssetFilter implements SerAssetFilter {
     }
 
     @Override
-    public Optional<List<String>> checkForCycles(Map<String, SerAssetFilter> allFilters, LinkedHashSet<String> parentFilters) {
+    public Optional<List<String>> checkForCycles(Map<String, AssetFilter> allFilters, LinkedHashSet<String> parentFilters) {
         for (var filter : getConstituentFilters()) {
             var cycleOpt = filter.checkForCycles(allFilters, parentFilters);
             if (cycleOpt.isPresent()) {
@@ -34,8 +36,8 @@ public abstract class AbstractCompoundAssetFilter implements SerAssetFilter {
         return Optional.empty();
     }
 
-    protected abstract List<SerAssetFilter> getConstituentFilters();
+    protected abstract List<AssetFilter> getConstituentFilters();
 
     // Reduce function used for deciding
-    protected abstract Map<String, SerAsset> combineFilterMatches(Map<String, SerAsset> filterResultA, Map<String, SerAsset> filterResultB);
+    protected abstract Map<String, Asset> combineFilterMatches(Map<String, Asset> filterResultA, Map<String, Asset> filterResultB);
 }

@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Sets;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
+import com.strangegrotto.wealthdraft.assets.api.types.Asset;
 import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
 import com.strangegrotto.wealthdraft.filters.ImmDisjunctionAssetFilter;
+import com.strangegrotto.wealthdraft.filters.api.types.AssetFilter;
 import org.immutables.value.Value;
 
 import java.util.HashMap;
@@ -19,15 +21,15 @@ import java.util.stream.Collectors;
 public abstract class DisjunctionAssetFilter extends AbstractCompoundAssetFilter {
     @Value.Parameter
     @JsonProperty("any")
-    public abstract List<SerAssetFilter> getTags();
+    public abstract List<AssetFilter> getTags();
 
     @Override
-    protected final List<SerAssetFilter> getConstituentFilters() {
+    protected final List<AssetFilter> getConstituentFilters() {
         return this.getTags();
     }
 
     @Override
-    protected Map<String, SerAsset> combineFilterMatches(Map<String, SerAsset> filterResultA, Map<String, SerAsset> filterResultB) {
+    protected Map<String, Asset> combineFilterMatches(Map<String, Asset> filterResultA, Map<String, Asset> filterResultB) {
         var matchingIds = Sets.union(filterResultA.keySet(), filterResultB.keySet());
         var matchingAEntries = filterResultA.entrySet().stream()
                 .filter(entry -> matchingIds.contains(entry.getKey()))
@@ -39,7 +41,7 @@ public abstract class DisjunctionAssetFilter extends AbstractCompoundAssetFilter
         // We put A entries second so that if A and B contain the same ID, the A version is the one that
         //  ends up in the final map. It shouldn't make a difference because A and B should have the exact same
         //  asset for the same assetId, but just in case
-        var result = new HashMap<String, SerAsset>();
+        var result = new HashMap<String, Asset>();
         result.putAll(matchingBEntries);
         result.putAll(matchingAEntries);
 
