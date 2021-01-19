@@ -1,8 +1,8 @@
 package com.strangegrotto.wealthdraft.assetallocation.calculator;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocation;
-import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocations;
+import com.strangegrotto.wealthdraft.assetallocation.impl.SerTargetAssetAllocation;
+import com.strangegrotto.wealthdraft.assetallocation.impl.SerTargetAssetAllocations;
 import com.strangegrotto.wealthdraft.filters.impl.SerAssetFilter;
 import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
 import com.strangegrotto.wealthdraft.assethistory.api.types.AssetSnapshot;
@@ -24,8 +24,8 @@ public class AssetAllocationCalculator {
         this.deviationFractionErr = deviationFractionErr;
     }
 
-    public LinkedHashMap<TargetAssetAllocation, AssetAllocationCalcResult> calculate(
-            TargetAssetAllocations targetAssetAllocations,
+    public LinkedHashMap<SerTargetAssetAllocation, AssetAllocationCalcResult> calculate(
+            SerTargetAssetAllocations targetAssetAllocations,
             Map<String, SerAsset> assets,
             Map<String, AssetSnapshot<?>> latestAssetSnapshots) {
         var totalPortfolioValue = latestAssetSnapshots.values().stream()
@@ -35,7 +35,7 @@ public class AssetAllocationCalculator {
         var filters = targetAssetAllocations.getFilters();
         var targets = targetAssetAllocations.getTargets();
 
-        var results = new LinkedHashMap<TargetAssetAllocation, AssetAllocationCalcResult>();
+        var results = new LinkedHashMap<SerTargetAssetAllocation, AssetAllocationCalcResult>();
         for (var target : targets) {
             var numeratorFilterName = target.getNumeratorFilter();
             var numeratorFilter = filters.get(numeratorFilterName);

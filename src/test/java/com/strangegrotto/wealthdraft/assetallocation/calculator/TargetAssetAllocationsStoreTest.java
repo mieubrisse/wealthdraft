@@ -5,7 +5,7 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 
-public class AssetAllocationCalculatorTest {
+public class TargetAssetAllocationsStoreTest {
     @Test
     public void testCalculationMath() {
         var currentNumerator = BigDecimal.valueOf(50_000);

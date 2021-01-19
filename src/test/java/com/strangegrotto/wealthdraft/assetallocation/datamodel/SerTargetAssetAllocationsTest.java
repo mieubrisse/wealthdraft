@@ -3,6 +3,7 @@ package com.strangegrotto.wealthdraft.assetallocation.datamodel;
 import com.strangegrotto.wealthdraft.Main;
 import com.strangegrotto.wealthdraft.assetallocation.ExpectedExampleTargetAssetAllocations;
 import com.strangegrotto.wealthdraft.assetallocation.TargetAssetAllocationsTestFiles;
+import com.strangegrotto.wealthdraft.assetallocation.impl.SerTargetAssetAllocations;
 import com.strangegrotto.wealthdraft.filters.impl.SerAssetFilter;
 import com.strangegrotto.wealthdraft.filters.FiltersTestFiles;
 import com.strangegrotto.wealthdraft.assets.impl.AssetDefinitions;
@@ -14,7 +15,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TargetAssetAllocationsTest {
+public class SerTargetAssetAllocationsTest {
     @Test
     public void testValidDeserialization() throws IOException {
         var targetAssetAllocations = parseAssetAllocationsFile(TargetAssetAllocationsTestFiles.EXAMPLE);
@@ -41,7 +42,7 @@ public class TargetAssetAllocationsTest {
         parseAssetAllocationsFile(TargetAssetAllocationsTestFiles.FRACTION_LESS_THAN_0);
     }
 
-    private static TargetAssetAllocations parseAssetAllocationsFile(TargetAssetAllocationsTestFiles testFile) throws IOException {
+    private static SerTargetAssetAllocations parseAssetAllocationsFile(TargetAssetAllocationsTestFiles testFile) throws IOException {
         var mapper = Main.getObjectMapper();
         var assetsUrl = AssetDefinitionsTestFiles.EXAMPLE.getResource();
         var assetDefinitions = mapper.readValue(assetsUrl, AssetDefinitions.class);
@@ -53,6 +54,6 @@ public class TargetAssetAllocationsTest {
         Main.addDeserializersNeedingFilters(mapper, filters);
 
         var assetAllocationsUrl = testFile.getResource();
-        return mapper.readValue(assetAllocationsUrl, TargetAssetAllocations.class);
+        return mapper.readValue(assetAllocationsUrl, SerTargetAssetAllocations.class);
     }
 }

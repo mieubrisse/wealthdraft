@@ -18,12 +18,11 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Ordering;
 import com.strangegrotto.wealthdraft.assetallocation.calculator.AssetAllocationCalculator;
-import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocationsDeserializer;
 import com.strangegrotto.wealthdraft.filters.impl.SerAssetFilter;
 import com.strangegrotto.wealthdraft.filters.impl.TagAssetFilter;
 import com.strangegrotto.wealthdraft.filters.impl.TagAssetFilterDeserializer;
 import com.strangegrotto.wealthdraft.assetallocation.renderer.AssetAllocationRenderer;
-import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocations;
+import com.strangegrotto.wealthdraft.assetallocation.impl.SerTargetAssetAllocations;
 import com.strangegrotto.wealthdraft.assets.impl.AssetDefinitions;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
@@ -238,9 +237,9 @@ public class Main {
 
         String assetAllocationsFilepath = parsedArgs.getString(ASSET_ALLOCATIONS_FILEPATH_ARG);
         log.debug("Asset allocations filepath: {}", assetAllocationsFilepath);
-        TargetAssetAllocations targetAssetAllocations;
+        SerTargetAssetAllocations targetAssetAllocations;
         try {
-            targetAssetAllocations = mapper.readValue(new File(assetAllocationsFilepath), TargetAssetAllocations.class);
+            targetAssetAllocations = mapper.readValue(new File(assetAllocationsFilepath), SerTargetAssetAllocations.class);
         } catch (IOException e) {
             log.error("An error occurred parsing the asset allocations file '{}'", assetAllocationsFilepath, e);
             System.exit(FAILURE_EXIT_CODE);
@@ -310,16 +309,6 @@ public class Main {
         deserializerModule.addDeserializer(SerProjections.class, new SerProjectionsDeserializer(assets));
         deserializerModule.addDeserializer(SerAssetsHistory.class, new SerAssetsHistoryDeserializer(assets));
         deserializerModule.addDeserializer(TagAssetFilter.class, new TagAssetFilterDeserializer(customTags));
-        mapper.registerModule(deserializerModule);
-    }
-
-    @VisibleForTesting
-    public static void addDeserializersNeedingFilters(ObjectMapper mapper, Map<String, SerAssetFilter> filters) {
-        var deserializerModule = new SimpleModule();
-        deserializerModule.addDeserializer(
-                TargetAssetAllocations.class,
-                new TargetAssetAllocationsDeserializer(filters)
-        );
         mapper.registerModule(deserializerModule);
     }
 

@@ -2,8 +2,8 @@ package com.strangegrotto.wealthdraft.assetallocation;
 
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.ImmTargetAssetAllocation;
 import com.strangegrotto.wealthdraft.assetallocation.datamodel.ImmTargetAssetAllocations;
-import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocation;
-import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocations;
+import com.strangegrotto.wealthdraft.assetallocation.impl.SerTargetAssetAllocation;
+import com.strangegrotto.wealthdraft.assetallocation.impl.SerTargetAssetAllocations;
 import com.strangegrotto.wealthdraft.filters.impl.SerAssetFilter;
 import com.strangegrotto.wealthdraft.filters.ImmConjunctionAssetFilter;
 import com.strangegrotto.wealthdraft.filters.ImmTagAssetFilter;
@@ -43,22 +43,22 @@ public class ExpectedExampleTargetAssetAllocations {
             )
     ));
 
-    private static final TargetAssetAllocation TARGET_ALLOCATION_1 = ImmTargetAssetAllocation.of(
+    private static final SerTargetAssetAllocation TARGET_ALLOCATION_1 = ImmTargetAssetAllocation.of(
             DOMESTIC_ASSETS_FILTER_ID,
             BigDecimal.valueOf(0.7)
     );
 
-    private static final TargetAssetAllocation TARGET_ALLOCATION_2 = ImmTargetAssetAllocation.of(
+    private static final SerTargetAssetAllocation TARGET_ALLOCATION_2 = ImmTargetAssetAllocation.of(
             INTERNATIONAL_ASSETS_FILTER_ID,
             BigDecimal.valueOf(0.3)
     );
 
-    private static final TargetAssetAllocation TARGET_ALLOCATION_3 = ImmTargetAssetAllocation.of(
+    private static final SerTargetAssetAllocation TARGET_ALLOCATION_3 = ImmTargetAssetAllocation.of(
             DOMESTIC_BANK_ASSETS_FILTER_ID,
             BigDecimal.valueOf(0.01)
     ).withDenominatorFilterOpt(DOMESTIC_ASSETS_FILTER_ID);
 
-    public static final TargetAssetAllocations ASSET_ALLOCATIONS = ImmTargetAssetAllocations.of(
+    public static final SerTargetAssetAllocations ASSET_ALLOCATIONS = ImmTargetAssetAllocations.of(
             Map.of(
                 DOMESTIC_ASSETS_FILTER_ID, DOMESTIC_ASSETS_FILTER,
                 INTERNATIONAL_ASSETS_FILTER_ID, INTERNATIONAL_ASSETS_FILTER,

@@ -2,7 +2,7 @@ package com.strangegrotto.wealthdraft.assetallocation.renderer;
 
 import com.strangegrotto.wealthdraft.Display;
 import com.strangegrotto.wealthdraft.assetallocation.calculator.AssetAllocationCalcResult;
-import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocation;
+import com.strangegrotto.wealthdraft.assetallocation.impl.SerTargetAssetAllocation;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -25,7 +25,7 @@ public class AssetAllocationRenderer {
     }
 
     public void render(
-            LinkedHashMap<TargetAssetAllocation, AssetAllocationCalcResult> calcResults) {
+            LinkedHashMap<SerTargetAssetAllocation, AssetAllocationCalcResult> calcResults) {
         display.printEmptyLine();
         display.printBannerHeader("Asset Allocations");
 
