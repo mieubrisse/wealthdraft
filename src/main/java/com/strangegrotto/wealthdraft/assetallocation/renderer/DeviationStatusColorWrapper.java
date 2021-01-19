@@ -1,7 +1,7 @@
 package com.strangegrotto.wealthdraft.assetallocation.renderer;
 
 import com.google.common.base.Strings;
-import com.strangegrotto.wealthdraft.assetallocation.calculator.AssetAllocationDeviationStatus;
+import com.strangegrotto.wealthdraft.assetallocationcalc.api.types.AssetAllocationDeviationStatus;
 
 class DeviationStatusColorWrapper {
     private static final String ANSI_WHITE = "\u001B[37m";

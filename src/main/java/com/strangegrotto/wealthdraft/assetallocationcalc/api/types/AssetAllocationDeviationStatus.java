@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.assetallocation.calculator;
+package com.strangegrotto.wealthdraft.assetallocationcalc.api.types;
 
 public enum AssetAllocationDeviationStatus {
     OK,     // Asset allocation deviation is within tolerances

@@ -17,7 +17,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Ordering;
-import com.strangegrotto.wealthdraft.assetallocation.calculator.AssetAllocationCalculator;
+import com.strangegrotto.wealthdraft.assetallocationcalc.impl.SimpleAssetAllocationCalculator;
 import com.strangegrotto.wealthdraft.filters.impl.SerAssetFilter;
 import com.strangegrotto.wealthdraft.filters.impl.TagAssetFilter;
 import com.strangegrotto.wealthdraft.filters.impl.TagAssetFilterDeserializer;
@@ -271,7 +271,7 @@ public class Main {
         var assetsHistoryByDate = assetsHistory.getHistory();
         var latestDate = assetsHistoryByDate.lastKey();
         var latestAssetSnapshots = assetsHistoryByDate.get(latestDate);
-        var assetAllocationCalculator = new AssetAllocationCalculator(
+        var assetAllocationCalculator = new SimpleAssetAllocationCalculator(
                 ASSET_ALLOCATION_DEVIATION_PCT_WARN,
                 ASSET_ALLOCATION_DEVIATION_PCT_ERROR
         );

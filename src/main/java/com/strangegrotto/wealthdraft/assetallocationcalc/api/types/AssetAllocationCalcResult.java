@@ -1,12 +1,7 @@
-package com.strangegrotto.wealthdraft.assetallocation.calculator;
-
-import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
-import org.immutables.value.Value;
+package com.strangegrotto.wealthdraft.assetallocationcalc.api.types;
 
 import java.math.BigDecimal;
 
-@WealthdraftImmutableStyle
-@Value.Immutable
 public interface AssetAllocationCalcResult {
     BigDecimal getCurrentNumeratorValue();
 

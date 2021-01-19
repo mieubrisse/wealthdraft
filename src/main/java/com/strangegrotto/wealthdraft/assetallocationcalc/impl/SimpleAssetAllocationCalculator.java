@@ -1,8 +1,15 @@
-package com.strangegrotto.wealthdraft.assetallocation.calculator;
+package com.strangegrotto.wealthdraft.assetallocationcalc.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.strangegrotto.wealthdraft.assetallocation.api.types.TargetAssetAllocation;
+import com.strangegrotto.wealthdraft.assetallocationcalc.api.AssetAllocationCalculator;
+import com.strangegrotto.wealthdraft.assetallocationcalc.api.types.AssetAllocationCalcResult;
+import com.strangegrotto.wealthdraft.assetallocationcalc.api.types.AssetAllocationDeviationStatus;
 import com.strangegrotto.wealthdraft.assetallocation.impl.SerTargetAssetAllocation;
 import com.strangegrotto.wealthdraft.assetallocation.impl.SerTargetAssetAllocations;
+import com.strangegrotto.wealthdraft.assethistory.api.AssetHistoryStore;
+import com.strangegrotto.wealthdraft.assets.api.AssetsStore;
+import com.strangegrotto.wealthdraft.filters.api.FiltersStore;
 import com.strangegrotto.wealthdraft.filters.impl.SerAssetFilter;
 import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
 import com.strangegrotto.wealthdraft.assethistory.api.types.AssetSnapshot;
@@ -11,23 +18,31 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 
-public class AssetAllocationCalculator {
+public class SimpleAssetAllocationCalculator implements AssetAllocationCalculator {
     // The rounding parameters to use so that non-terminating divison doesn't throw an exception
     @VisibleForTesting static final int DIVISION_SCALE = 6;
     @VisibleForTesting static final RoundingMode ROUNDING_MODE = RoundingMode.HALF_EVEN;
 
     private final BigDecimal deviationFractionWarn;
     private final BigDecimal deviationFractionErr;
+    private final FiltersStore filtersStore;
+    private final AssetsStore assetsStore;
+    private final AssetHistoryStore assetHistoryStore;
 
-    public AssetAllocationCalculator(BigDecimal deviationFractionWarn, BigDecimal deviationFractionErr) {
+    public SimpleAssetAllocationCalculator(BigDecimal deviationFractionWarn, BigDecimal deviationFractionErr, FiltersStore filtersStore, AssetsStore assetsStore, AssetHistoryStore assetHistoryStore) {
         this.deviationFractionWarn = deviationFractionWarn;
         this.deviationFractionErr = deviationFractionErr;
+        this.filtersStore = filtersStore;
+        this.assetsStore = assetsStore;
+        this.assetHistoryStore = assetHistoryStore;
     }
 
-    public LinkedHashMap<SerTargetAssetAllocation, AssetAllocationCalcResult> calculate(
-            SerTargetAssetAllocations targetAssetAllocations,
-            Map<String, SerAsset> assets,
-            Map<String, AssetSnapshot<?>> latestAssetSnapshots) {
+    @Override
+    public AssetAllocationCalcResult calculate(TargetAssetAllocation target) {
+
+
+
+
         var totalPortfolioValue = latestAssetSnapshots.values().stream()
                 .map(AssetSnapshot::getValue)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -35,7 +50,7 @@ public class AssetAllocationCalculator {
         var filters = targetAssetAllocations.getFilters();
         var targets = targetAssetAllocations.getTargets();
 
-        var results = new LinkedHashMap<SerTargetAssetAllocation, AssetAllocationCalcResult>();
+        var results = new LinkedHashMap<SerTargetAssetAllocation, SerAssetAllocationCalcResult>();
         for (var target : targets) {
             var numeratorFilterName = target.getNumeratorFilter();
             var numeratorFilter = filters.get(numeratorFilterName);
@@ -67,7 +82,7 @@ public class AssetAllocationCalculator {
     }
 
     @VisibleForTesting
-    static AssetAllocationCalcResult calcSingleAssetAllocation(
+    static SerAssetAllocationCalcResult calcSingleAssetAllocation(
             BigDecimal numeratorValue,
             BigDecimal denominatorValue,
             BigDecimal targetFraction,

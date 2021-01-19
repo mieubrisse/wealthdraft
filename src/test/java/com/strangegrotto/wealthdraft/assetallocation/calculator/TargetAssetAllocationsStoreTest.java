@@ -1,5 +1,7 @@
 package com.strangegrotto.wealthdraft.assetallocation.calculator;
 
+import com.strangegrotto.wealthdraft.assetallocationcalc.api.types.AssetAllocationDeviationStatus;
+import com.strangegrotto.wealthdraft.assetallocationcalc.impl.SimpleAssetAllocationCalculator;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -11,7 +13,7 @@ public class TargetAssetAllocationsStoreTest {
         var currentNumerator = BigDecimal.valueOf(50_000);
         var currentDenominator = BigDecimal.valueOf(300_000);
         var targetFraction = BigDecimal.valueOf(0.10);
-        var result = AssetAllocationCalculator.calcSingleAssetAllocation(
+        var result = SimpleAssetAllocationCalculator.calcSingleAssetAllocation(
                 currentNumerator,
                 currentDenominator,
                 targetFraction,
@@ -21,16 +23,16 @@ public class TargetAssetAllocationsStoreTest {
 
         var expectedCurrentFraction = currentNumerator.divide(
                 currentDenominator,
-                AssetAllocationCalculator.DIVISION_SCALE,
-                AssetAllocationCalculator.ROUNDING_MODE);
+                SimpleAssetAllocationCalculator.DIVISION_SCALE,
+                SimpleAssetAllocationCalculator.ROUNDING_MODE);
         var expectedTargetNumeratorValue = BigDecimal.valueOf(30_000);
         var expectedCorrectionNeeded = BigDecimal.valueOf(-20_000);
         var expectedDeviationFraction = expectedCorrectionNeeded
                 .abs()
                 .divide(
                         expectedTargetNumeratorValue,
-                        AssetAllocationCalculator.DIVISION_SCALE,
-                        AssetAllocationCalculator.ROUNDING_MODE
+                        SimpleAssetAllocationCalculator.DIVISION_SCALE,
+                        SimpleAssetAllocationCalculator.ROUNDING_MODE
                 );
 
         // We use .compareTo rather than .equals because .equals compares value AND scale
@@ -43,7 +45,7 @@ public class TargetAssetAllocationsStoreTest {
     @Test
     public void testOkDeviationStatus() {
         // Lower
-        var lower = AssetAllocationCalculator.calcSingleAssetAllocation(
+        var lower = SimpleAssetAllocationCalculator.calcSingleAssetAllocation(
                 BigDecimal.valueOf(28_000),
                 BigDecimal.valueOf(300_000),
                 BigDecimal.valueOf(0.10),
@@ -53,7 +55,7 @@ public class TargetAssetAllocationsStoreTest {
         Assert.assertEquals(AssetAllocationDeviationStatus.OK, lower.getDeviationStatus());
 
         // Higher
-        var higher = AssetAllocationCalculator.calcSingleAssetAllocation(
+        var higher = SimpleAssetAllocationCalculator.calcSingleAssetAllocation(
                 BigDecimal.valueOf(32_000),
                 BigDecimal.valueOf(300_000),
                 BigDecimal.valueOf(0.10),
@@ -66,7 +68,7 @@ public class TargetAssetAllocationsStoreTest {
     @Test
     public void testWarnDeviationStatus() {
         // Lower
-        var lower = AssetAllocationCalculator.calcSingleAssetAllocation(
+        var lower = SimpleAssetAllocationCalculator.calcSingleAssetAllocation(
                 BigDecimal.valueOf(26_000),
                 BigDecimal.valueOf(300_000),
                 BigDecimal.valueOf(0.10),
@@ -76,7 +78,7 @@ public class TargetAssetAllocationsStoreTest {
         Assert.assertEquals(AssetAllocationDeviationStatus.WARN, lower.getDeviationStatus());
 
         // Higher
-        var higher = AssetAllocationCalculator.calcSingleAssetAllocation(
+        var higher = SimpleAssetAllocationCalculator.calcSingleAssetAllocation(
                 BigDecimal.valueOf(34_000),
                 BigDecimal.valueOf(300_000),
                 BigDecimal.valueOf(0.10),
@@ -89,7 +91,7 @@ public class TargetAssetAllocationsStoreTest {
     @Test
     public void testErrDeviationStatus() {
         // Lower
-        var lower = AssetAllocationCalculator.calcSingleAssetAllocation(
+        var lower = SimpleAssetAllocationCalculator.calcSingleAssetAllocation(
                 BigDecimal.valueOf(22_000),
                 BigDecimal.valueOf(300_000),
                 BigDecimal.valueOf(0.10),
@@ -99,7 +101,7 @@ public class TargetAssetAllocationsStoreTest {
         Assert.assertEquals(AssetAllocationDeviationStatus.ERROR, lower.getDeviationStatus());
 
         // Higher
-        var higher = AssetAllocationCalculator.calcSingleAssetAllocation(
+        var higher = SimpleAssetAllocationCalculator.calcSingleAssetAllocation(
                 BigDecimal.valueOf(38_000),
                 BigDecimal.valueOf(300_000),
                 BigDecimal.valueOf(0.10),
