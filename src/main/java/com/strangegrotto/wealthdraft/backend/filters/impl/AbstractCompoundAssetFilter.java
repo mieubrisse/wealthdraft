@@ -5,7 +5,10 @@ import com.google.common.base.Preconditions;
 import com.strangegrotto.wealthdraft.backend.assets.api.types.Asset;
 import com.strangegrotto.wealthdraft.backend.filters.api.types.AssetFilter;
 
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
 abstract class AbstractCompoundAssetFilter implements SerAssetFilter {

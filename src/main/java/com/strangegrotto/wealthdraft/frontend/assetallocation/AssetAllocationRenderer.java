@@ -1,9 +1,10 @@
 package com.strangegrotto.wealthdraft.frontend.assetallocation;
 
 import com.strangegrotto.wealthdraft.Display;
+import com.strangegrotto.wealthdraft.backend.assetallocation.api.TargetAssetAllocationsStore;
 import com.strangegrotto.wealthdraft.backend.assetallocation.api.types.TargetAssetAllocation;
-import com.strangegrotto.wealthdraft.backend.assetallocationcalc.impl.SerAssetAllocationCalcResult;
-import com.strangegrotto.wealthdraft.backend.assetallocation.impl.SerTargetAssetAllocation;
+import com.strangegrotto.wealthdraft.backend.assetallocationcalc.api.AssetAllocationCalculator;
+import com.strangegrotto.wealthdraft.backend.assetallocationcalc.api.types.AssetAllocationCalcResult;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -20,15 +21,25 @@ public class AssetAllocationRenderer {
     private static final String TOTAL_PORTFOLIO_STR = "Total Portfolio";
 
     private final Display display;
+    private final TargetAssetAllocationsStore targetAllocationStore;
+    private final AssetAllocationCalculator assetAllocationCalculator;
 
-    public AssetAllocationRenderer(Display display) {
+    public AssetAllocationRenderer(Display display, TargetAssetAllocationsStore targetAllocationStore, AssetAllocationCalculator assetAllocationCalculator) {
         this.display = display;
+        this.targetAllocationStore = targetAllocationStore;
+        this.assetAllocationCalculator = assetAllocationCalculator;
     }
 
-    public void render(
-            LinkedHashMap<TargetAssetAllocation, SerAssetAllocationCalcResult> calcResults) {
+    public void render() {
         display.printEmptyLine();
         display.printBannerHeader("Asset Allocations");
+
+        var targetAssetAllocations = this.targetAllocationStore.getTargetAllocations();
+        var calcResults = new LinkedHashMap<TargetAssetAllocation, AssetAllocationCalcResult>();
+        for (var targetAllocation : this.targetAllocationStore.getTargetAllocations()) {
+            var calcResult = this.assetAllocationCalculator.calculate(targetAllocation);
+            calcResults.put(targetAllocation, calcResult);
+        }
 
         var table = new AssetAllocationTable();
         for (var entry : calcResults.entrySet()) {

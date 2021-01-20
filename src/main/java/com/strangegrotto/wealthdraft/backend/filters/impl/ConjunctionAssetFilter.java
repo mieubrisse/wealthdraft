@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Sets;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
 import com.strangegrotto.wealthdraft.backend.assets.api.types.Asset;
-import com.strangegrotto.wealthdraft.backend.filters.ImmConjunctionAssetFilter;
 import com.strangegrotto.wealthdraft.backend.filters.api.types.AssetFilter;
 import org.immutables.value.Value;
 

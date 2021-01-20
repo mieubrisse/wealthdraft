@@ -6,9 +6,8 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
-import com.strangegrotto.wealthdraft.backend.assets.api.AssetsStore;
 import com.strangegrotto.wealthdraft.backend.assethistory.api.types.AssetSnapshot;
-import com.strangegrotto.wealthdraft.networth.history.ImmSerAssetsHistory;
+import com.strangegrotto.wealthdraft.backend.assets.api.AssetsStore;
 
 import java.io.IOException;
 import java.time.LocalDate;

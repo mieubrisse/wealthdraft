@@ -2,7 +2,6 @@ package com.strangegrotto.wealthdraft.backend.projections.api;
 
 import com.strangegrotto.wealthdraft.backend.projections.api.types.ProjectionScenario;
 
-import java.math.BigDecimal;
 import java.util.Map;
 
 public interface ProjectionsStore {

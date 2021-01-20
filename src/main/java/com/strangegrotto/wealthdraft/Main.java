@@ -26,22 +26,15 @@ import com.strangegrotto.wealthdraft.backend.assets.api.AssetsStore;
 import com.strangegrotto.wealthdraft.backend.assets.impl.SimpleAssetsStoreFactory;
 import com.strangegrotto.wealthdraft.backend.filters.api.FiltersStore;
 import com.strangegrotto.wealthdraft.backend.filters.impl.SimpleFilterStoreFactory;
-import com.strangegrotto.wealthdraft.backend.filters.impl.TagAssetFilter;
-import com.strangegrotto.wealthdraft.backend.filters.impl.TagAssetFilterDeserializer;
 import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.SerAssetParameterChange;
 import com.strangegrotto.wealthdraft.frontend.assetallocation.AssetAllocationRenderer;
-import com.strangegrotto.wealthdraft.backend.assets.impl.AssetDefinitions;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.govconstants.RetirementConstants;
 import com.strangegrotto.wealthdraft.frontend.NetWorthRenderer;
-import com.strangegrotto.wealthdraft.backend.assethistory.impl.SerAssetsHistory;
 import com.strangegrotto.wealthdraft.backend.projections.api.ProjectionsStore;
-import com.strangegrotto.wealthdraft.backend.projections.impl.SerProjections;
 import com.strangegrotto.wealthdraft.backend.projections.impl.SimpleProjectionsStoreFactory;
 import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.AssetParameterChangeDeserializer;
-import com.strangegrotto.wealthdraft.backend.assethistory.impl.SerAssetsHistoryDeserializer;
-import com.strangegrotto.wealthdraft.backend.projections.impl.SerProjectionsDeserializer;
 import com.strangegrotto.wealthdraft.scenarios.IncomeStreams;
 import com.strangegrotto.wealthdraft.scenarios.TaxScenario;
 import com.strangegrotto.wealthdraft.backend.tagstores.custom.api.CustomTagStore;
@@ -299,9 +292,12 @@ public class Main {
                 assetsStore,
                 assetHistoryStore
         );
-        var assetAllocationCalcResults = assetAllocationCalculator.calculate(targetAssetAllocations);
-        var assetAllocationRenderer = new AssetAllocationRenderer(display);
-        assetAllocationRenderer.render(assetAllocationCalcResults);
+
+        var assetAllocationRenderer = new AssetAllocationRenderer(
+                display,
+                targetAllocationsStore,
+                assetAllocationCalculator);
+        assetAllocationRenderer.render();
     }
 
     @VisibleForTesting
@@ -318,18 +314,6 @@ public class Main {
         mapper.registerModule(deserializerModule);
 
         return mapper;
-    }
-
-    @VisibleForTesting
-    public static void addDeserializersNeedingAssetDefs(ObjectMapper mapper, AssetDefinitions assetDefs) {
-        var customTags = assetDefs.getCustomTags();
-        var assets = assetDefs.getAssets();
-
-        var deserializerModule = new SimpleModule();
-        deserializerModule.addDeserializer(SerProjections.class, new SerProjectionsDeserializer(assets));
-        deserializerModule.addDeserializer(SerAssetsHistory.class, new SerAssetsHistoryDeserializer(assets));
-        deserializerModule.addDeserializer(TagAssetFilter.class, new TagAssetFilterDeserializer(customTags));
-        mapper.registerModule(deserializerModule);
     }
 
     private static void configureRootLoggerPattern(ch.qos.logback.classic.Logger rootLogger) {

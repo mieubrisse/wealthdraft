@@ -6,15 +6,15 @@ import com.strangegrotto.wealthdraft.backend.assetallocationcalc.api.AssetAlloca
 import com.strangegrotto.wealthdraft.backend.assetallocationcalc.api.types.AssetAllocationCalcResult;
 import com.strangegrotto.wealthdraft.backend.assetallocationcalc.api.types.AssetAllocationDeviationStatus;
 import com.strangegrotto.wealthdraft.backend.assethistory.api.AssetHistoryStore;
+import com.strangegrotto.wealthdraft.backend.assethistory.api.types.AssetSnapshot;
 import com.strangegrotto.wealthdraft.backend.assets.api.AssetsStore;
 import com.strangegrotto.wealthdraft.backend.assets.api.types.Asset;
 import com.strangegrotto.wealthdraft.backend.filters.api.FiltersStore;
 import com.strangegrotto.wealthdraft.backend.filters.api.types.AssetFilter;
-import com.strangegrotto.wealthdraft.backend.assethistory.api.types.AssetSnapshot;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.*;
+import java.util.Map;
 
 public class SimpleAssetAllocationCalculator implements AssetAllocationCalculator {
     // The rounding parameters to use so that non-terminating divison doesn't throw an exception

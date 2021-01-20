@@ -8,18 +8,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.strangegrotto.wealthdraft.backend.assets.api.AssetsStore;
 import com.strangegrotto.wealthdraft.backend.assets.api.types.Asset;
+import com.strangegrotto.wealthdraft.backend.projections.api.types.AssetChange;
 import com.strangegrotto.wealthdraft.errors.Gerr;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
-import com.strangegrotto.wealthdraft.networth.projections.ImmProjectionScenario;
-import com.strangegrotto.wealthdraft.networth.projections.ImmProjections;
-import com.strangegrotto.wealthdraft.backend.projections.api.types.AssetChange;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
