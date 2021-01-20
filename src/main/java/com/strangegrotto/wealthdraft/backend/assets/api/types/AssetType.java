@@ -4,7 +4,7 @@ import com.strangegrotto.wealthdraft.assetimpls.bankaccount.BankAccountAssetChan
 import com.strangegrotto.wealthdraft.assetimpls.bankaccount.BankAccountAssetSnapshot;
 import com.strangegrotto.wealthdraft.assetimpls.stock.StockAssetChange;
 import com.strangegrotto.wealthdraft.assetimpls.stock.StockAssetSnapshot;
-import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.AssetChange;
+import com.strangegrotto.wealthdraft.backend.projections.api.types.AssetChange;
 import com.strangegrotto.wealthdraft.backend.assethistory.api.types.AssetSnapshot;
 
 public enum AssetType {

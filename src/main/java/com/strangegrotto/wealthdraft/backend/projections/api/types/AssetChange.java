@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.backend.projections.impl.temporal;
+package com.strangegrotto.wealthdraft.backend.projections.api.types;
 
 
 /**

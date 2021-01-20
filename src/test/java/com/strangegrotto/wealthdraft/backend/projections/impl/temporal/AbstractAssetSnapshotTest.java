@@ -16,7 +16,7 @@ public class AbstractAssetSnapshotTest {
                 BigDecimal.valueOf(10)
         );
         BankAccountAssetChange bankAssetChange = ImmBankAccountAssetChange.of(
-                ImmAssetParameterChange.of(BigDecimal.valueOf(10), AssetParameterChangeValueOperation.ADD),
+                ImmSerAssetParameterChange.of(BigDecimal.valueOf(10), AssetParameterChangeValueOperation.ADD),
                 null
         );
         stockAssetSnapshot.applyChange(bankAssetChange);

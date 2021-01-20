@@ -12,8 +12,8 @@ public class AssetParameterChangeDeserializerTest {
     public void testAddDeserialization() throws IOException {
         var mapper = Main.getObjectMapper();
         var value = 15000L;
-        AssetParameterChange change = null;
-        change = mapper.readValue("+" + value, AssetParameterChange.class);
+        SerAssetParameterChange change = null;
+        change = mapper.readValue("+" + value, SerAssetParameterChange.class);
         Assert.assertEquals(new BigDecimal(value), change.getValue());
         Assert.assertEquals(AssetParameterChangeValueOperation.ADD, change.getOperation());
     }
@@ -22,8 +22,8 @@ public class AssetParameterChangeDeserializerTest {
     public void testSubtractDeserialization() throws IOException {
         var mapper = Main.getObjectMapper();
         var value = 15000L;
-        AssetParameterChange change = null;
-        change = mapper.readValue("-" + value, AssetParameterChange.class);
+        SerAssetParameterChange change = null;
+        change = mapper.readValue("-" + value, SerAssetParameterChange.class);
         Assert.assertEquals(new BigDecimal(value), change.getValue());
         Assert.assertEquals(AssetParameterChangeValueOperation.SUBTRACT, change.getOperation());
     }
@@ -32,8 +32,8 @@ public class AssetParameterChangeDeserializerTest {
     public void testSetDeserialization() throws IOException {
         var mapper = Main.getObjectMapper();
         var value = 15000L;
-        AssetParameterChange change = null;
-        change = mapper.readValue(Long.toString(value), AssetParameterChange.class);
+        SerAssetParameterChange change = null;
+        change = mapper.readValue(Long.toString(value), SerAssetParameterChange.class);
         Assert.assertEquals(new BigDecimal(value), change.getValue());
         Assert.assertEquals(AssetParameterChangeValueOperation.SET, change.getOperation());
     }

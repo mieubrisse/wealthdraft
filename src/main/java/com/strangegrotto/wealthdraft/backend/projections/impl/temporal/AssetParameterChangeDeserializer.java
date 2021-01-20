@@ -8,9 +8,9 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import java.io.IOException;
 import java.math.BigDecimal;
 
-public class AssetParameterChangeDeserializer extends JsonDeserializer<AssetParameterChange> {
+public class AssetParameterChangeDeserializer extends JsonDeserializer<SerAssetParameterChange> {
     @Override
-    public AssetParameterChange deserialize(JsonParser parser, DeserializationContext context) throws IOException, JsonProcessingException {
+    public SerAssetParameterChange deserialize(JsonParser parser, DeserializationContext context) throws IOException, JsonProcessingException {
         String raw = parser.readValueAs(String.class);
 
         AssetParameterChangeValueOperation operation = AssetParameterChangeValueOperation.SET;
@@ -30,6 +30,6 @@ public class AssetParameterChangeDeserializer extends JsonDeserializer<AssetPara
             throw new IOException("Could not parse asset change string '" + raw + "' to BigDecimal", e);
         }
 
-        return ImmAssetParameterChange.of(value, operation);
+        return ImmSerAssetParameterChange.of(value, operation);
     }
 }

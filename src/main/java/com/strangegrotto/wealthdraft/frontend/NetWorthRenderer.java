@@ -1,12 +1,12 @@
 package com.strangegrotto.wealthdraft.frontend;
 
 import com.strangegrotto.wealthdraft.Display;
-import com.strangegrotto.wealthdraft.backend.assethistory.impl.SerAssetsHistory;
+import com.strangegrotto.wealthdraft.backend.assethistory.api.AssetHistoryStore;
+import com.strangegrotto.wealthdraft.backend.projections.api.ProjectionsStore;
+import com.strangegrotto.wealthdraft.backend.projections.api.types.ProjectionScenario;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.backend.assethistory.api.types.AssetSnapshot;
-import com.strangegrotto.wealthdraft.backend.projections.impl.SerProjections;
-import com.strangegrotto.wealthdraft.backend.projections.impl.SerProjectionScenario;
-import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.AssetChange;
+import com.strangegrotto.wealthdraft.backend.projections.api.types.AssetChange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,31 +20,37 @@ public class NetWorthRenderer {
     private static final Logger log = LoggerFactory.getLogger(NetWorthRenderer.class);
 
     private final Display display;
+    private final AssetHistoryStore assetHistoryStore;
+    private final ProjectionsStore projectionsStore;
     private final int projectionDisplayIncrementYears;
     private final int maxYearsToProject;
 
-    public NetWorthRenderer(Display display, int projectionDisplayIncrementYears, int maxYearsToProject) {
+    public NetWorthRenderer(Display display, AssetHistoryStore assetHistoryStore, ProjectionsStore projectionsStore, int projectionDisplayIncrementYears, int maxYearsToProject) {
         this.display = display;
+        this.assetHistoryStore = assetHistoryStore;
+        this.projectionsStore = projectionsStore;
         this.projectionDisplayIncrementYears = projectionDisplayIncrementYears;
         this.maxYearsToProject = maxYearsToProject;
     }
 
-    public ValOrGerr<Void> renderNetWorthCalculations(SerAssetsHistory assetsHistory, SerProjections projections) {
-        SortedMap<LocalDate, Map<String, AssetSnapshot<?>>> histAssetSnapshotsByDate = assetsHistory.getHistory();
+    public ValOrGerr<Void> renderNetWorthCalculations() {
+        var assetsHistory = this.assetHistoryStore.getHistory();
+        var projectionScenarios = this.projectionsStore.getScenarios();
+
         display.printEmptyLine();
         display.printBannerHeader("Historical Net Worth");
-        histAssetSnapshotsByDate.forEach((date, assetSnapshotsForDate) -> {
+        assetsHistory.forEach((date, assetSnapshotsForDate) -> {
             var netWorth = assetSnapshotsForDate.values().stream()
                     .map(AssetSnapshot::getValue)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             this.display.printCurrencyItem(date.toString(), netWorth);
         });
 
-        var latestAssetSnapshots = histAssetSnapshotsByDate.get(histAssetSnapshotsByDate.lastKey());
+        var latestAssetSnapshots = assetsHistory.get(assetsHistory.lastKey());
         var emptyOrErr = renderProjectionNetWorths(
                 this.display,
                 latestAssetSnapshots,
-                projections,
+                projectionScenarios,
                 this.maxYearsToProject,
                 this.projectionDisplayIncrementYears
         );
@@ -60,22 +66,15 @@ public class NetWorthRenderer {
     private static ValOrGerr<Void> renderProjectionNetWorths(
             Display display,
             Map<String, AssetSnapshot<?>> latestHistAssetSnapshots,
-            SerProjections projections,
+            Map<String, ProjectionScenario> projectionScenarios,
             int maxYearsToProject,
             int projectionDisplayIncrementYears) {
-        var projectionsParseResults = projections.getScenarios();
-        for (var entry : projectionsParseResults.entrySet()) {
+        for (var entry : projectionScenarios.entrySet()) {
             var scenarioId = entry.getKey();
-            var scenarioParseResultOrErr = entry.getValue();
+            var scenario = entry.getValue();
 
             display.printEmptyLine();
             display.printBannerHeader("Networth Proj: " + scenarioId);
-
-            if (scenarioParseResultOrErr.hasGerr()) {
-                log.error(scenarioParseResultOrErr.getGerr().toString());
-                continue;
-            }
-            var scenario = scenarioParseResultOrErr.getVal();
 
             var futureNetWorthsOrErr = calculateSingleScenarioAssetSnapshots(
                     latestHistAssetSnapshots,
@@ -102,7 +101,7 @@ public class NetWorthRenderer {
 
     private static ValOrGerr<SortedMap<LocalDate, Map<String, AssetSnapshot<?>>>> calculateSingleScenarioAssetSnapshots(
             Map<String, AssetSnapshot<?>> latestHistAssetSnapshots,
-            SerProjectionScenario scenario,
+            ProjectionScenario scenario,
             int maxYearsToProject,
             int projectionDisplayIncrementYears) {
         var assetChanges = scenario.getAssetChanges();

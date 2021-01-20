@@ -6,4 +6,4 @@ import org.immutables.value.Value;
 
 @WealthdraftImmutableStyle
 @Value.Immutable
-public interface SerProjectionScenario extends ProjectionScenario  { }
+interface SerProjectionScenario extends ProjectionScenario  { }

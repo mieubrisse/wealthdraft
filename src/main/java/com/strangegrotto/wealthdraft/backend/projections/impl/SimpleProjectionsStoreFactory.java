@@ -8,7 +8,7 @@ import com.strangegrotto.wealthdraft.AbstractYmlBackedStoreFactory;
 import com.strangegrotto.wealthdraft.backend.assets.api.AssetsStore;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.backend.projections.api.types.ProjectionScenario;
-import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.AssetChange;
+import com.strangegrotto.wealthdraft.backend.projections.api.types.AssetChange;
 
 import java.time.LocalDate;
 import java.util.*;

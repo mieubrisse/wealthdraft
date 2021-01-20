@@ -3,8 +3,8 @@ package com.strangegrotto.wealthdraft.assetimpls.stock;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
-import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.AssetChange;
-import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.AssetParameterChange;
+import com.strangegrotto.wealthdraft.backend.projections.api.types.AssetChange;
+import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.SerAssetParameterChange;
 import org.immutables.value.Value;
 
 import java.util.Optional;
@@ -15,9 +15,9 @@ import java.util.Optional;
 public interface StockAssetChange extends AssetChange {
     @Value.Parameter
     @JsonProperty("quantity")
-    Optional<AssetParameterChange> getQuantity();
+    Optional<SerAssetParameterChange> getQuantity();
 
     @Value.Parameter
     @JsonProperty("price")
-    Optional<AssetParameterChange> getPrice();
+    Optional<SerAssetParameterChange> getPrice();
 }

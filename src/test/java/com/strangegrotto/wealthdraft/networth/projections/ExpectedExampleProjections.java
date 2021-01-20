@@ -2,10 +2,10 @@ package com.strangegrotto.wealthdraft.networth.projections;
 
 import com.strangegrotto.wealthdraft.backend.assets.impl.ExpectedExampleAssetDefinitions;
 import com.strangegrotto.wealthdraft.backend.projections.impl.SerProjectionScenario;
-import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.AssetChange;
+import com.strangegrotto.wealthdraft.backend.projections.api.types.AssetChange;
 import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.AssetParameterChangeValueOperation;
 import com.strangegrotto.wealthdraft.assetimpls.bankaccount.ImmBankAccountAssetChange;
-import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.ImmAssetParameterChange;
+import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.ImmSerAssetParameterChange;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -32,12 +32,12 @@ public class ExpectedExampleProjections {
         // ----------------------- Sell all BTC in 3y scenario ----------------------------------------
         var allBtc3yBtcChange = ImmBankAccountAssetChange.builder()
                 .balance(
-                        ImmAssetParameterChange.of(new BigDecimal(0), AssetParameterChangeValueOperation.SET)
+                        ImmSerAssetParameterChange.of(new BigDecimal(0), AssetParameterChangeValueOperation.SET)
                 )
                 .build();
         var allBtc3yBankChange = ImmBankAccountAssetChange.builder()
                 .balance(
-                        ImmAssetParameterChange.of(new BigDecimal(15000), AssetParameterChangeValueOperation.ADD)
+                        ImmSerAssetParameterChange.of(new BigDecimal(15000), AssetParameterChangeValueOperation.ADD)
                 )
                 .build();
         var allBtc3yAllChanges = new TreeMap<LocalDate, Map<String, AssetChange>>(Map.of(
@@ -54,12 +54,12 @@ public class ExpectedExampleProjections {
         // ----------------------- Sell half BTC in 1y scenario ----------------------------------------
         var halfBtc1yBtcChange = ImmBankAccountAssetChange.builder()
                 .balance(
-                        ImmAssetParameterChange.of(new BigDecimal(7500), AssetParameterChangeValueOperation.SUBTRACT)
+                        ImmSerAssetParameterChange.of(new BigDecimal(7500), AssetParameterChangeValueOperation.SUBTRACT)
                 )
                 .build();
         var halfBtc1yBankChange = ImmBankAccountAssetChange.builder()
                 .balance(
-                        ImmAssetParameterChange.of(new BigDecimal(7500), AssetParameterChangeValueOperation.ADD)
+                        ImmSerAssetParameterChange.of(new BigDecimal(7500), AssetParameterChangeValueOperation.ADD)
                 )
                 .build();
         var halfBtc1yAllChanges = new TreeMap<LocalDate, Map<String, AssetChange>>(Map.of(
@@ -76,12 +76,12 @@ public class ExpectedExampleProjections {
         // ----------------------- Sell half BTC in 1y scenario ----------------------------------------
         var otherHalfBtc2yBtcChange = ImmBankAccountAssetChange.builder()
                 .balance(
-                        ImmAssetParameterChange.of(new BigDecimal(7500), AssetParameterChangeValueOperation.SUBTRACT)
+                        ImmSerAssetParameterChange.of(new BigDecimal(7500), AssetParameterChangeValueOperation.SUBTRACT)
                 )
                 .build();
         var otherHalfBtc2yBankChange = ImmBankAccountAssetChange.builder()
                 .balance(
-                        ImmAssetParameterChange.of(new BigDecimal(7500), AssetParameterChangeValueOperation.ADD)
+                        ImmSerAssetParameterChange.of(new BigDecimal(7500), AssetParameterChangeValueOperation.ADD)
                 )
                 .build();
         var otherHalfBtc2yAllChanges = new TreeMap<LocalDate, Map<String, AssetChange>>(Map.of(

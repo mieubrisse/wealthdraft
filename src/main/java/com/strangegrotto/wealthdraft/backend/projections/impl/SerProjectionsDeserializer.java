@@ -12,7 +12,7 @@ import com.strangegrotto.wealthdraft.errors.Gerr;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.networth.projections.ImmProjectionScenario;
 import com.strangegrotto.wealthdraft.networth.projections.ImmProjections;
-import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.AssetChange;
+import com.strangegrotto.wealthdraft.backend.projections.api.types.AssetChange;
 
 import javax.annotation.Nullable;
 import java.io.IOException;

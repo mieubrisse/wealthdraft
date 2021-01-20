@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.backend.assetallocation.calculator;
+package com.strangegrotto.wealthdraft.backend.assetallocationcalc.impl;
 
 import com.strangegrotto.wealthdraft.backend.assetallocationcalc.api.types.AssetAllocationDeviationStatus;
 import com.strangegrotto.wealthdraft.backend.assetallocationcalc.impl.SimpleAssetAllocationCalculator;
@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 
-public class TargetAssetAllocationsStoreTest {
+public class SimpleAssetAllocationCalculatorTest {
     @Test
     public void testCalculationMath() {
         var currentNumerator = BigDecimal.valueOf(50_000);

@@ -28,6 +28,7 @@ import com.strangegrotto.wealthdraft.backend.filters.api.FiltersStore;
 import com.strangegrotto.wealthdraft.backend.filters.impl.SimpleFilterStoreFactory;
 import com.strangegrotto.wealthdraft.backend.filters.impl.TagAssetFilter;
 import com.strangegrotto.wealthdraft.backend.filters.impl.TagAssetFilterDeserializer;
+import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.SerAssetParameterChange;
 import com.strangegrotto.wealthdraft.frontend.assetallocation.AssetAllocationRenderer;
 import com.strangegrotto.wealthdraft.backend.assets.impl.AssetDefinitions;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
@@ -38,7 +39,6 @@ import com.strangegrotto.wealthdraft.backend.assethistory.impl.SerAssetsHistory;
 import com.strangegrotto.wealthdraft.backend.projections.api.ProjectionsStore;
 import com.strangegrotto.wealthdraft.backend.projections.impl.SerProjections;
 import com.strangegrotto.wealthdraft.backend.projections.impl.SimpleProjectionsStoreFactory;
-import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.AssetParameterChange;
 import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.AssetParameterChangeDeserializer;
 import com.strangegrotto.wealthdraft.backend.assethistory.impl.SerAssetsHistoryDeserializer;
 import com.strangegrotto.wealthdraft.backend.projections.impl.SerProjectionsDeserializer;
@@ -278,7 +278,7 @@ public class Main {
         );
 
         var netWorthRenderer = new NetWorthRenderer(display, PROJECTION_DISPLAY_INCREMENT_YEARS, MAX_YEARS_TO_PROJECT);
-        var emptyOrErr =netWorthRenderer.renderNetWorthCalculations(assetsHistory, projections);
+        var emptyOrErr = netWorthRenderer.renderNetWorthCalculations(assetsHistory, projections);
         if (emptyOrErr.hasGerr()) {
             log.error("An error occurred rendering net worth: {}", emptyOrErr.getGerr());
             System.exit(FAILURE_EXIT_CODE);
@@ -310,7 +310,7 @@ public class Main {
         mapper.registerModule(new Jdk8Module());    // Support deserializing to Optionals
 
         var deserializerModule = new SimpleModule();
-        deserializerModule.addDeserializer(AssetParameterChange.class, new AssetParameterChangeDeserializer());
+        deserializerModule.addDeserializer(SerAssetParameterChange.class, new AssetParameterChangeDeserializer());
         mapper.registerModule(deserializerModule);
 
         return mapper;
