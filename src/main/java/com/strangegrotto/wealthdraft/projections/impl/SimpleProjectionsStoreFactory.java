@@ -2,8 +2,10 @@ package com.strangegrotto.wealthdraft.projections.impl;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.strangegrotto.wealthdraft.AbstractYmlBackedStoreFactory;
+import com.strangegrotto.wealthdraft.assets.api.AssetsStore;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.projections.api.types.ProjectionScenario;
 import com.strangegrotto.wealthdraft.projections.impl.temporal.AssetChange;
@@ -11,14 +13,22 @@ import com.strangegrotto.wealthdraft.projections.impl.temporal.AssetChange;
 import java.time.LocalDate;
 import java.util.*;
 
-public class SimpleProjectionsStoreFactory implements AbstractYmlBackedStoreFactory<
+public class SimpleProjectionsStoreFactory extends AbstractYmlBackedStoreFactory<
         SerProjections,
         SerProjections,
         SimpleProjectionsStore> {
 
+    private final AssetsStore assetsStore;
+
+    public SimpleProjectionsStoreFactory(AssetsStore assetsStore) {
+        this.assetsStore = assetsStore;
+    }
+
     @Override
     protected void configureMapper(ObjectMapper mapper) {
-
+        var module = new SimpleModule();
+        module.addDeserializer(SerProjections.class, new SerProjectionsDeserializer(this.assetsStore));
+        mapper.registerModule(module);
     }
 
     @Override

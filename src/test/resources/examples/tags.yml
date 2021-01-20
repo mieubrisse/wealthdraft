@@ -1,0 +1,14 @@
+# These are custom tags, which can be applied to assets
+# All custom tags used by assets must be declared here
+
+# This custom tag doesn't have any restrictions
+broker: {}
+
+domOrIntl:
+  # This tag is restricted to only certain values
+  allowedValues:
+    - domestic
+    - international
+  # Tags can have default values that get used if the tag is missing
+  defaultValue: domestic
+  required: true

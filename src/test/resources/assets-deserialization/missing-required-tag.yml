@@ -1,7 +1,5 @@
-customTags:
-  myCustomTag:
-    required: true
 assets:
   ret:
     name: Retirement account
     type: BANK_ACCOUNT
+  # Missing domOrIntl tag

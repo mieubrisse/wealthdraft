@@ -15,13 +15,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class SimpleAssetsServiceFactory extends AbstractYmlBackedStoreFactory<
+public class SimpleAssetsStoreFactory extends AbstractYmlBackedStoreFactory<
         Map<String, SerAsset>,
         Map<String, SerAsset>,
         SimpleAssetsStore> {
     private final CustomTagStore customTagStore;
 
-    public SimpleAssetsServiceFactory(CustomTagStore customTagStore) {
+    public SimpleAssetsStoreFactory(CustomTagStore customTagStore) {
         this.customTagStore = customTagStore;
     }
 

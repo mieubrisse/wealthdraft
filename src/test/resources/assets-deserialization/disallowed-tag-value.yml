@@ -1,8 +1,3 @@
-customTags:
-  domOrIntl:
-    allowedValues:
-      - international
-      - domestic
 assets:
   ret:
     name: Retirement account

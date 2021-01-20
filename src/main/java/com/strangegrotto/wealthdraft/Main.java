@@ -17,8 +17,18 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Ordering;
+import com.strangegrotto.wealthdraft.assetallocation.api.TargetAssetAllocationsStore;
+import com.strangegrotto.wealthdraft.assetallocation.impl.SimpleTargetAssetAllocationsStore;
+import com.strangegrotto.wealthdraft.assetallocation.impl.SimpleTargetAssetAllocationsStoreFactory;
 import com.strangegrotto.wealthdraft.assetallocationcalc.impl.SimpleAssetAllocationCalculator;
+import com.strangegrotto.wealthdraft.assethistory.api.AssetHistoryStore;
+import com.strangegrotto.wealthdraft.assethistory.impl.SimpleAssetHistoryStore;
+import com.strangegrotto.wealthdraft.assethistory.impl.SimpleAssetHistoryStoreFactory;
+import com.strangegrotto.wealthdraft.assets.api.AssetsStore;
+import com.strangegrotto.wealthdraft.assets.impl.SimpleAssetsStoreFactory;
+import com.strangegrotto.wealthdraft.filters.api.FiltersStore;
 import com.strangegrotto.wealthdraft.filters.impl.SerAssetFilter;
+import com.strangegrotto.wealthdraft.filters.impl.SimpleFilterStoreFactory;
 import com.strangegrotto.wealthdraft.filters.impl.TagAssetFilter;
 import com.strangegrotto.wealthdraft.filters.impl.TagAssetFilterDeserializer;
 import com.strangegrotto.wealthdraft.assetallocation.renderer.AssetAllocationRenderer;
@@ -29,13 +39,18 @@ import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.govconstants.RetirementConstants;
 import com.strangegrotto.wealthdraft.networth.NetWorthRenderer;
 import com.strangegrotto.wealthdraft.assethistory.impl.SerAssetsHistory;
+import com.strangegrotto.wealthdraft.projections.api.ProjectionsStore;
 import com.strangegrotto.wealthdraft.projections.impl.SerProjections;
+import com.strangegrotto.wealthdraft.projections.impl.SimpleProjectionsStoreFactory;
 import com.strangegrotto.wealthdraft.projections.impl.temporal.AssetParameterChange;
 import com.strangegrotto.wealthdraft.projections.impl.temporal.AssetParameterChangeDeserializer;
 import com.strangegrotto.wealthdraft.assethistory.impl.SerAssetsHistoryDeserializer;
 import com.strangegrotto.wealthdraft.projections.impl.SerProjectionsDeserializer;
 import com.strangegrotto.wealthdraft.scenarios.IncomeStreams;
 import com.strangegrotto.wealthdraft.scenarios.TaxScenario;
+import com.strangegrotto.wealthdraft.tagstores.custom.api.CustomTagStore;
+import com.strangegrotto.wealthdraft.tagstores.custom.impl.SimpleCustomTagStoreFactory;
+import com.strangegrotto.wealthdraft.tagstores.intrinsic.IntrinsicTagStore;
 import com.strangegrotto.wealthdraft.tax.ScenarioTaxCalculator;
 import com.strangegrotto.wealthdraft.tax.ScenarioTaxes;
 import com.strangegrotto.wealthdraft.tax.Tax;
@@ -70,6 +85,7 @@ public class Main {
     private static final String PROJECTIONS_FILEPATH_ARG = "projections";
     private static final String ASSET_ALLOCATIONS_FILEPATH_ARG = "asset-allocations";
     private static final String FILTERS_FILEPATH_ARG = "filters";
+    private static final String TAGS_FILEPATH_ARG = "tags";
     private static final String LOG_LEVEL_ARG = "log-level";
     private static final String ALL_SCENARIOS_ARG = "all";
 
@@ -134,6 +150,10 @@ public class Main {
                 .dest(FILTERS_FILEPATH_ARG)
                 .required(true)
                 .help("YAML file of saved asset filers");
+        parser.addArgument("--" + TAGS_FILEPATH_ARG)
+                .dest(TAGS_FILEPATH_ARG)
+                .required(true)
+                .help("YAML file of asset tags");
         parser.addArgument("--" + LOG_LEVEL_ARG)
                 .dest(LOG_LEVEL_ARG)
                 .type(Level.class)
@@ -160,7 +180,7 @@ public class Main {
         var mapper = getObjectMapper();
         TypeFactory typeFactory = mapper.getTypeFactory();
 
-        // TODO Clean up this whole nasty chain of YAML-parsing - it's a mess
+        // TODO Switch to new AbstractYamlStore method
         String taxScenariosFilepath = parsedArgs.getString(TAX_SCENARIOS_FILEPATH_ARG);
         log.debug("Scenarios filepath: {}", taxScenariosFilepath);
         MapType taxScenariosMapType = typeFactory.constructMapType(HashMap.class, String.class, TaxScenario.class);
@@ -173,6 +193,7 @@ public class Main {
             return;
         }
 
+        // TODO Switch to new AbstractYamlStore method
         String govConstantsFilepath = parsedArgs.getString(GOV_CONSTANTS_FILEPATH_ARG);
         log.debug("Gov constants filepath: {}", govConstantsFilepath);
         MapType govConstantsMapType = typeFactory.constructMapType(HashMap.class, Integer.class, GovConstantsForYear.class);
@@ -185,68 +206,67 @@ public class Main {
             return;
         }
 
-        String assetsFilepath = parsedArgs.getString(ASSETS_FILEPATH_ARG);
-        log.debug("Assets filepath: {}", assetsFilepath);
-        AssetDefinitions assetDefinitions;
+        var intrinsicTagStore = new IntrinsicTagStore();
+
+        var tagsFilepath = parsedArgs.getString(TAGS_FILEPATH_ARG);
+        CustomTagStore customTagStore;
         try {
-            assetDefinitions = mapper.readValue(new File(assetsFilepath), AssetDefinitions.class);
+            customTagStore = new SimpleCustomTagStoreFactory(intrinsicTagStore).create(tagsFilepath);
         } catch (IOException e) {
-            log.error("An error occurred parsing the assets file '{}'", assetsFilepath, e);
+            log.error("An error occurred parsing the tags file '{}'", tagsFilepath, e);
             System.exit(FAILURE_EXIT_CODE);
             return;
         }
 
-
-        addDeserializersNeedingAssetDefs(mapper, assetDefinitions);
-
-        String assetsHistoryFilepath = parsedArgs.getString(ASSETS_HISTORY_FILEPATH_ARG);
-        log.debug("Assets history filepath: {}", assetsHistoryFilepath);
-        SerAssetsHistory assetsHistory;
+        var filtersFilepath = parsedArgs.getString(FILTERS_FILEPATH_ARG);
+        FiltersStore filtersStore;
         try {
-            assetsHistory = mapper.readValue(new File(assetsHistoryFilepath), SerAssetsHistory.class);
-        } catch (IOException e) {
-            log.error("An error occurred parsing the assets history file '{}'", assetsHistoryFilepath, e);
-            System.exit(FAILURE_EXIT_CODE);
-            return;
-        }
-
-        String projectionsFilepath = parsedArgs.getString(PROJECTIONS_FILEPATH_ARG);
-        log.debug("Projections filepath: {}", projectionsFilepath);
-        SerProjections projections;
-        try {
-            projections = mapper.readValue(new File(projectionsFilepath), SerProjections.class);
-        } catch (IOException e) {
-            log.error("An error occurred parsing the projections file '{}'", projectionsFilepath, e);
-            System.exit(FAILURE_EXIT_CODE);
-            return;
-        }
-
-        String filtersFilepath = parsedArgs.getString(FILTERS_FILEPATH_ARG);
-        log.debug("Filters filepath: {}", filtersFilepath);
-        MapType filtersMapType = typeFactory.constructMapType(HashMap.class, String.class, SerAssetFilter.class);
-        Map<String, SerAssetFilter> filters;
-        try {
-            filters = mapper.readValue(new File(filtersFilepath), filtersMapType);
+            filtersStore = new SimpleFilterStoreFactory(customTagStore, intrinsicTagStore).create(filtersFilepath);
         } catch (IOException e) {
             log.error("An error occurred parsing the filters file '{}'", filtersFilepath, e);
             System.exit(FAILURE_EXIT_CODE);
             return;
         }
 
-        addDeserializersNeedingFilters(mapper, filters);
-
-        String assetAllocationsFilepath = parsedArgs.getString(ASSET_ALLOCATIONS_FILEPATH_ARG);
-        log.debug("Asset allocations filepath: {}", assetAllocationsFilepath);
-        SerTargetAssetAllocations targetAssetAllocations;
+        var assetsFilepath = parsedArgs.getString(ASSETS_FILEPATH_ARG);
+        AssetsStore assetsStore;
         try {
-            targetAssetAllocations = mapper.readValue(new File(assetAllocationsFilepath), SerTargetAssetAllocations.class);
+            assetsStore = new SimpleAssetsStoreFactory(customTagStore).create(assetsFilepath);
         } catch (IOException e) {
-            log.error("An error occurred parsing the asset allocations file '{}'", assetAllocationsFilepath, e);
+            log.error("An error occurred parsing the assets file '{}'", assetsFilepath, e);
             System.exit(FAILURE_EXIT_CODE);
             return;
         }
 
+        var assetsHistoryFilepath = parsedArgs.getString(ASSETS_HISTORY_FILEPATH_ARG);
+        AssetHistoryStore assetHistoryStore;
+        try {
+            assetHistoryStore = new SimpleAssetHistoryStoreFactory(assetsStore).create(assetsHistoryFilepath);
+        } catch (IOException e) {
+            log.error("An error occurred parsing the asset history file '{}'", assetsHistoryFilepath, e);
+            System.exit(FAILURE_EXIT_CODE);
+            return;
+        }
 
+        var projectionsFilepath = parsedArgs.getString(PROJECTIONS_FILEPATH_ARG);
+        ProjectionsStore projectionsStore;
+        try {
+            projectionsStore = new SimpleProjectionsStoreFactory(assetsStore).create(projectionsFilepath);
+        } catch (IOException e) {
+            log.error("An error occurred parsing the projections file '{}'", projectionsFilepath, e);
+            System.exit(FAILURE_EXIT_CODE);
+            return;
+        }
+
+        var assetAllocationsFilepath = parsedArgs.getString(ASSET_ALLOCATIONS_FILEPATH_ARG);
+        TargetAssetAllocationsStore targetAllocationsStore;
+        try {
+            targetAllocationsStore = new SimpleTargetAssetAllocationsStoreFactory(filtersStore).create(assetAllocationsFilepath);
+        } catch (IOException e) {
+            log.error("An error occurred parsing the target asset allocations file '{}'", assetAllocationsFilepath, e);
+            System.exit(FAILURE_EXIT_CODE);
+            return;
+        }
 
         Display display = new Display(
                 log,
