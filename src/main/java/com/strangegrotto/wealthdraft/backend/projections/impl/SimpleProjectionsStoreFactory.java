@@ -39,7 +39,7 @@ public class SimpleProjectionsStoreFactory extends AbstractYmlBackedStoreFactory
     @Override
     protected ValOrGerr<SerProjections> postprocess(SerProjections deserialized) {
         var notUnrolledScenarios = deserialized.getScenarios();
-        Map<String, ProjectionScenario> unrolledScenarios = new HashMap<>();
+        Map<String, SerProjectionScenario> unrolledScenarios = new HashMap<>();
         for (String scenarioId : notUnrolledScenarios.keySet()) {
             var unrolledScenarioOrErr = unrollScenarioAssetChanges(scenarioId, notUnrolledScenarios);
             if (unrolledScenarioOrErr.hasGerr()) {

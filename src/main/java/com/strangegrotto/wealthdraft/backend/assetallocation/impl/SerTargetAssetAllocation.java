@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @WealthdraftImmutableStyle
 @Value.Immutable
-@JsonDeserialize(as = ImmTargetAssetAllocation.class)
+@JsonDeserialize(as = ImmSerTargetAssetAllocation.class)
 interface SerTargetAssetAllocation extends TargetAssetAllocation {
     @Override
     @JsonProperty("numerator")
