@@ -2,8 +2,8 @@ package com.strangegrotto.wealthdraft.networth.history;
 
 import com.strangegrotto.wealthdraft.assetimpls.bankaccount.ImmBankAccountAssetSnapshot;
 import com.strangegrotto.wealthdraft.assetimpls.stock.ImmStockAssetSnapshot;
-import com.strangegrotto.wealthdraft.assets.impl.ExpectedExampleAssetDefinitions;
-import com.strangegrotto.wealthdraft.assethistory.api.types.AssetSnapshot;
+import com.strangegrotto.wealthdraft.backend.assets.impl.ExpectedExampleAssetDefinitions;
+import com.strangegrotto.wealthdraft.backend.assethistory.api.types.AssetSnapshot;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

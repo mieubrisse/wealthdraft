@@ -1,9 +1,9 @@
 package com.strangegrotto.wealthdraft.networth.history;
 
 import com.strangegrotto.wealthdraft.Main;
-import com.strangegrotto.wealthdraft.assethistory.impl.SerAssetsHistory;
-import com.strangegrotto.wealthdraft.assets.impl.AssetDefinitions;
-import com.strangegrotto.wealthdraft.assets.impl.AssetDefinitionsTestFiles;
+import com.strangegrotto.wealthdraft.backend.assethistory.impl.SerAssetsHistory;
+import com.strangegrotto.wealthdraft.backend.assets.impl.AssetDefinitions;
+import com.strangegrotto.wealthdraft.backend.assets.impl.AssetDefinitionsTestFiles;
 import org.junit.Assert;
 import org.junit.Test;
 

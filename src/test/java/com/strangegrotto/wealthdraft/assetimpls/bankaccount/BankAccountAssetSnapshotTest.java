@@ -1,7 +1,7 @@
 package com.strangegrotto.wealthdraft.assetimpls.bankaccount;
 
-import com.strangegrotto.wealthdraft.projections.impl.temporal.AssetParameterChangeValueOperation;
-import com.strangegrotto.wealthdraft.projections.impl.temporal.ImmAssetParameterChange;
+import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.AssetParameterChangeValueOperation;
+import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.ImmAssetParameterChange;
 import org.junit.Assert;
 import org.junit.Test;
 

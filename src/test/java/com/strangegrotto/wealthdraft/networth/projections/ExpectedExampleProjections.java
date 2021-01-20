@@ -1,11 +1,11 @@
 package com.strangegrotto.wealthdraft.networth.projections;
 
-import com.strangegrotto.wealthdraft.assets.impl.ExpectedExampleAssetDefinitions;
-import com.strangegrotto.wealthdraft.projections.impl.SerProjectionScenario;
-import com.strangegrotto.wealthdraft.projections.impl.temporal.AssetChange;
-import com.strangegrotto.wealthdraft.projections.impl.temporal.AssetParameterChangeValueOperation;
+import com.strangegrotto.wealthdraft.backend.assets.impl.ExpectedExampleAssetDefinitions;
+import com.strangegrotto.wealthdraft.backend.projections.impl.SerProjectionScenario;
+import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.AssetChange;
+import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.AssetParameterChangeValueOperation;
 import com.strangegrotto.wealthdraft.assetimpls.bankaccount.ImmBankAccountAssetChange;
-import com.strangegrotto.wealthdraft.projections.impl.temporal.ImmAssetParameterChange;
+import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.ImmAssetParameterChange;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
