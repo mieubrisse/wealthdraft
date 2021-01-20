@@ -5,15 +5,11 @@ import com.strangegrotto.wealthdraft.assetallocation.api.types.TargetAssetAlloca
 import com.strangegrotto.wealthdraft.assetallocationcalc.api.AssetAllocationCalculator;
 import com.strangegrotto.wealthdraft.assetallocationcalc.api.types.AssetAllocationCalcResult;
 import com.strangegrotto.wealthdraft.assetallocationcalc.api.types.AssetAllocationDeviationStatus;
-import com.strangegrotto.wealthdraft.assetallocation.impl.SerTargetAssetAllocation;
-import com.strangegrotto.wealthdraft.assetallocation.impl.SerTargetAssetAllocations;
 import com.strangegrotto.wealthdraft.assethistory.api.AssetHistoryStore;
 import com.strangegrotto.wealthdraft.assets.api.AssetsStore;
 import com.strangegrotto.wealthdraft.assets.api.types.Asset;
 import com.strangegrotto.wealthdraft.filters.api.FiltersStore;
 import com.strangegrotto.wealthdraft.filters.api.types.AssetFilter;
-import com.strangegrotto.wealthdraft.filters.impl.SerAssetFilter;
-import com.strangegrotto.wealthdraft.assets.impl.SerAsset;
 import com.strangegrotto.wealthdraft.assethistory.api.types.AssetSnapshot;
 
 import java.math.BigDecimal;
@@ -57,7 +53,7 @@ public class SimpleAssetAllocationCalculator implements AssetAllocationCalculato
         var numeratorFilter = filters.get(numeratorFilterId);
         var numeratorValue = getValueOfAssetsMatchingFilter(assets, latestAssetSnapshots, filters, numeratorFilter);
 
-        var denominatorFilterIdOpt = target.getDenominatorFilterOpt();
+        var denominatorFilterIdOpt = target.getDenominatorFilterIdOpt();
         BigDecimal denominatorValue;
         String denominatorStrRepr;
         if (denominatorFilterIdOpt.isPresent()) {
@@ -70,15 +66,13 @@ public class SimpleAssetAllocationCalculator implements AssetAllocationCalculato
             denominatorStrRepr = "Total Portfolio";
         }
 
-        var calcResult = calcSingleAssetAllocation(
+        return calcSingleAssetAllocation(
                 numeratorValue,
                 denominatorValue,
                 target.getFraction(),
                 this.deviationFractionWarn,
                 this.deviationFractionErr
         );
-        results.put(target, calcResult);
-        return results;
     }
 
     @VisibleForTesting
@@ -126,7 +120,7 @@ public class SimpleAssetAllocationCalculator implements AssetAllocationCalculato
             Map<String, Asset> assets,
             Map<String, AssetSnapshot<?>> latestAssetSnapshots,
             Map<String, AssetFilter> filters,
-            SerAssetFilter filter) {
+            AssetFilter filter) {
         var matchingAssetIds = filter.apply(filters, assets);
         return latestAssetSnapshots.entrySet().stream()
                 .filter(entry -> matchingAssetIds.containsKey(entry.getKey()))

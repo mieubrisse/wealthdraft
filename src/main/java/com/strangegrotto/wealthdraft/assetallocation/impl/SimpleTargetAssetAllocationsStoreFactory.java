@@ -2,7 +2,6 @@ package com.strangegrotto.wealthdraft.assetallocation.impl;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.base.Preconditions;
 import com.strangegrotto.wealthdraft.AbstractYmlBackedStoreFactory;
@@ -51,7 +50,7 @@ public class SimpleTargetAssetAllocationsStoreFactory extends AbstractYmlBackedS
                     i
             );
 
-            var denominatorFilterNameOpt = target.getDenominatorFilterId();
+            var denominatorFilterNameOpt = target.getDenominatorFilterIdOpt();
             if (denominatorFilterNameOpt.isPresent()) {
                 var denominatorFilterName = denominatorFilterNameOpt.get();
                 Preconditions.checkState(

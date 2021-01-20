@@ -7,7 +7,7 @@ public interface TargetAssetAllocation {
     String getNumeratorFilterId();
 
     // If not present, the denominator is assumed to be the entire portfolio
-    Optional<String> getDenominatorFilterId();
+    Optional<String> getDenominatorFilterIdOpt();
 
     BigDecimal getFraction();
 }

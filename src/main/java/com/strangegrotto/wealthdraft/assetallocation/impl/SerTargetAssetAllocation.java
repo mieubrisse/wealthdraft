@@ -19,7 +19,7 @@ public interface SerTargetAssetAllocation extends TargetAssetAllocation {
 
     @Override
     @JsonProperty("denominator")
-    Optional<String> getDenominatorFilterId();
+    Optional<String> getDenominatorFilterIdOpt();
 
     // Fraction meaning 0.7, rather than 70%
     @Override
