@@ -5,7 +5,7 @@ import com.strangegrotto.wealthdraft.backend.assets.api.types.Asset;
 
 import java.util.Map;
 
-public class SimpleAssetsStore implements AssetsStore {
+class SimpleAssetsStore implements AssetsStore {
     Map<String, Asset> assets;
 
     public SimpleAssetsStore(Map<String, ? extends Asset> assets) {

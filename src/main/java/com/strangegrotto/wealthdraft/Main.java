@@ -277,25 +277,29 @@ public class Main {
                 allGovConstants
         );
 
-        var netWorthRenderer = new NetWorthRenderer(display, PROJECTION_DISPLAY_INCREMENT_YEARS, MAX_YEARS_TO_PROJECT);
-        var emptyOrErr = netWorthRenderer.renderNetWorthCalculations(assetsHistory, projections);
+        var netWorthRenderer = new NetWorthRenderer(
+                display,
+                assetHistoryStore,
+                projectionsStore,
+                PROJECTION_DISPLAY_INCREMENT_YEARS,
+                MAX_YEARS_TO_PROJECT);
+        var emptyOrErr = netWorthRenderer.renderNetWorthCalculations();
         if (emptyOrErr.hasGerr()) {
             log.error("An error occurred rendering net worth: {}", emptyOrErr.getGerr());
             System.exit(FAILURE_EXIT_CODE);
         }
 
-        var assetsHistoryByDate = assetsHistory.getHistory();
+        var assetsHistoryByDate = assetHistoryStore.getHistory();
         var latestDate = assetsHistoryByDate.lastKey();
         var latestAssetSnapshots = assetsHistoryByDate.get(latestDate);
         var assetAllocationCalculator = new SimpleAssetAllocationCalculator(
                 ASSET_ALLOCATION_DEVIATION_PCT_WARN,
-                ASSET_ALLOCATION_DEVIATION_PCT_ERROR
+                ASSET_ALLOCATION_DEVIATION_PCT_ERROR,
+                filtersStore,
+                assetsStore,
+                assetHistoryStore
         );
-        var assetAllocationCalcResults = assetAllocationCalculator.calculate(
-                targetAssetAllocations,
-                assetDefinitions.getAssets(),
-                latestAssetSnapshots
-        );
+        var assetAllocationCalcResults = assetAllocationCalculator.calculate(targetAssetAllocations);
         var assetAllocationRenderer = new AssetAllocationRenderer(display);
         assetAllocationRenderer.render(assetAllocationCalcResults);
     }

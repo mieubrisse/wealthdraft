@@ -23,7 +23,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SerProjectionsDeserializer extends JsonDeserializer<SerProjections> {
+class SerProjectionsDeserializer extends JsonDeserializer<SerProjections> {
     // TODO Add support for "w" and "d"????
     private static final Pattern RELATIVE_DATE_PATTERN = Pattern.compile("^\\+([0-9]+)([ym])$");
 

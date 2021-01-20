@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 // TODO delete
-public class AssetDefinitionsDeserializer extends JsonDeserializer<AssetDefinitions> {
+class AssetDefinitionsDeserializer extends JsonDeserializer<AssetDefinitions> {
     @WealthdraftImmutableStyle
     @Value.Immutable
     @JsonDeserialize(as = ImmRawAssetDefinitions.class)

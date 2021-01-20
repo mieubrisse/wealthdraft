@@ -12,7 +12,7 @@ import java.util.Optional;
 @WealthdraftImmutableStyle
 @Value.Immutable
 @JsonDeserialize(as = ImmTargetAssetAllocation.class)
-public interface SerTargetAssetAllocation extends TargetAssetAllocation {
+interface SerTargetAssetAllocation extends TargetAssetAllocation {
     @Override
     @JsonProperty("numerator")
     String getNumeratorFilterId();

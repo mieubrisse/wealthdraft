@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @WealthdraftImmutableStyle
 @Value.Immutable
 @JsonDeserialize(as = ImmSerAsset.class)
-public abstract class SerAsset implements Asset {
+abstract class SerAsset implements Asset {
     public abstract String getName();
 
     public abstract AssetType getType();

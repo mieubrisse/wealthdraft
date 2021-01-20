@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 @WealthdraftImmutableStyle
 @Value.Immutable
 // Deserialized using custom deserializer
-public abstract class TagAssetFilter implements SerAssetFilter {
+abstract class TagAssetFilter implements SerAssetFilter {
     public abstract String getTag();
 
     public abstract String getValue();

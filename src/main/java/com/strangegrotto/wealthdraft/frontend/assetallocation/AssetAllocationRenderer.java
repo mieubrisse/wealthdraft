@@ -1,6 +1,7 @@
 package com.strangegrotto.wealthdraft.frontend.assetallocation;
 
 import com.strangegrotto.wealthdraft.Display;
+import com.strangegrotto.wealthdraft.backend.assetallocation.api.types.TargetAssetAllocation;
 import com.strangegrotto.wealthdraft.backend.assetallocationcalc.impl.SerAssetAllocationCalcResult;
 import com.strangegrotto.wealthdraft.backend.assetallocation.impl.SerTargetAssetAllocation;
 
@@ -25,7 +26,7 @@ public class AssetAllocationRenderer {
     }
 
     public void render(
-            LinkedHashMap<SerTargetAssetAllocation, SerAssetAllocationCalcResult> calcResults) {
+            LinkedHashMap<TargetAssetAllocation, SerAssetAllocationCalcResult> calcResults) {
         display.printEmptyLine();
         display.printBannerHeader("Asset Allocations");
 
@@ -34,9 +35,9 @@ public class AssetAllocationRenderer {
             var target = entry.getKey();
             var calcResult = entry.getValue();
 
-            var numeratorStr = target.getNumeratorFilter();
-            var denominatorFilterNameOpt = target.getDenominatorFilterOpt();
-            var denominatorStr = denominatorFilterNameOpt.orElse(TOTAL_PORTFOLIO_STR);
+            var numeratorStr = target.getNumeratorFilterId();
+            var denominatorFilterIdOpt = target.getDenominatorFilterIdOpt();
+            var denominatorStr = denominatorFilterIdOpt.orElse(TOTAL_PORTFOLIO_STR);
 
             var colorWrapper = new DeviationStatusColorWrapper(calcResult.getDeviationStatus());
 

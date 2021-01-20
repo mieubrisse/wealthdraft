@@ -16,7 +16,7 @@ import java.util.Map;
 @Value.Immutable
 @JsonDeserialize(using = AssetDefinitionsDeserializer.class)
 // @JsonDeserialize(as = ImmAssetDefinitions.class)
-public interface AssetDefinitions {
+interface AssetDefinitions {
     @Value.Parameter
     @JsonProperty("assets")
     Map<String, SerAsset> getAssets();

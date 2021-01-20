@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @WealthdraftImmutableStyle
 @Value.Immutable
 @JsonDeserialize(as = ImmDisjunctionAssetFilter.class)
-public abstract class DisjunctionAssetFilter extends AbstractCompoundAssetFilter {
+abstract class DisjunctionAssetFilter extends AbstractCompoundAssetFilter {
     @Value.Parameter
     @JsonProperty("any")
     public abstract List<AssetFilter> getTags();

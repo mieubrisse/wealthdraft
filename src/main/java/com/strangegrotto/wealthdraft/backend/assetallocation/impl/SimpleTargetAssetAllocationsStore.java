@@ -5,7 +5,7 @@ import com.strangegrotto.wealthdraft.backend.assetallocation.api.types.TargetAss
 
 import java.util.List;
 
-public class SimpleTargetAssetAllocationsStore implements TargetAssetAllocationsStore {
+class SimpleTargetAssetAllocationsStore implements TargetAssetAllocationsStore {
     private final List<TargetAssetAllocation> targetAssetAllocations;
 
     public SimpleTargetAssetAllocationsStore(List<TargetAssetAllocation> targetAssetAllocations) {

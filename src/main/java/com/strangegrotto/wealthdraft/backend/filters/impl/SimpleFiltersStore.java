@@ -5,7 +5,7 @@ import com.strangegrotto.wealthdraft.backend.filters.api.types.AssetFilter;
 
 import java.util.Map;
 
-public class SimpleFiltersStore implements FiltersStore {
+class SimpleFiltersStore implements FiltersStore {
     private final Map<String, AssetFilter> filters;
 
     public SimpleFiltersStore(Map<String, AssetFilter> filters) {

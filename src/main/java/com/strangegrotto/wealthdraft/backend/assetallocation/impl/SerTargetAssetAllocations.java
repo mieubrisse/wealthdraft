@@ -9,7 +9,7 @@ import java.util.List;
 @WealthdraftImmutableStyle
 @Value.Immutable
 // Deserialized using custom deserializer
-public interface SerTargetAssetAllocations {
+interface SerTargetAssetAllocations {
     // TODO add configurable WARN/ERROR thresholds
 
     @Value.Parameter

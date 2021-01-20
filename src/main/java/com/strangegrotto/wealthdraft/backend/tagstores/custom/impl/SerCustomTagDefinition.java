@@ -11,7 +11,7 @@ import java.util.Set;
 @WealthdraftImmutableStyle
 @Value.Immutable
 @JsonDeserialize(as = ImmSerializableCustomTagDefinition.class)
-public interface SerCustomTagDefinition extends CustomTagDefinition {
+interface SerCustomTagDefinition extends CustomTagDefinition {
     @Value.Default
     default boolean isRequired() {
         return false;

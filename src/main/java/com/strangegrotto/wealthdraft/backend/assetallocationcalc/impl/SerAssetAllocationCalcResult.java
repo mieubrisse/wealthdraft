@@ -6,5 +6,5 @@ import org.immutables.value.Value;
 
 @WealthdraftImmutableStyle
 @Value.Immutable
-public interface SerAssetAllocationCalcResult extends AssetAllocationCalcResult {
+interface SerAssetAllocationCalcResult extends AssetAllocationCalcResult {
 }

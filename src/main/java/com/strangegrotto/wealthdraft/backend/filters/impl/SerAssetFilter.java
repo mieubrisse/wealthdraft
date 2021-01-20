@@ -11,4 +11,4 @@ import com.strangegrotto.wealthdraft.backend.filters.api.types.AssetFilter;
         @JsonSubTypes.Type(DisjunctionAssetFilter.class),
         @JsonSubTypes.Type(EmbeddedFilterAssetFilter.class)
 })
-public interface SerAssetFilter extends AssetFilter { }
+interface SerAssetFilter extends AssetFilter { }

@@ -11,7 +11,7 @@ import java.util.SortedMap;
 @WealthdraftImmutableStyle
 @Value.Immutable
 // Deserialized using custom deserializer without default constructor
-public abstract class SerAssetsHistory {
+abstract class SerAssetsHistory {
     @Value.Parameter
     public abstract SortedMap<LocalDate, Map<String, AssetSnapshot<?>>> getHistory();
 }

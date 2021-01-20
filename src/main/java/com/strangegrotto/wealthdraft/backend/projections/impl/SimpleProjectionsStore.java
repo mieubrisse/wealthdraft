@@ -6,7 +6,7 @@ import com.strangegrotto.wealthdraft.backend.projections.api.types.ProjectionSce
 import java.math.BigDecimal;
 import java.util.Map;
 
-public class SimpleProjectionsStore implements ProjectionsStore {
+class SimpleProjectionsStore implements ProjectionsStore {
     private final BigDecimal defaultAnnualGrowth;
     private final Map<String, ProjectionScenario> scenarios;
 

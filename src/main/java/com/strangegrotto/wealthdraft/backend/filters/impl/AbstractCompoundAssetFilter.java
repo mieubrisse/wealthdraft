@@ -8,7 +8,7 @@ import com.strangegrotto.wealthdraft.backend.filters.api.types.AssetFilter;
 import java.util.*;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
-public abstract class AbstractCompoundAssetFilter implements SerAssetFilter {
+abstract class AbstractCompoundAssetFilter implements SerAssetFilter {
     @Override
     public final Map<String, Asset> apply(Map<String, AssetFilter> allFilters, Map<String, Asset> input) {
         var constituentFilters = getConstituentFilters();

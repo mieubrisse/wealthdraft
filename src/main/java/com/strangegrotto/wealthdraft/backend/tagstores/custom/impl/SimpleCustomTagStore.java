@@ -5,7 +5,7 @@ import com.strangegrotto.wealthdraft.backend.tagstores.custom.api.types.CustomTa
 
 import java.util.Map;
 
-public class SimpleCustomTagStore implements CustomTagStore {
+class SimpleCustomTagStore implements CustomTagStore {
     Map<String, CustomTagDefinition> customTags;
 
     public SimpleCustomTagStore(Map<String, ? extends CustomTagDefinition> customTags) {

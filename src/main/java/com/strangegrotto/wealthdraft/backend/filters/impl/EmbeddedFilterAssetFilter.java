@@ -15,7 +15,7 @@ import java.util.*;
 @WealthdraftImmutableStyle
 @Value.Immutable
 @JsonDeserialize(as = ImmEmbeddedFilterAssetFilter.class)
-public abstract class EmbeddedFilterAssetFilter implements SerAssetFilter {
+abstract class EmbeddedFilterAssetFilter implements SerAssetFilter {
     @JsonProperty("filter")
     public abstract String getFilterId();
 

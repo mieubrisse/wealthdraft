@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class SerAssetsHistoryDeserializer extends JsonDeserializer<SerAssetsHistory> {
+class SerAssetsHistoryDeserializer extends JsonDeserializer<SerAssetsHistory> {
     private final AssetsStore assetsStore;
 
     public SerAssetsHistoryDeserializer(AssetsStore assetsStore) {

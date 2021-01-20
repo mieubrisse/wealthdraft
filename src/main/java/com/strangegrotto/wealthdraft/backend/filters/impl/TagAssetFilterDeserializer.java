@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-public class TagAssetFilterDeserializer extends JsonDeserializer<TagAssetFilter> {
+class TagAssetFilterDeserializer extends JsonDeserializer<TagAssetFilter> {
     private static class RawTagAssetFilter {
         @JsonProperty("tag")
         public String tag;
