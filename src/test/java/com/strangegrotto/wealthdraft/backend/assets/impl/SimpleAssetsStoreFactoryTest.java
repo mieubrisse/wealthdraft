@@ -75,7 +75,7 @@ public class SimpleAssetsStoreFactoryTest {
         parseAssetsFile(Main.getObjectMapper(), AssetDefinitionsTestFiles.MISSING_REQUIRED_TAG);
     }
 
-    private static AssetsStore parseAssetsFile(ObjectMapper mapper, AssetDefinitionsTestFiles testFile) throws IOException {
+    public static AssetsStore parseAssetsFile(ObjectMapper mapper, AssetDefinitionsTestFiles testFile) throws IOException {
         // TODO switch to using mocks
         var customTagStore = SimpleCustomTagStoreFactoryTest.parseCustomTagsFile(
                 mapper,

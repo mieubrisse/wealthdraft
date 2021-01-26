@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.networth.history;
+package com.strangegrotto.wealthdraft.backend.assethistory;
 
 import com.strangegrotto.wealthdraft.TestFileProvider;
 import com.strangegrotto.wealthdraft.TestResourceDirnames;

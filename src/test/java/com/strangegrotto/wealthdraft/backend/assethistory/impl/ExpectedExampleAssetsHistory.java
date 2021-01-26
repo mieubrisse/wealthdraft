@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.networth.history;
+package com.strangegrotto.wealthdraft.backend.assethistory.impl;
 
 import com.strangegrotto.wealthdraft.assetimpls.bankaccount.ImmBankAccountAssetSnapshot;
 import com.strangegrotto.wealthdraft.assetimpls.stock.ImmStockAssetSnapshot;
