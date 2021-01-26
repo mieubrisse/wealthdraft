@@ -1,7 +1,6 @@
-package com.strangegrotto.wealthdraft.backend.assets.impl;
+package com.strangegrotto.wealthdraft.backend.tagstores.intrinsic;
 
 import com.strangegrotto.wealthdraft.EnumDistinctnessVerifier;
-import com.strangegrotto.wealthdraft.backend.tagstores.intrinsic.IntrinsicAssetTag;
 import org.junit.Test;
 
 public class IntrinsicAssetTagTest {

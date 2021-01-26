@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import java.util.Map;
 
-public class AssetTest {
+public class SerAssetTest {
     @Test
     public void testGetTags() {
         String customTagName = "customTag";

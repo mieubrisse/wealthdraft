@@ -8,7 +8,6 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.ConsoleAppender;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -26,7 +25,6 @@ import com.strangegrotto.wealthdraft.backend.assets.api.AssetsStore;
 import com.strangegrotto.wealthdraft.backend.assets.impl.SimpleAssetsStoreFactory;
 import com.strangegrotto.wealthdraft.backend.filters.api.FiltersStore;
 import com.strangegrotto.wealthdraft.backend.filters.impl.SimpleFilterStoreFactory;
-import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.SerAssetParameterChange;
 import com.strangegrotto.wealthdraft.frontend.assetallocation.AssetAllocationRenderer;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
@@ -34,12 +32,11 @@ import com.strangegrotto.wealthdraft.govconstants.RetirementConstants;
 import com.strangegrotto.wealthdraft.frontend.NetWorthRenderer;
 import com.strangegrotto.wealthdraft.backend.projections.api.ProjectionsStore;
 import com.strangegrotto.wealthdraft.backend.projections.impl.SimpleProjectionsStoreFactory;
-import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.AssetParameterChangeDeserializer;
 import com.strangegrotto.wealthdraft.scenarios.IncomeStreams;
 import com.strangegrotto.wealthdraft.scenarios.TaxScenario;
 import com.strangegrotto.wealthdraft.backend.tagstores.custom.api.CustomTagStore;
 import com.strangegrotto.wealthdraft.backend.tagstores.custom.impl.SimpleCustomTagStoreFactory;
-import com.strangegrotto.wealthdraft.backend.tagstores.intrinsic.IntrinsicTagStore;
+import com.strangegrotto.wealthdraft.backend.tagstores.intrinsic.impl.SimpleIntrinsicTagStore;
 import com.strangegrotto.wealthdraft.tax.ScenarioTaxCalculator;
 import com.strangegrotto.wealthdraft.tax.ScenarioTaxes;
 import com.strangegrotto.wealthdraft.tax.Tax;
@@ -195,12 +192,13 @@ public class Main {
             return;
         }
 
-        var intrinsicTagStore = new IntrinsicTagStore();
+        var intrinsicTagStore = new SimpleIntrinsicTagStore();
 
         var tagsFilepath = parsedArgs.getString(TAGS_FILEPATH_ARG);
         CustomTagStore customTagStore;
         try {
-            customTagStore = new SimpleCustomTagStoreFactory(intrinsicTagStore).create(tagsFilepath);
+            customTagStore = new SimpleCustomTagStoreFactory(mapper, intrinsicTagStore)
+                    .create(new File(tagsFilepath).toURI().toURL());
         } catch (IOException e) {
             log.error("An error occurred parsing the tags file '{}'", tagsFilepath, e);
             System.exit(FAILURE_EXIT_CODE);
@@ -210,7 +208,8 @@ public class Main {
         var filtersFilepath = parsedArgs.getString(FILTERS_FILEPATH_ARG);
         FiltersStore filtersStore;
         try {
-            filtersStore = new SimpleFilterStoreFactory(customTagStore, intrinsicTagStore).create(filtersFilepath);
+            filtersStore = new SimpleFilterStoreFactory(mapper, customTagStore, intrinsicTagStore)
+                    .create(new File(filtersFilepath).toURI().toURL());
         } catch (IOException e) {
             log.error("An error occurred parsing the filters file '{}'", filtersFilepath, e);
             System.exit(FAILURE_EXIT_CODE);
@@ -220,7 +219,8 @@ public class Main {
         var assetsFilepath = parsedArgs.getString(ASSETS_FILEPATH_ARG);
         AssetsStore assetsStore;
         try {
-            assetsStore = new SimpleAssetsStoreFactory(customTagStore).create(assetsFilepath);
+            assetsStore = new SimpleAssetsStoreFactory(mapper, customTagStore)
+                    .create(new File(assetsFilepath).toURI().toURL());
         } catch (IOException e) {
             log.error("An error occurred parsing the assets file '{}'", assetsFilepath, e);
             System.exit(FAILURE_EXIT_CODE);
@@ -230,7 +230,8 @@ public class Main {
         var assetsHistoryFilepath = parsedArgs.getString(ASSETS_HISTORY_FILEPATH_ARG);
         AssetHistoryStore assetHistoryStore;
         try {
-            assetHistoryStore = new SimpleAssetHistoryStoreFactory(assetsStore).create(assetsHistoryFilepath);
+            assetHistoryStore = new SimpleAssetHistoryStoreFactory(mapper, assetsStore)
+                    .create(new File(assetsHistoryFilepath).toURI().toURL());
         } catch (IOException e) {
             log.error("An error occurred parsing the asset history file '{}'", assetsHistoryFilepath, e);
             System.exit(FAILURE_EXIT_CODE);
@@ -240,7 +241,8 @@ public class Main {
         var projectionsFilepath = parsedArgs.getString(PROJECTIONS_FILEPATH_ARG);
         ProjectionsStore projectionsStore;
         try {
-            projectionsStore = new SimpleProjectionsStoreFactory(assetsStore).create(projectionsFilepath);
+            projectionsStore = new SimpleProjectionsStoreFactory(mapper, assetsStore)
+                    .create(new File(projectionsFilepath).toURI().toURL());
         } catch (IOException e) {
             log.error("An error occurred parsing the projections file '{}'", projectionsFilepath, e);
             System.exit(FAILURE_EXIT_CODE);
@@ -250,7 +252,8 @@ public class Main {
         var assetAllocationsFilepath = parsedArgs.getString(ASSET_ALLOCATIONS_FILEPATH_ARG);
         TargetAssetAllocationsStore targetAllocationsStore;
         try {
-            targetAllocationsStore = new SimpleTargetAssetAllocationsStoreFactory(filtersStore).create(assetAllocationsFilepath);
+            targetAllocationsStore = new SimpleTargetAssetAllocationsStoreFactory(mapper, filtersStore)
+                    .create(new File(assetAllocationsFilepath).toURI().toURL());
         } catch (IOException e) {
             log.error("An error occurred parsing the target asset allocations file '{}'", assetAllocationsFilepath, e);
             System.exit(FAILURE_EXIT_CODE);
@@ -308,10 +311,6 @@ public class Main {
         mapper.registerModule(new GuavaModule());
         mapper.registerModule(new JavaTimeModule());
         mapper.registerModule(new Jdk8Module());    // Support deserializing to Optionals
-
-        var deserializerModule = new SimpleModule();
-        deserializerModule.addDeserializer(SerAssetParameterChange.class, new AssetParameterChangeDeserializer());
-        mapper.registerModule(deserializerModule);
 
         return mapper;
     }

@@ -20,7 +20,8 @@ public class SimpleAssetsStoreFactory extends AbstractYmlBackedStoreFactory<
         SimpleAssetsStore> {
     private final CustomTagStore customTagStore;
 
-    public SimpleAssetsStoreFactory(CustomTagStore customTagStore) {
+    public SimpleAssetsStoreFactory(ObjectMapper baseMapper, CustomTagStore customTagStore) {
+        super(baseMapper);
         this.customTagStore = customTagStore;
     }
 

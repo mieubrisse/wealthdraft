@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.base.Preconditions;
 import com.strangegrotto.wealthdraft.AbstractYmlBackedStoreFactory;
 import com.strangegrotto.wealthdraft.backend.tagstores.custom.api.types.CustomTagDefinition;
-import com.strangegrotto.wealthdraft.backend.tagstores.intrinsic.IntrinsicTagStore;
+import com.strangegrotto.wealthdraft.backend.tagstores.intrinsic.impl.SimpleIntrinsicTagStore;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,9 +15,10 @@ public class SimpleCustomTagStoreFactory extends AbstractYmlBackedStoreFactory<
         Map<String, CustomTagDefinition>,
         Map<String, CustomTagDefinition>,
         SimpleCustomTagStore> {
-    private final IntrinsicTagStore intrinsicTagStore;
+    private final SimpleIntrinsicTagStore intrinsicTagStore;
 
-    public SimpleCustomTagStoreFactory(IntrinsicTagStore intrinsicTagStore) {
+    public SimpleCustomTagStoreFactory(ObjectMapper baseMapper, SimpleIntrinsicTagStore intrinsicTagStore) {
+        super(baseMapper);
         this.intrinsicTagStore = intrinsicTagStore;
     }
 

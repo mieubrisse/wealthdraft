@@ -1,6 +1,5 @@
-assets:
-  ret:
-    name: Retirement account
-    type: BANK_ACCOUNT
-    tags:
-      domOrIntl: thisIsntAllowed
+ret:
+  name: Retirement account
+  type: BANK_ACCOUNT
+  tags:
+    domOrIntl: thisIsntAllowed

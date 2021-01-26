@@ -6,14 +6,21 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 
 public abstract class AbstractYmlBackedStoreFactory<DESERIALIZED, POSTPROCESSED, OUTPUT> {
-    public final OUTPUT create(String ymlFilepath) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper baseMapper;
+
+    public AbstractYmlBackedStoreFactory(ObjectMapper baseMapper) {
+        this.baseMapper = baseMapper;
+    }
+
+    public final OUTPUT create(URL ymlFileUrl) throws IOException {
+        var mapper = this.baseMapper.copy();
         configureMapper(mapper);
 
         var type = getDeserializationType(mapper.getTypeFactory());
-        DESERIALIZED deserialized = mapper.readValue(new File(ymlFilepath), type);
+        DESERIALIZED deserialized = mapper.readValue(ymlFileUrl, type);
         POSTPROCESSED postprocessed = postprocess(deserialized);
         validate(postprocessed);
         return buildResult(postprocessed);

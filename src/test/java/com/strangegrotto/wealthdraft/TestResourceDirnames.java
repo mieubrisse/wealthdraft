@@ -7,7 +7,8 @@ public enum TestResourceDirnames {
     ASSET_DEFINITIONS_DESERIALIZATION_TESTS("assets-deserialization"),
     ASSET_FILTERS_DESERIALIZATION_TESTS("asset-filters"),
     ASSETS_HISTORY_DESERIALIZATION_TESTS("assets-history-deserialization"),
-    PROJECTIONS_DESERIALIZATION_TESTS("projections-deserialization");
+    PROJECTIONS_DESERIALIZATION_TESTS("projections-deserialization"),
+    TAGS_TESTS("tags");
 
     private final String dirname;
 

@@ -8,7 +8,7 @@ import com.google.common.base.Strings;
 import com.strangegrotto.wealthdraft.AbstractYmlBackedStoreFactory;
 import com.strangegrotto.wealthdraft.backend.filters.api.types.AssetFilter;
 import com.strangegrotto.wealthdraft.backend.tagstores.custom.api.CustomTagStore;
-import com.strangegrotto.wealthdraft.backend.tagstores.intrinsic.IntrinsicTagStore;
+import com.strangegrotto.wealthdraft.backend.tagstores.intrinsic.impl.SimpleIntrinsicTagStore;
 
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -20,9 +20,10 @@ public class SimpleFilterStoreFactory extends AbstractYmlBackedStoreFactory<
         Map<String, AssetFilter>,
         SimpleFiltersStore> {
     private final CustomTagStore customTagStore;
-    private final IntrinsicTagStore intrinsicTagStore;
+    private final SimpleIntrinsicTagStore intrinsicTagStore;
 
-    public SimpleFilterStoreFactory(CustomTagStore customTagStore, IntrinsicTagStore intrinsicTagStore) {
+    public SimpleFilterStoreFactory(ObjectMapper baseMapper, CustomTagStore customTagStore, SimpleIntrinsicTagStore intrinsicTagStore) {
+        super(baseMapper);
         this.customTagStore = customTagStore;
         this.intrinsicTagStore = intrinsicTagStore;
     }

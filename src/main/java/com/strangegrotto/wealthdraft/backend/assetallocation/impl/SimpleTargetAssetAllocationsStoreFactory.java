@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.base.Preconditions;
+import com.google.common.escape.ArrayBasedEscaperMap;
 import com.strangegrotto.wealthdraft.AbstractYmlBackedStoreFactory;
 import com.strangegrotto.wealthdraft.backend.assetallocation.api.types.TargetAssetAllocation;
 import com.strangegrotto.wealthdraft.backend.filters.api.FiltersStore;
@@ -17,7 +18,8 @@ public class SimpleTargetAssetAllocationsStoreFactory extends AbstractYmlBackedS
         SimpleTargetAssetAllocationsStore> {
     private final FiltersStore filtersStore;
 
-    public SimpleTargetAssetAllocationsStoreFactory(FiltersStore filtersStore) {
+    public SimpleTargetAssetAllocationsStoreFactory(ObjectMapper baseMapper, FiltersStore filtersStore) {
+        super(baseMapper);
         this.filtersStore = filtersStore;
     }
 

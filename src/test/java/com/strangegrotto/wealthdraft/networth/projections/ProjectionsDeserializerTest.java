@@ -2,7 +2,7 @@ package com.strangegrotto.wealthdraft.networth.projections;
 
 import com.strangegrotto.wealthdraft.Main;
 import com.strangegrotto.wealthdraft.backend.assets.impl.AssetDefinitions;
-import com.strangegrotto.wealthdraft.backend.assets.impl.AssetDefinitionsTestFiles;
+import com.strangegrotto.wealthdraft.backend.assets.AssetDefinitionsTestFiles;
 import com.strangegrotto.wealthdraft.backend.assets.impl.ImmAssetDefinitions;
 import com.strangegrotto.wealthdraft.backend.projections.impl.SerProjectionsDeserializer;
 import com.strangegrotto.wealthdraft.backend.projections.impl.SerProjectionScenario;

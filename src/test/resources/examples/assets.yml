@@ -1,23 +1,20 @@
-customTags:
-
-assets:
-  ret:
-    name: Retirement account
-    type: STOCK
-    tags:
-      broker: Fidelity
-  pbrok:
-    name: Personal brokerage account
-    type: STOCK
-    tags:
-      broker: Vanguard
-  bank:
-    name: Bank account
-    type: BANK_ACCOUNT
-    tags:
-      broker: Chase
-  btc:
-    name: BTC holdings
-    type: BANK_ACCOUNT
-    tags:
-      domOrIntl: international
+ret:
+  name: Retirement account
+  type: STOCK
+  tags:
+    broker: Fidelity
+pbrok:
+  name: Personal brokerage account
+  type: STOCK
+  tags:
+    broker: Vanguard
+bank:
+  name: Bank account
+  type: BANK_ACCOUNT
+  tags:
+    broker: Chase
+btc:
+  name: BTC holdings
+  type: BANK_ACCOUNT
+  tags:
+    domOrIntl: international

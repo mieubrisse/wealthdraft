@@ -16,7 +16,8 @@ public class SimpleAssetHistoryStoreFactory extends AbstractYmlBackedStoreFactor
         SimpleAssetHistoryStore> {
     private final AssetsStore assetsStore;
 
-    public SimpleAssetHistoryStoreFactory(AssetsStore assetsStore) {
+    public SimpleAssetHistoryStoreFactory(ObjectMapper baseMapper, AssetsStore assetsStore) {
+        super(baseMapper);
         this.assetsStore = assetsStore;
     }
 

@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.strangegrotto.wealthdraft.backend.tagstores.custom.api.CustomTagStore;
-import com.strangegrotto.wealthdraft.backend.tagstores.intrinsic.IntrinsicTagStore;
+import com.strangegrotto.wealthdraft.backend.tagstores.intrinsic.impl.SimpleIntrinsicTagStore;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -24,9 +24,9 @@ class TagAssetFilterDeserializer extends JsonDeserializer<TagAssetFilter> {
     }
 
     private final CustomTagStore customTagStore;
-    private final IntrinsicTagStore intrinsicTagStore;
+    private final SimpleIntrinsicTagStore intrinsicTagStore;
 
-    public TagAssetFilterDeserializer(CustomTagStore customTagStore, IntrinsicTagStore intrinsicTagStore) {
+    public TagAssetFilterDeserializer(CustomTagStore customTagStore, SimpleIntrinsicTagStore intrinsicTagStore) {
         this.customTagStore = customTagStore;
         this.intrinsicTagStore = intrinsicTagStore;
     }

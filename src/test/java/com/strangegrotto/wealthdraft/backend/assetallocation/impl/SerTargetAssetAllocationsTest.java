@@ -1,13 +1,12 @@
-package com.strangegrotto.wealthdraft.backend.assetallocation.datamodel;
+package com.strangegrotto.wealthdraft.backend.assetallocation.impl;
 
 import com.strangegrotto.wealthdraft.Main;
 import com.strangegrotto.wealthdraft.backend.assetallocation.ExpectedExampleTargetAssetAllocations;
 import com.strangegrotto.wealthdraft.backend.assetallocation.TargetAssetAllocationsTestFiles;
-import com.strangegrotto.wealthdraft.backend.assetallocation.impl.SerTargetAssetAllocations;
 import com.strangegrotto.wealthdraft.backend.filters.impl.SerAssetFilter;
 import com.strangegrotto.wealthdraft.backend.filters.FiltersTestFiles;
 import com.strangegrotto.wealthdraft.backend.assets.impl.AssetDefinitions;
-import com.strangegrotto.wealthdraft.backend.assets.impl.AssetDefinitionsTestFiles;
+import com.strangegrotto.wealthdraft.backend.assets.AssetDefinitionsTestFiles;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -42,7 +41,7 @@ public class SerTargetAssetAllocationsTest {
         parseAssetAllocationsFile(TargetAssetAllocationsTestFiles.FRACTION_LESS_THAN_0);
     }
 
-    private static SerTargetAssetAllocations parseAssetAllocationsFile(TargetAssetAllocationsTestFiles testFile) throws IOException {
+    public static SerTargetAssetAllocations parseAssetAllocationsFile(TargetAssetAllocationsTestFiles testFile) throws IOException {
         var mapper = Main.getObjectMapper();
         var assetsUrl = AssetDefinitionsTestFiles.EXAMPLE.getResource();
         var assetDefinitions = mapper.readValue(assetsUrl, AssetDefinitions.class);

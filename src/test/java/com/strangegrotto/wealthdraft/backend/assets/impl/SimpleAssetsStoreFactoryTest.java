@@ -1,37 +1,39 @@
 package com.strangegrotto.wealthdraft.backend.assets.impl;
 
 import com.strangegrotto.wealthdraft.Main;
+import com.strangegrotto.wealthdraft.backend.assets.AssetDefinitionsTestFiles;
+import com.strangegrotto.wealthdraft.backend.assets.api.AssetsStore;
+import com.strangegrotto.wealthdraft.backend.assets.api.types.Asset;
 import com.strangegrotto.wealthdraft.backend.assets.api.types.AssetType;
+import com.strangegrotto.wealthdraft.backend.tagstores.custom.CustomTagsTestFiles;
+import com.strangegrotto.wealthdraft.backend.tagstores.custom.impl.SimpleCustomTagStoreFactoryTest;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 
-public class AssetDefinitionsTest {
+public class SimpleAssetsStoreFactoryTest {
     @Test
     public void testValidDeserialization() throws IOException {
-        AssetDefinitions definitions = parseAssetsFile(AssetDefinitionsTestFiles.EXAMPLE);
+        var assetsStore = parseAssetsFile(AssetDefinitionsTestFiles.EXAMPLE);
         Assert.assertEquals(
                 ExpectedExampleAssetDefinitions.EXPECTED_ASSETS,
-                definitions.getAssets()
-        );
-        Assert.assertEquals(
-                ExpectedExampleAssetDefinitions.EXPECTED_CUSTOM_TAGS,
-                definitions.getCustomTags()
+                assetsStore.getAssets()
         );
     }
 
     @Test
     public void testDeserializingEveryAsset() throws IOException {
-        var definitions = parseAssetsFile(AssetDefinitionsTestFiles.EVERY_ASSET_TYPE);
-        var assetsMap = definitions.getAssets();
+        var assetsStore = parseAssetsFile(AssetDefinitionsTestFiles.EVERY_ASSET_TYPE);
+        var assetsMap = assetsStore.getAssets();
         var assets = assetsMap.values();
 
         var expectedDistinctAssets = AssetType.values().length;
 
         // Verify that we do indeed have one of every class
         var distinctAssetClasses = assets.stream()
-                .map(SerAsset::getType)
+                .map(Asset::getType)
                 .distinct()
                 .count();
         Assert.assertEquals(expectedDistinctAssets, distinctAssetClasses);
@@ -39,8 +41,8 @@ public class AssetDefinitionsTest {
 
     @Test
     public void testDefaultTags() throws IOException {
-        var definitions = parseAssetsFile(AssetDefinitionsTestFiles.TEST_DEFAULT_TAGS);
-        var assets = definitions.getAssets();
+        var assetsStore = parseAssetsFile(AssetDefinitionsTestFiles.TEST_DEFAULT_TAGS);
+        var assets = assetsStore.getAssets();
         var myAsset = assets.get("myAsset");
         var myAssetCustomTags = myAsset.getCustomTags();
 
@@ -77,9 +79,12 @@ public class AssetDefinitionsTest {
         parseAssetsFile(AssetDefinitionsTestFiles.MISSING_REQUIRED_TAG);
     }
 
-    private static AssetDefinitions parseAssetsFile(AssetDefinitionsTestFiles testFile) throws IOException {
+    private static AssetsStore parseAssetsFile(AssetDefinitionsTestFiles testFile) throws IOException {
         var mapper = Main.getObjectMapper();
         var assetsUrl = testFile.getResource();
-        return mapper.readValue(assetsUrl, AssetDefinitions.class);
+
+        var customTagStore = SimpleCustomTagStoreFactoryTest.parseCustomTagsFile(CustomTagsTestFiles.EXAMPLE);
+        var factory = new SimpleAssetsStoreFactory(mapper, customTagStore);
+        return factory.create(testFile.getResource());
     }
 }

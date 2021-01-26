@@ -25,7 +25,6 @@ public enum IntrinsicAssetTag {
         return allowedValues;
     }
 
-    // TODO Delete??
     public static Set<String> getAllTagNames() {
         return Arrays.stream(IntrinsicAssetTag.values())
                 .map(IntrinsicAssetTag::getTagName)

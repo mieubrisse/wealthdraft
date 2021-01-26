@@ -10,6 +10,8 @@ import com.strangegrotto.wealthdraft.AbstractYmlBackedStoreFactory;
 import com.strangegrotto.wealthdraft.backend.assets.api.AssetsStore;
 import com.strangegrotto.wealthdraft.backend.projections.api.types.AssetChange;
 import com.strangegrotto.wealthdraft.backend.projections.api.types.ProjectionScenario;
+import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.AssetParameterChangeDeserializer;
+import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.SerAssetParameterChange;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 
 import java.time.LocalDate;
@@ -22,7 +24,8 @@ public class SimpleProjectionsStoreFactory extends AbstractYmlBackedStoreFactory
 
     private final AssetsStore assetsStore;
 
-    public SimpleProjectionsStoreFactory(AssetsStore assetsStore) {
+    public SimpleProjectionsStoreFactory(ObjectMapper baseMapper, AssetsStore assetsStore) {
+        super(baseMapper);
         this.assetsStore = assetsStore;
     }
 
@@ -30,6 +33,7 @@ public class SimpleProjectionsStoreFactory extends AbstractYmlBackedStoreFactory
     protected void configureMapper(ObjectMapper mapper) {
         var module = new SimpleModule();
         module.addDeserializer(SerProjections.class, new SerProjectionsDeserializer(this.assetsStore));
+        module.addDeserializer(SerAssetParameterChange.class, new AssetParameterChangeDeserializer());
         mapper.registerModule(module);
     }
 
