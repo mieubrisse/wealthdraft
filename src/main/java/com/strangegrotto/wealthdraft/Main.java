@@ -205,7 +205,7 @@ public class Main {
         var filtersFilepath = parsedArgs.getString(FILTERS_FILEPATH_ARG);
         FiltersStore filtersStore;
         try {
-            filtersStore = new SimpleFilterStoreFactory(mapper, customTagStore, intrinsicTagStore)
+            filtersStore = new SimpleFilterStoreFactory(mapper, customTagStore)
                     .create(new File(filtersFilepath).toURI().toURL());
         } catch (IOException e) {
             log.error("An error occurred parsing the filters file '{}'", filtersFilepath, e);

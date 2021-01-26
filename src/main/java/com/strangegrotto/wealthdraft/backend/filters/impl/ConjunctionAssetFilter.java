@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Sets;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
 import com.strangegrotto.wealthdraft.backend.assets.api.types.Asset;
-import com.strangegrotto.wealthdraft.backend.filters.api.types.AssetFilter;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -18,10 +17,10 @@ import java.util.stream.Collectors;
 abstract class ConjunctionAssetFilter extends AbstractCompoundAssetFilter {
     @Value.Parameter
     @JsonProperty("all")
-    public abstract List<AssetFilter> getFilters();
+    public abstract List<ValidatableAssetFilter> getFilters();
 
     @Override
-    protected final List<AssetFilter> getConstituentFilters() {
+    protected final List<ValidatableAssetFilter> getConstituentFilters() {
         return getFilters();
     }
 

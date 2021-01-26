@@ -1,11 +1,10 @@
-package com.strangegrotto.wealthdraft.backend.filters;
+package com.strangegrotto.wealthdraft.backend.filters.impl;
 
 import com.google.common.collect.Sets;
+import com.strangegrotto.wealthdraft.backend.assets.api.types.Asset;
 import com.strangegrotto.wealthdraft.backend.assets.api.types.AssetType;
-import com.strangegrotto.wealthdraft.backend.assets.impl.ImmSerAsset;
-import com.strangegrotto.wealthdraft.backend.assets.impl.SerAsset;
-import com.strangegrotto.wealthdraft.backend.assets.impl.ImmCustomTagDefinition;
-import com.strangegrotto.wealthdraft.backend.filters.impl.SerAssetFilter;
+import com.strangegrotto.wealthdraft.backend.assets.api.types.MockAsset;
+import com.strangegrotto.wealthdraft.backend.filters.api.types.AssetFilter;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -19,29 +18,24 @@ public class EmbeddedFilterAssetFilterTest {
         var needleName = "myTag";
         var needleValue = "myTagValue";
 
-        var tags = Map.of(
-                needleName, ImmCustomTagDefinition.builder().build()
-        );
-
         var embeddedFilterId = "embedded";
         var embeddedFilter = ImmTagAssetFilter.of(
-                tags,
                 needleName,
                 needleValue
         );
         var embeddingFilterId = "embedding";
         var embeddingFilter = ImmEmbeddedFilterAssetFilter.of(embeddedFilterId);
-        var filters = Map.of(
+        var filters = Map.<String, AssetFilter>of(
                 embeddedFilterId, embeddedFilter,
                 embeddingFilterId, embeddingFilter
         );
 
         var matchingAssetId = "matching";
-        Map<String, SerAsset> haystack = Map.of(
-                matchingAssetId, ImmSerAsset.of("Matching", AssetType.BANK_ACCOUNT).withCustomTags(Map.of(
+        var haystack = Map.<String, Asset>of(
+                matchingAssetId, new MockAsset("Matching", AssetType.BANK_ACCOUNT, Map.of(
                         needleName, needleValue
                 )),
-                "unmatchingAsset", ImmSerAsset.of("Doesn't match", AssetType.BANK_ACCOUNT)
+                "unmatchingAsset", new MockAsset("Doesn't match", AssetType.BANK_ACCOUNT, Map.of())
         );
 
         var expected = Map.of(
@@ -60,7 +54,7 @@ public class EmbeddedFilterAssetFilterTest {
 
         var filter1 = ImmEmbeddedFilterAssetFilter.of(filterId2);
 
-        Map<String, SerAssetFilter> filters = Map.of(
+        var filters = Map.<String, ValidatableAssetFilter>of(
                 filterId1, filter1,
                 filterId2, ImmEmbeddedFilterAssetFilter.of(filterId3),
                 filterId3, ImmEmbeddedFilterAssetFilter.of(filterId1)
@@ -74,12 +68,12 @@ public class EmbeddedFilterAssetFilterTest {
     public void testErrorOnNonexistentEmbeddedFilter() {
         var embeddingFilterId = "embedding";
         var embeddingFilter = ImmEmbeddedFilterAssetFilter.of("this-filter-id-doesnt-exist");
-        Map<String, SerAssetFilter> filters = Map.of(
+        var filters = Map.<String, AssetFilter>of(
                 embeddingFilterId, embeddingFilter
         );
 
-        Map<String, SerAsset> assets = Map.of(
-                "someAsset", ImmSerAsset.of("Some ranodm asset", AssetType.BANK_ACCOUNT)
+        var assets = Map.<String, Asset>of(
+                "someAsset", new MockAsset("Some random asset", AssetType.BANK_ACCOUNT, Map.of())
         );
 
         embeddingFilter.apply(filters, assets);

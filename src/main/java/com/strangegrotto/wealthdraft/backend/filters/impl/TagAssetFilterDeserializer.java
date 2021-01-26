@@ -8,10 +8,11 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.strangegrotto.wealthdraft.backend.tags.custom.api.CustomTagStore;
-import com.strangegrotto.wealthdraft.backend.tags.intrinsic.impl.SimpleIntrinsicTagStore;
+import com.strangegrotto.wealthdraft.backend.tags.intrinsic.IntrinsicAssetTag;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 class TagAssetFilterDeserializer extends JsonDeserializer<TagAssetFilter> {
@@ -24,11 +25,9 @@ class TagAssetFilterDeserializer extends JsonDeserializer<TagAssetFilter> {
     }
 
     private final CustomTagStore customTagStore;
-    private final SimpleIntrinsicTagStore intrinsicTagStore;
 
-    public TagAssetFilterDeserializer(CustomTagStore customTagStore, SimpleIntrinsicTagStore intrinsicTagStore) {
+    public TagAssetFilterDeserializer(CustomTagStore customTagStore) {
         this.customTagStore = customTagStore;
-        this.intrinsicTagStore = intrinsicTagStore;
     }
 
     @Override
@@ -42,11 +41,11 @@ class TagAssetFilterDeserializer extends JsonDeserializer<TagAssetFilter> {
     }
 
     private void validateRaw(RawTagAssetFilter raw) {
-        var customTags = this.customTagStore.getTags();
-        var intrinsicTags = this.intrinsicTagStore.getTags();
+        Map<String, Set<String>> intrinsicTagNamesAndValues = IntrinsicAssetTag.getTagNamesToAllowedValues();
 
+        var customTags = this.customTagStore.getTags();
         Set<String> customTagNames = customTags.keySet();
-        Set<String> intrinsicTagNames = intrinsicTags.keySet();
+        Set<String> intrinsicTagNames = intrinsicTagNamesAndValues.keySet();
 
         Set<String> allTagNames = new HashSet<>();
         allTagNames.addAll(intrinsicTagNames);
@@ -61,7 +60,7 @@ class TagAssetFilterDeserializer extends JsonDeserializer<TagAssetFilter> {
 
         var tagValue = raw.value;
         if (intrinsicTagNames.contains(tagName)) {
-            var allowedValues = intrinsicTags.get(tagName);
+            var allowedValues = intrinsicTagNamesAndValues.get(tagName);
             if (allowedValues.size() > 0) {
                 Preconditions.checkState(
                         allowedValues.contains(tagValue),

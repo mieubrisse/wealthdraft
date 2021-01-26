@@ -7,6 +7,7 @@ import com.google.common.collect.Sets;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
 import com.strangegrotto.wealthdraft.backend.assets.api.types.Asset;
 import com.strangegrotto.wealthdraft.backend.filters.api.types.AssetFilter;
+import com.strangegrotto.wealthdraft.backend.tags.custom.api.types.CustomTagDefinition;
 import org.immutables.value.Value;
 
 import java.util.*;
@@ -31,7 +32,13 @@ abstract class EmbeddedFilterAssetFilter implements SerAssetFilter {
     }
 
     @Override
-    public Optional<List<String>> checkForCycles(Map<String, AssetFilter> allFilters, LinkedHashSet<String> parentFilters) {
+    public void validate(Map<String, ValidatableAssetFilter> allFilters, Map<String, CustomTagDefinition> customTags) {
+        var filterId = getFilterId();
+        Preconditions.checkState(allFilters.containsKey(filterId));
+    }
+
+    @Override
+    public Optional<List<String>> checkForCycles(Map<String, ValidatableAssetFilter> allFilters, LinkedHashSet<String> parentFilters) {
         var embeddedFilterName = getFilterId();
         Preconditions.checkState(
                 allFilters.containsKey(embeddedFilterName),

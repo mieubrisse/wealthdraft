@@ -16,16 +16,14 @@ import java.util.List;
 import java.util.Map;
 
 public class SimpleFilterStoreFactory extends AbstractYmlBackedStoreFactory<
-        Map<String, AssetFilter>,
-        Map<String, AssetFilter>,
+        Map<String, ValidatableAssetFilter>,
+        Map<String, ValidatableAssetFilter>,
         SimpleFiltersStore> {
     private final CustomTagStore customTagStore;
-    private final SimpleIntrinsicTagStore intrinsicTagStore;
 
-    public SimpleFilterStoreFactory(ObjectMapper baseMapper, CustomTagStore customTagStore, SimpleIntrinsicTagStore intrinsicTagStore) {
+    public SimpleFilterStoreFactory(ObjectMapper baseMapper, CustomTagStore customTagStore) {
         super(baseMapper);
         this.customTagStore = customTagStore;
-        this.intrinsicTagStore = intrinsicTagStore;
     }
 
     @Override
@@ -33,7 +31,7 @@ public class SimpleFilterStoreFactory extends AbstractYmlBackedStoreFactory<
         var module = new SimpleModule();
         module.addDeserializer(
                 TagAssetFilter.class,
-                new TagAssetFilterDeserializer(this.customTagStore, this.intrinsicTagStore)
+                new TagAssetFilterDeserializer(this.customTagStore)
         );
         mapper.registerModule(module);
     }
@@ -44,13 +42,12 @@ public class SimpleFilterStoreFactory extends AbstractYmlBackedStoreFactory<
     }
 
     @Override
-    protected Map<String, AssetFilter> postprocess(Map<String, AssetFilter> deserialized) {
+    protected Map<String, ValidatableAssetFilter> postprocess(Map<String, ValidatableAssetFilter> deserialized) {
         return deserialized;
     }
 
     @Override
-    protected void validate(Map<String, AssetFilter> postprocessed) {
-        // TODO This is a terrible spot to do error-checking!!
+    protected void validate(Map<String, ValidatableAssetFilter> postprocessed) {
         for (var filterEntry : postprocessed.entrySet()) {
             var filterName = filterEntry.getKey();
             var filter = filterEntry.getValue();
@@ -63,11 +60,17 @@ public class SimpleFilterStoreFactory extends AbstractYmlBackedStoreFactory<
                         String.join(" -> ", cycleOpt.get())
                 ));
             }
+
+            // Very important that we validate AFTER we check for cycles to avoid any possible infinite recursions!
+            var customTags = this.customTagStore.getTags();
+            // TODO Make any exceptions thrown checked
+            filter.validate(postprocessed, customTags);
         }
     }
 
     @Override
-    protected SimpleFiltersStore buildResult(Map<String, AssetFilter> stringAssetFilterMap) {
-        return new SimpleFiltersStore(stringAssetFilterMap);
+    protected SimpleFiltersStore buildResult(Map<String, ValidatableAssetFilter> stringAssetFilterMap) {
+        Map<String, AssetFilter> filters = Map.copyOf(stringAssetFilterMap);
+        return new SimpleFiltersStore(filters);
     }
 }

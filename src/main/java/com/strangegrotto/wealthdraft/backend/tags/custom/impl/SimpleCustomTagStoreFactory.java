@@ -37,7 +37,7 @@ public class SimpleCustomTagStoreFactory extends AbstractYmlBackedStoreFactory<
 
     @Override
     protected void validate(Map<String, CustomTagDefinition> postprocessed) {
-        var intrinsicTagNames = IntrinsicAssetTag.getAllTagNames();
+        var intrinsicTagNames = IntrinsicAssetTag.getTagNamesToAllowedValues();
 
         for (var customTagEntry : postprocessed.entrySet()) {
             var customTagName = customTagEntry.getKey();

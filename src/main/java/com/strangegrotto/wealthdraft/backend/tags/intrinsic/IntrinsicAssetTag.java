@@ -3,11 +3,12 @@ package com.strangegrotto.wealthdraft.backend.tags.intrinsic;
 import com.strangegrotto.wealthdraft.backend.assets.api.types.AssetType;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public enum IntrinsicAssetTag {
-    ASSET_TYPE("assetType", Arrays.stream(AssetType.values()).map(value -> value.name()).collect(Collectors.toSet()));
+    ASSET_TYPE("assetType", Arrays.stream(AssetType.values()).map(Enum::name).collect(Collectors.toSet()));
 
     private final String tagName;
     private final Set<String> allowedValues;
@@ -25,9 +26,11 @@ public enum IntrinsicAssetTag {
         return allowedValues;
     }
 
-    public static Set<String> getAllTagNames() {
+    public static Map<String, Set<String>> getTagNamesToAllowedValues() {
         return Arrays.stream(IntrinsicAssetTag.values())
-                .map(IntrinsicAssetTag::getTagName)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toMap(
+                        IntrinsicAssetTag::getTagName,
+                        IntrinsicAssetTag::getAllowedValues
+                ));
     }
 }

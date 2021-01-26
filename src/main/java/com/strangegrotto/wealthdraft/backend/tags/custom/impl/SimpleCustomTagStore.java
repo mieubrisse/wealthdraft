@@ -4,6 +4,7 @@ import com.strangegrotto.wealthdraft.backend.tags.custom.api.CustomTagStore;
 import com.strangegrotto.wealthdraft.backend.tags.custom.api.types.CustomTagDefinition;
 
 import java.util.Map;
+import java.util.Optional;
 
 class SimpleCustomTagStore implements CustomTagStore {
     Map<String, CustomTagDefinition> customTags;
@@ -15,5 +16,10 @@ class SimpleCustomTagStore implements CustomTagStore {
     @Override
     public Map<String, CustomTagDefinition> getTags() {
         return this.customTags;
+    }
+
+    @Override
+    public Optional<String> validateTag(String tagName, String tagValue) {
+        return Optional.empty();
     }
 }

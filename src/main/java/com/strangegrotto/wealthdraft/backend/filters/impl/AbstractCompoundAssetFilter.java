@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Preconditions;
 import com.strangegrotto.wealthdraft.backend.assets.api.types.Asset;
 import com.strangegrotto.wealthdraft.backend.filters.api.types.AssetFilter;
+import com.strangegrotto.wealthdraft.backend.tags.custom.api.types.CustomTagDefinition;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -28,7 +29,14 @@ abstract class AbstractCompoundAssetFilter implements SerAssetFilter {
     }
 
     @Override
-    public Optional<List<String>> checkForCycles(Map<String, AssetFilter> allFilters, LinkedHashSet<String> parentFilters) {
+    public void validate(Map<String, ValidatableAssetFilter> allFilters, Map<String, CustomTagDefinition> customTags) {
+        for (var filter : getConstituentFilters()) {
+            filter.validate(allFilters, customTags);
+        }
+    }
+
+    @Override
+    public Optional<List<String>> checkForCycles(Map<String, ValidatableAssetFilter> allFilters, LinkedHashSet<String> parentFilters) {
         for (var filter : getConstituentFilters()) {
             var cycleOpt = filter.checkForCycles(allFilters, parentFilters);
             if (cycleOpt.isPresent()) {
@@ -38,7 +46,7 @@ abstract class AbstractCompoundAssetFilter implements SerAssetFilter {
         return Optional.empty();
     }
 
-    protected abstract List<AssetFilter> getConstituentFilters();
+    protected abstract List<ValidatableAssetFilter> getConstituentFilters();
 
     // Reduce function used for deciding
     protected abstract Map<String, Asset> combineFilterMatches(Map<String, Asset> filterResultA, Map<String, Asset> filterResultB);

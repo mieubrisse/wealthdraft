@@ -34,7 +34,7 @@ interface AssetDefinitions {
             var customTagDefinition = customTagEntry.getValue();
 
             Preconditions.checkState(
-                    !IntrinsicAssetTag.getAllTagNames().contains(customTagName),
+                    !IntrinsicAssetTag.getTagNamesToAllowedValues().containsKey(customTagName),
                     "Custom tag '%s' collides with an intrinsic tag",
                     customTagName
             );
