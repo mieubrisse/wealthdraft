@@ -2,8 +2,8 @@ package com.strangegrotto.wealthdraft.backend.filters;
 
 import com.strangegrotto.wealthdraft.backend.assets.api.types.AssetType;
 import com.strangegrotto.wealthdraft.backend.assets.impl.*;
-import com.strangegrotto.wealthdraft.backend.tagstores.custom.api.types.CustomTagDefinition;
-import com.strangegrotto.wealthdraft.backend.tagstores.intrinsic.IntrinsicAssetTag;
+import com.strangegrotto.wealthdraft.backend.tags.custom.api.types.CustomTagDefinition;
+import com.strangegrotto.wealthdraft.backend.tags.intrinsic.IntrinsicAssetTag;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.Assert;
 import org.junit.Test;

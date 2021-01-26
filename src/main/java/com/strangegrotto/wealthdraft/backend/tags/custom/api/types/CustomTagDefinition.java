@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.backend.tagstores.custom.api.types;
+package com.strangegrotto.wealthdraft.backend.tags.custom.api.types;
 
 import java.util.Optional;
 import java.util.Set;

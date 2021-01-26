@@ -1,8 +1,8 @@
-package com.strangegrotto.wealthdraft.backend.tagstores.custom.impl;
+package com.strangegrotto.wealthdraft.backend.tags.custom.impl;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
-import com.strangegrotto.wealthdraft.backend.tagstores.custom.api.types.CustomTagDefinition;
+import com.strangegrotto.wealthdraft.backend.tags.custom.api.types.CustomTagDefinition;
 import org.immutables.value.Value;
 
 import java.util.Optional;

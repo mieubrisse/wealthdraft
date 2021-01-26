@@ -1,10 +1,9 @@
-package com.strangegrotto.wealthdraft.backend.tagstores.custom.impl;
+package com.strangegrotto.wealthdraft.backend.tags.custom.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.strangegrotto.wealthdraft.Main;
-import com.strangegrotto.wealthdraft.backend.tagstores.custom.CustomTagsTestFiles;
-import com.strangegrotto.wealthdraft.backend.tagstores.custom.api.CustomTagStore;
-import com.strangegrotto.wealthdraft.backend.tagstores.intrinsic.impl.SimpleIntrinsicTagStore;
+import com.strangegrotto.wealthdraft.backend.tags.custom.CustomTagsTestFiles;
+import com.strangegrotto.wealthdraft.backend.tags.custom.api.CustomTagStore;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -31,8 +30,7 @@ public class SimpleCustomTagStoreFactoryTest {
     }
 
     public static CustomTagStore parseCustomTagsFile(ObjectMapper baseMapper, CustomTagsTestFiles file) throws IOException {
-        var intrinsicTagStore = new SimpleIntrinsicTagStore();
-        var factory = new SimpleCustomTagStoreFactory(baseMapper, intrinsicTagStore);
+        var factory = new SimpleCustomTagStoreFactory(baseMapper);
         return factory.create(file.getResource());
     }
 }

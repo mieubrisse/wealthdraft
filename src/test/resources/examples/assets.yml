@@ -3,18 +3,22 @@ ret:
   type: STOCK
   tags:
     broker: Fidelity
+    isRetirement: true
 pbrok:
   name: Personal brokerage account
   type: STOCK
   tags:
     broker: Vanguard
+    isRetirement: false
 bank:
   name: Bank account
   type: BANK_ACCOUNT
   tags:
     broker: Chase
+    isRetirement: false
 btc:
   name: BTC holdings
   type: BANK_ACCOUNT
   tags:
     domOrIntl: international
+    isRetirement: false

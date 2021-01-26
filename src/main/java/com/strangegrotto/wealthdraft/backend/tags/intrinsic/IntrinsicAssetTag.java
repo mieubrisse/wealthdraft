@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.backend.tagstores.intrinsic;
+package com.strangegrotto.wealthdraft.backend.tags.intrinsic;
 
 import com.strangegrotto.wealthdraft.backend.assets.api.types.AssetType;
 

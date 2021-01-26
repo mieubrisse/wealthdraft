@@ -1,4 +1,4 @@
 ret:
   name: Retirement account
   type: BANK_ACCOUNT
-  # Missing domOrIntl tag
+  # Missing isRetirement tag

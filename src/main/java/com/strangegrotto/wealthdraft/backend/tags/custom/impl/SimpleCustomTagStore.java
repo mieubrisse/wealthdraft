@@ -1,7 +1,7 @@
-package com.strangegrotto.wealthdraft.backend.tagstores.custom.impl;
+package com.strangegrotto.wealthdraft.backend.tags.custom.impl;
 
-import com.strangegrotto.wealthdraft.backend.tagstores.custom.api.CustomTagStore;
-import com.strangegrotto.wealthdraft.backend.tagstores.custom.api.types.CustomTagDefinition;
+import com.strangegrotto.wealthdraft.backend.tags.custom.api.CustomTagStore;
+import com.strangegrotto.wealthdraft.backend.tags.custom.api.types.CustomTagDefinition;
 
 import java.util.Map;
 

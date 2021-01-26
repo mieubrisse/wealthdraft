@@ -34,9 +34,8 @@ import com.strangegrotto.wealthdraft.backend.projections.api.ProjectionsStore;
 import com.strangegrotto.wealthdraft.backend.projections.impl.SimpleProjectionsStoreFactory;
 import com.strangegrotto.wealthdraft.scenarios.IncomeStreams;
 import com.strangegrotto.wealthdraft.scenarios.TaxScenario;
-import com.strangegrotto.wealthdraft.backend.tagstores.custom.api.CustomTagStore;
-import com.strangegrotto.wealthdraft.backend.tagstores.custom.impl.SimpleCustomTagStoreFactory;
-import com.strangegrotto.wealthdraft.backend.tagstores.intrinsic.impl.SimpleIntrinsicTagStore;
+import com.strangegrotto.wealthdraft.backend.tags.custom.api.CustomTagStore;
+import com.strangegrotto.wealthdraft.backend.tags.custom.impl.SimpleCustomTagStoreFactory;
 import com.strangegrotto.wealthdraft.tax.ScenarioTaxCalculator;
 import com.strangegrotto.wealthdraft.tax.ScenarioTaxes;
 import com.strangegrotto.wealthdraft.tax.Tax;
@@ -192,12 +191,10 @@ public class Main {
             return;
         }
 
-        var intrinsicTagStore = new SimpleIntrinsicTagStore();
-
         var tagsFilepath = parsedArgs.getString(TAGS_FILEPATH_ARG);
         CustomTagStore customTagStore;
         try {
-            customTagStore = new SimpleCustomTagStoreFactory(mapper, intrinsicTagStore)
+            customTagStore = new SimpleCustomTagStoreFactory(mapper)
                     .create(new File(tagsFilepath).toURI().toURL());
         } catch (IOException e) {
             log.error("An error occurred parsing the tags file '{}'", tagsFilepath, e);

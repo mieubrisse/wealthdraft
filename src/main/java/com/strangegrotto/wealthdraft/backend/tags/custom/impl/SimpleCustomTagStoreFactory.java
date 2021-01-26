@@ -1,12 +1,12 @@
-package com.strangegrotto.wealthdraft.backend.tagstores.custom.impl;
+package com.strangegrotto.wealthdraft.backend.tags.custom.impl;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.base.Preconditions;
 import com.strangegrotto.wealthdraft.AbstractYmlBackedStoreFactory;
-import com.strangegrotto.wealthdraft.backend.tagstores.custom.api.types.CustomTagDefinition;
-import com.strangegrotto.wealthdraft.backend.tagstores.intrinsic.impl.SimpleIntrinsicTagStore;
+import com.strangegrotto.wealthdraft.backend.tags.custom.api.types.CustomTagDefinition;
+import com.strangegrotto.wealthdraft.backend.tags.intrinsic.IntrinsicAssetTag;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,11 +15,9 @@ public class SimpleCustomTagStoreFactory extends AbstractYmlBackedStoreFactory<
         Map<String, CustomTagDefinition>,
         Map<String, CustomTagDefinition>,
         SimpleCustomTagStore> {
-    private final SimpleIntrinsicTagStore intrinsicTagStore;
 
-    public SimpleCustomTagStoreFactory(ObjectMapper baseMapper, SimpleIntrinsicTagStore intrinsicTagStore) {
+    public SimpleCustomTagStoreFactory(ObjectMapper baseMapper) {
         super(baseMapper);
-        this.intrinsicTagStore = intrinsicTagStore;
     }
 
     @Override
@@ -39,14 +37,14 @@ public class SimpleCustomTagStoreFactory extends AbstractYmlBackedStoreFactory<
 
     @Override
     protected void validate(Map<String, CustomTagDefinition> postprocessed) {
-        var intrinsicTags = this.intrinsicTagStore.getTags();
+        var intrinsicTagNames = IntrinsicAssetTag.getAllTagNames();
 
         for (var customTagEntry : postprocessed.entrySet()) {
             var customTagName = customTagEntry.getKey();
             var customTagDef = customTagEntry.getValue();
 
             Preconditions.checkState(
-                    !intrinsicTags.containsKey(customTagName),
+                    !intrinsicTagNames.contains(customTagName),
                     "Custom tag name '%s' cannot be used because it collides with an intrinsic tag",
                     customTagName
             );

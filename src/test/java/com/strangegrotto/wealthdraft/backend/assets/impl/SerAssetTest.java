@@ -1,7 +1,7 @@
 package com.strangegrotto.wealthdraft.backend.assets.impl;
 
 import com.strangegrotto.wealthdraft.backend.assets.api.types.AssetType;
-import com.strangegrotto.wealthdraft.backend.tagstores.intrinsic.IntrinsicAssetTag;
+import com.strangegrotto.wealthdraft.backend.tags.intrinsic.IntrinsicAssetTag;
 import org.junit.Assert;
 import org.junit.Test;
 

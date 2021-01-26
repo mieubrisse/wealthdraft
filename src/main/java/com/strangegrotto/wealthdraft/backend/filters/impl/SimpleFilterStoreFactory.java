@@ -7,8 +7,8 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.base.Strings;
 import com.strangegrotto.wealthdraft.AbstractYmlBackedStoreFactory;
 import com.strangegrotto.wealthdraft.backend.filters.api.types.AssetFilter;
-import com.strangegrotto.wealthdraft.backend.tagstores.custom.api.CustomTagStore;
-import com.strangegrotto.wealthdraft.backend.tagstores.intrinsic.impl.SimpleIntrinsicTagStore;
+import com.strangegrotto.wealthdraft.backend.tags.custom.api.CustomTagStore;
+import com.strangegrotto.wealthdraft.backend.tags.intrinsic.impl.SimpleIntrinsicTagStore;
 
 import java.util.HashMap;
 import java.util.LinkedHashSet;

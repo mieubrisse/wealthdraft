@@ -7,7 +7,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.strangegrotto.wealthdraft.AbstractYmlBackedStoreFactory;
 import com.strangegrotto.wealthdraft.backend.assets.api.types.Asset;
-import com.strangegrotto.wealthdraft.backend.tagstores.custom.api.CustomTagStore;
+import com.strangegrotto.wealthdraft.backend.tags.custom.api.CustomTagStore;
 
 import java.util.HashMap;
 import java.util.HashSet;

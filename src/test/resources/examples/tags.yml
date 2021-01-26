@@ -11,4 +11,9 @@ domOrIntl:
     - international
   # Tags can have default values that get used if the tag is missing
   defaultValue: domestic
+
+isRetirement:
+  allowedValues:
+    - true
+    - false
   required: true

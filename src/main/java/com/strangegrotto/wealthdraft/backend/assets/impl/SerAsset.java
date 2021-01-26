@@ -6,7 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
 import com.strangegrotto.wealthdraft.backend.assets.api.types.Asset;
 import com.strangegrotto.wealthdraft.backend.assets.api.types.AssetType;
-import com.strangegrotto.wealthdraft.backend.tagstores.intrinsic.IntrinsicAssetTag;
+import com.strangegrotto.wealthdraft.backend.tags.intrinsic.IntrinsicAssetTag;
 import org.immutables.value.Value;
 
 import java.util.Map;

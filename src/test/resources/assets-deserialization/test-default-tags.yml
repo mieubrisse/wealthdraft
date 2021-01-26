@@ -1,3 +1,6 @@
 myAsset:
   name: My asset
   type: BANK_ACCOUNT
+  tags:
+    isRetirement: false
+    # Missing domOrIntl tag, so should get default value

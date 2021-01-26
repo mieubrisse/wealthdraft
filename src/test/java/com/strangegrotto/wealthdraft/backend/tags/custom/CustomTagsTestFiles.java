@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.backend.tagstores.custom;
+package com.strangegrotto.wealthdraft.backend.tags.custom;
 
 import com.strangegrotto.wealthdraft.TestFileProvider;
 import com.strangegrotto.wealthdraft.TestResourceDirnames;
