@@ -37,14 +37,14 @@ public class SimpleCustomTagStoreFactory extends AbstractYmlBackedStoreFactory<
 
     @Override
     protected void validate(Map<String, CustomTagDefinition> postprocessed) {
-        var intrinsicTagNames = IntrinsicAssetTag.getTagNamesToAllowedValues();
+        var intrinsicTagNamesAndValues = IntrinsicAssetTag.getTagNamesToAllowedValues();
 
         for (var customTagEntry : postprocessed.entrySet()) {
             var customTagName = customTagEntry.getKey();
             var customTagDef = customTagEntry.getValue();
 
             Preconditions.checkState(
-                    !intrinsicTagNames.contains(customTagName),
+                    !intrinsicTagNamesAndValues.containsKey(customTagName),
                     "Custom tag name '%s' cannot be used because it collides with an intrinsic tag",
                     customTagName
             );

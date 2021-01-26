@@ -10,6 +10,7 @@ import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.ImmSerAss
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 
 /**
@@ -46,8 +47,9 @@ public class ExpectedExampleProjections {
                         ExpectedExampleAssetDefinitions.BANK_ACCOUNT_ID, allBtc3yBankChange
                 )
         ));
-        SELL_ALL_BTC_3Y_SCENARIO = ImmProjectionScenario.of(
+        SELL_ALL_BTC_3Y_SCENARIO = ImmSerProjectionScenario.of(
                 "Sell Bitcoin in 3 years for 15k",
+                Optional.empty(),
                 allBtc3yAllChanges
         );
 
@@ -68,8 +70,9 @@ public class ExpectedExampleProjections {
                         ExpectedExampleAssetDefinitions.BANK_ACCOUNT_ID, halfBtc1yBankChange
                 )
         ));
-        SELL_HALF_BTC_1Y_SCENARIO = ImmProjectionScenario.of(
+        SELL_HALF_BTC_1Y_SCENARIO = ImmSerProjectionScenario.of(
                 "Sell 50% Bitcoin in 1 year",
+                Optional.empty(),
                 halfBtc1yAllChanges
         );
 
@@ -91,10 +94,11 @@ public class ExpectedExampleProjections {
                 )
         ));
         otherHalfBtc2yAllChanges.putAll(halfBtc1yAllChanges);
-        SELL_OTHER_HALF_BTC_2Y_SCENARIO = ImmProjectionScenario.of(
+        SELL_OTHER_HALF_BTC_2Y_SCENARIO = ImmSerProjectionScenario.of(
                 "After selling 50% Bitcoin in 1 year, sell other 50% in 2 years",
+                SELL_HALF_BTC_1Y_ID,
                 otherHalfBtc2yAllChanges
-        ).withBase(SELL_HALF_BTC_1Y_ID);
+        );
 
         // ---------------------------------------------------------------------------------------------
         EXPECTED_SCENARIOS = Map.of(
