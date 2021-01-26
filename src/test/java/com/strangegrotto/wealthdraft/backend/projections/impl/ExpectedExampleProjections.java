@@ -1,4 +1,4 @@
-package com.strangegrotto.wealthdraft.networth.projections;
+package com.strangegrotto.wealthdraft.backend.projections.impl;
 
 import com.strangegrotto.wealthdraft.backend.assets.impl.ExpectedExampleAssetDefinitions;
 import com.strangegrotto.wealthdraft.backend.projections.impl.SerProjectionScenario;

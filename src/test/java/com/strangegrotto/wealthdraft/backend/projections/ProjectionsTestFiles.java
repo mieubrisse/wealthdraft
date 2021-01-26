@@ -1,9 +1,9 @@
-package com.strangegrotto.wealthdraft.networth.projections;
+package com.strangegrotto.wealthdraft.backend.projections;
 
 import com.strangegrotto.wealthdraft.TestFileProvider;
 import com.strangegrotto.wealthdraft.TestResourceDirnames;
 
-enum ProjectionsTestFiles implements TestFileProvider {
+public enum ProjectionsTestFiles implements TestFileProvider {
     CHANGE_ON_TODAY("change-on-today.yml"),
     DEPEND_ON_NONEXISTENT_SCENARIO("depend-on-nonexistent-scenario.yml"),
     DEPENDENCY_CYLE("dependency-cycle.yml"),

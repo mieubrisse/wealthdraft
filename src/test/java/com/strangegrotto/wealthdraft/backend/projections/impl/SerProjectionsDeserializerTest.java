@@ -1,12 +1,10 @@
-package com.strangegrotto.wealthdraft.networth.projections;
+package com.strangegrotto.wealthdraft.backend.projections.impl;
 
 import com.strangegrotto.wealthdraft.Main;
 import com.strangegrotto.wealthdraft.backend.assets.impl.AssetDefinitions;
 import com.strangegrotto.wealthdraft.backend.assets.AssetDefinitionsTestFiles;
 import com.strangegrotto.wealthdraft.backend.assets.impl.ImmAssetDefinitions;
-import com.strangegrotto.wealthdraft.backend.projections.impl.SerProjectionsDeserializer;
-import com.strangegrotto.wealthdraft.backend.projections.impl.SerProjectionScenario;
-import com.strangegrotto.wealthdraft.backend.projections.impl.SerProjections;
+import com.strangegrotto.wealthdraft.backend.projections.ProjectionsTestFiles;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,7 +13,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Optional;
 
-public class ProjectionsDeserializerTest {
+public class SerProjectionsDeserializerTest {
     @Test
     public void testPinnedDate() {
         var parsedDateOrErr = SerProjectionsDeserializer.parseRelativeDateStr("2020-10-31");

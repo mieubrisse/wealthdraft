@@ -1,9 +1,11 @@
-package com.strangegrotto.wealthdraft.backend.projections.impl.temporal;
+package com.strangegrotto.wealthdraft.backend.assethistory.impl;
 
 import com.strangegrotto.wealthdraft.assetimpls.bankaccount.BankAccountAssetChange;
 import com.strangegrotto.wealthdraft.assetimpls.bankaccount.ImmBankAccountAssetChange;
 import com.strangegrotto.wealthdraft.assetimpls.stock.ImmStockAssetSnapshot;
 import com.strangegrotto.wealthdraft.assetimpls.stock.StockAssetSnapshot;
+import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.AssetParameterChangeValueOperation;
+import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.ImmSerAssetParameterChange;
 import org.junit.Test;
 
 import java.math.BigDecimal;

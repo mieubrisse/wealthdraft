@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-public class SerAssetsHistoryTest {
+public class SimpleAssetsHistoryStoreFactoryTest {
     @Test
     public void testValidDeserialization() throws IOException {
         var assetsStore = parseAssetsHistoryFile(Main.getObjectMapper(), AssetsHistoryTestFiles.EXAMPLE);
