@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.strangegrotto.wealthdraft.AbstractYmlBackedStoreFactory;
 import com.strangegrotto.wealthdraft.backend.assets.api.AssetsStore;
 import com.strangegrotto.wealthdraft.backend.projections.api.types.AssetChange;
@@ -37,25 +39,24 @@ public class SimpleProjectionsStoreFactory extends AbstractYmlBackedStoreFactory
     }
 
     @Override
-    protected ValOrGerr<SerProjections> postprocess(SerProjections deserialized) {
+    protected SerProjections postprocess(SerProjections deserialized) {
         var notUnrolledScenarios = deserialized.getScenarios();
         Map<String, SerProjectionScenario> unrolledScenarios = new HashMap<>();
         for (String scenarioId : notUnrolledScenarios.keySet()) {
             var unrolledScenarioOrErr = unrollScenarioAssetChanges(scenarioId, notUnrolledScenarios);
+            // TODO get rid of this Gerr silliness
             if (unrolledScenarioOrErr.hasGerr()) {
-                return ValOrGerr.propGerr(
-                        unrolledScenarioOrErr.getGerr(),
-                        "An error occurred unrolling scenario '{}'",
+                throw new IllegalStateException(Strings.lenientFormat(
+                        "An error occurred unrolling scenario asset changes for scenario '%s'",
                         scenarioId
-                );
+                ));
             }
             unrolledScenarios.put(scenarioId, unrolledScenarioOrErr.getVal());
         }
-        var postprocessed = ImmSerProjections.of(
+        return ImmSerProjections.of(
                 deserialized.getDefaultAnnualGrowth(),
                 unrolledScenarios
         );
-        return ValOrGerr.val(postprocessed);
     }
 
     @Override
@@ -122,8 +123,9 @@ public class SimpleProjectionsStoreFactory extends AbstractYmlBackedStoreFactory
         SerProjectionScenario notUnrolledScenario = notUnrolledScenarios.get(scenarioId);
         SerProjectionScenario unrolledScenario = ImmSerProjectionScenario.of(
                 notUnrolledScenario.getName(),
+                notUnrolledScenario.getBase(),
                 unrolledAssetChanges
-        ).withBase(notUnrolledScenario.getBase());
+        );
         return ValOrGerr.val(unrolledScenario);
     }
 

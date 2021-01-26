@@ -17,9 +17,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -92,7 +90,7 @@ class SerProjectionsDeserializer extends JsonDeserializer<SerProjections> {
             RawProjectionScenario rawScenario,
             Map<String, Asset> assets,
             ObjectMapper mapper) {
-        Map<LocalDate, Map<String, AssetChange>> parsedAssetChanges = new HashMap<>();
+        var parsedAssetChanges = new TreeMap<LocalDate, Map<String, AssetChange>>();
         for (String relativeDateStr : rawScenario.changes.keySet()) {
             Map<String, Map<String, String>> unparsedAssetChangesOnDate = rawScenario.changes.get(relativeDateStr);
 

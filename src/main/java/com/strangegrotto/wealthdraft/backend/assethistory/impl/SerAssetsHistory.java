@@ -12,6 +12,5 @@ import java.util.SortedMap;
 @Value.Immutable
 // Deserialized using custom deserializer without default constructor
 abstract class SerAssetsHistory {
-    @Value.Parameter
     public abstract SortedMap<LocalDate, Map<String, AssetSnapshot<?>>> getHistory();
 }

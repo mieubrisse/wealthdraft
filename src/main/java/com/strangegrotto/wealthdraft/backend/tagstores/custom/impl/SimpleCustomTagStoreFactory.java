@@ -45,7 +45,7 @@ public class SimpleCustomTagStoreFactory extends AbstractYmlBackedStoreFactory<
             var customTagDef = customTagEntry.getValue();
 
             Preconditions.checkState(
-                    !intrinsicTags.contains(customTagName),
+                    !intrinsicTags.containsKey(customTagName),
                     "Custom tag name '%s' cannot be used because it collides with an intrinsic tag",
                     customTagName
             );

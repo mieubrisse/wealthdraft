@@ -104,7 +104,7 @@ public class SimpleAssetAllocationCalculator implements AssetAllocationCalculato
             deviationStatus = AssetAllocationDeviationStatus.OK;
         }
 
-        return ImmAssetAllocationCalcResult.of(
+        return ImmSerAssetAllocationCalcResult.of(
                 numeratorValue,
                 denominatorValue,
                 currentFraction,
