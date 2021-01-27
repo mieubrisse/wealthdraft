@@ -1,8 +1,6 @@
-customTags:
-  tagWithDefault:
-    defaultValue: someValue
-
-assets:
-  myAsset:
-    name: My asset
-    type: BANK_ACCOUNT
+myAsset:
+  name: My asset
+  type: BANK_ACCOUNT
+  tags:
+    isRetirement: false
+    # Missing domOrIntl tag, so should get default value

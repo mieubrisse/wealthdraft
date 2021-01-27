@@ -1,7 +1,7 @@
 package com.strangegrotto.wealthdraft.assetimpls.bankaccount;
 
-import com.strangegrotto.wealthdraft.assets.temporal.AssetParameterChangeValueOperation;
-import com.strangegrotto.wealthdraft.assets.temporal.ImmAssetParameterChange;
+import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.AssetParameterChangeValueOperation;
+import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.ImmSerAssetParameterChange;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -27,8 +27,8 @@ public class BankAccountAssetSnapshotTest {
         BigDecimal newInterestRate = BigDecimal.valueOf(0.05);
 
         var snapshot = ImmBankAccountAssetSnapshot.of(new BigDecimal(100), BigDecimal.valueOf(0.03));
-        var balanceChangeOperation = ImmAssetParameterChange.of(newBalance,AssetParameterChangeValueOperation.SET);
-        var interestRateChangeOperation = ImmAssetParameterChange.of(newInterestRate, AssetParameterChangeValueOperation.SET);
+        var balanceChangeOperation = ImmSerAssetParameterChange.of(newBalance,AssetParameterChangeValueOperation.SET);
+        var interestRateChangeOperation = ImmSerAssetParameterChange.of(newInterestRate, AssetParameterChangeValueOperation.SET);
         var change = ImmBankAccountAssetChange.builder()
                 .balance(balanceChangeOperation)
                 .annualInterestRate(interestRateChangeOperation)

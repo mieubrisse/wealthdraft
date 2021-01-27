@@ -1,0 +1,2 @@
+# This collides with an intrinsic tag; we should get an error
+assetType: {}

@@ -1,7 +1,10 @@
-assets:
-  bank:
-    name: Bank Account
-    type: BANK_ACCOUNT
-  stock:
-    name: Stonks
-    type: STOCK
+bank:
+  name: Bank Account
+  type: BANK_ACCOUNT
+  tags:
+    isRetirement: false
+stock:
+  name: Stonks
+  type: STOCK
+  tags:
+    isRetirement: false

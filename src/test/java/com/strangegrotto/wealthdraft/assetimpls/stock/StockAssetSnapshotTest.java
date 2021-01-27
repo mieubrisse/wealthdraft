@@ -1,12 +1,11 @@
 package com.strangegrotto.wealthdraft.assetimpls.stock;
 
-import com.strangegrotto.wealthdraft.assets.temporal.AssetParameterChangeValueOperation;
-import com.strangegrotto.wealthdraft.assets.temporal.ImmAssetParameterChange;
+import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.AssetParameterChangeValueOperation;
+import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.ImmSerAssetParameterChange;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.math.BigDecimal;
-import java.util.Map;
 
 // TODO Maybe make this an interface????
 public class StockAssetSnapshotTest {
@@ -27,11 +26,11 @@ public class StockAssetSnapshotTest {
     public void testChangeApplication() {
         var snapshot = ImmStockAssetSnapshot.of(BigDecimal.valueOf(10), BigDecimal.valueOf(10));
         var change = ImmStockAssetChange.of(
-                ImmAssetParameterChange.of(
+                ImmSerAssetParameterChange.of(
                         BigDecimal.valueOf(5),
                         AssetParameterChangeValueOperation.ADD
                 ),
-                ImmAssetParameterChange.of(
+                ImmSerAssetParameterChange.of(
                         BigDecimal.valueOf(2),
                         AssetParameterChangeValueOperation.SUBTRACT
                 )

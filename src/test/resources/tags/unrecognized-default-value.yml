@@ -1,0 +1,5 @@
+test:
+  allowedValues:
+    - A
+    - B
+  defaultValue: thisDoesntExit

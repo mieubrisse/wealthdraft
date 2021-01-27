@@ -15,6 +15,7 @@ extra_args="${1+"${@}"}"
     --projections ${test_resources_dirpath}/projections.yml \
     --asset-allocations ${test_resources_dirpath}/asset-allocations.yml \
     --filters ${test_resources_dirpath}/filters.yml \
+    --tags ${test_resources_dirpath}/tags.yml \
     `# Render all scenarios during development, to make sure things work` \
     --all \
     ${extra_args}"

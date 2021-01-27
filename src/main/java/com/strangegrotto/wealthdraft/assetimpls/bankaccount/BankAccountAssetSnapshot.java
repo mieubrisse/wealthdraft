@@ -3,11 +3,9 @@ package com.strangegrotto.wealthdraft.assetimpls.bankaccount;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.annotations.VisibleForTesting;
 import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
-import com.strangegrotto.wealthdraft.assetimpls.stock.StockAssetChange;
-import com.strangegrotto.wealthdraft.assets.temporal.AbstractAssetSnapshot;
+import com.strangegrotto.wealthdraft.backend.assethistory.impl.AbstractAssetSnapshot;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
-import com.strangegrotto.wealthdraft.assets.temporal.AssetSnapshot;
-import com.strangegrotto.wealthdraft.assets.temporal.AssetChange;
+import com.strangegrotto.wealthdraft.backend.assethistory.api.types.AssetSnapshot;
 import org.immutables.value.Value;
 
 import java.math.BigDecimal;
