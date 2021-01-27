@@ -36,7 +36,7 @@ public class AssetAllocationRenderer {
 
         var targetAssetAllocations = this.targetAllocationStore.getTargetAllocations();
         var calcResults = new LinkedHashMap<TargetAssetAllocation, AssetAllocationCalcResult>();
-        for (var targetAllocation : this.targetAllocationStore.getTargetAllocations()) {
+        for (var targetAllocation : targetAssetAllocations) {
             var calcResult = this.assetAllocationCalculator.calculate(targetAllocation);
             calcResults.put(targetAllocation, calcResult);
         }

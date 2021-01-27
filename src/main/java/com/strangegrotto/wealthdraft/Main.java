@@ -282,9 +282,6 @@ public class Main {
             System.exit(FAILURE_EXIT_CODE);
         }
 
-        var assetsHistoryByDate = assetHistoryStore.getHistory();
-        var latestDate = assetsHistoryByDate.lastKey();
-        var latestAssetSnapshots = assetsHistoryByDate.get(latestDate);
         var assetAllocationCalculator = new SimpleAssetAllocationCalculator(
                 ASSET_ALLOCATION_DEVIATION_PCT_WARN,
                 ASSET_ALLOCATION_DEVIATION_PCT_ERROR,
