@@ -32,7 +32,7 @@ public class SimpleAssetsStoreFactory extends AbstractYmlBackedStoreFactory<
 
     @Override
     protected JavaType getDeserializationType(TypeFactory typeFactory) {
-        return typeFactory.constructMapType(HashMap.class, String.class, Asset.class);
+        return typeFactory.constructMapType(HashMap.class, String.class, SerAsset.class);
     }
 
     @Override
@@ -52,10 +52,10 @@ public class SimpleAssetsStoreFactory extends AbstractYmlBackedStoreFactory<
             var asset = assetEntry.getValue();
             var assetCustomTags = asset.getCustomTags();
 
-            var newTagsBuilder = ImmutableMap.<String, String>builder();
-            newTagsBuilder.putAll(customTagDefaultValues);
-            newTagsBuilder.putAll(assetCustomTags);
-            var newAsset = ImmSerAsset.copyOf(asset).withCustomTags(newTagsBuilder.build());
+            var newTags = new HashMap<String, String>();
+            newTags.putAll(customTagDefaultValues);  // Default tags first, so they can get overridden
+            newTags.putAll(assetCustomTags);
+            var newAsset = ImmSerAsset.copyOf(asset).withCustomTags(newTags);
 
             newAssetsBuilder.put(assetId, newAsset);
         }

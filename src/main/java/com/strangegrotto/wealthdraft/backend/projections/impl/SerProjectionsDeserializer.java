@@ -104,14 +104,6 @@ class SerProjectionsDeserializer extends JsonDeserializer<SerProjections> {
             }
             LocalDate actualDate = actualDateOrErr.getVal();
 
-            if (actualDate.isBefore(LocalDate.now())) {
-                return ValOrGerr.newGerr(
-                        "Projection scenario {} cannot be used because it has asset changes in the past, on date {}",
-                        scenarioId,
-                        actualDate
-                );
-            }
-
             for (var assetChangeEntry : unparsedAssetChangesOnDate.entrySet()) {
                 var assetId = assetChangeEntry.getKey();
                 var unparsedAssetChange = assetChangeEntry.getValue();

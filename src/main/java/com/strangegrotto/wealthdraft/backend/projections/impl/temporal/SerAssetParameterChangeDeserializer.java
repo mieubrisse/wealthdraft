@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import java.io.IOException;
 import java.math.BigDecimal;
 
-public class AssetParameterChangeDeserializer extends JsonDeserializer<SerAssetParameterChange> {
+public class SerAssetParameterChangeDeserializer extends JsonDeserializer<SerAssetParameterChange> {
     @Override
     public SerAssetParameterChange deserialize(JsonParser parser, DeserializationContext context) throws IOException, JsonProcessingException {
         String raw = parser.readValueAs(String.class);

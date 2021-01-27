@@ -10,7 +10,7 @@ import com.strangegrotto.wealthdraft.AbstractYmlBackedStoreFactory;
 import com.strangegrotto.wealthdraft.backend.assets.api.AssetsStore;
 import com.strangegrotto.wealthdraft.backend.projections.api.types.AssetChange;
 import com.strangegrotto.wealthdraft.backend.projections.api.types.ProjectionScenario;
-import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.AssetParameterChangeDeserializer;
+import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.SerAssetParameterChangeDeserializer;
 import com.strangegrotto.wealthdraft.backend.projections.impl.temporal.SerAssetParameterChange;
 import com.strangegrotto.wealthdraft.errors.ValOrGerr;
 
@@ -33,13 +33,13 @@ public class SimpleProjectionsStoreFactory extends AbstractYmlBackedStoreFactory
     protected void configureMapper(ObjectMapper mapper) {
         var module = new SimpleModule();
         module.addDeserializer(SerProjections.class, new SerProjectionsDeserializer(this.assetsStore));
-        module.addDeserializer(SerAssetParameterChange.class, new AssetParameterChangeDeserializer());
+        module.addDeserializer(SerAssetParameterChange.class, new SerAssetParameterChangeDeserializer());
         mapper.registerModule(module);
     }
 
     @Override
     protected JavaType getDeserializationType(TypeFactory typeFactory) {
-        return null;
+        return typeFactory.constructType(SerProjections.class);
     }
 
     @Override
@@ -65,12 +65,29 @@ public class SimpleProjectionsStoreFactory extends AbstractYmlBackedStoreFactory
 
     @Override
     protected void validate(SerProjections projections) {
+        var scenariosMap = projections.getScenarios();
+        for (var projectionEntry : scenariosMap.entrySet()) {
+            var scenarioId = projectionEntry.getKey();
+            var scenario = projectionEntry.getValue();
 
+            var scenarioAssetChanges = scenario.getAssetChanges();
+            for (var changesForDateEntry : scenarioAssetChanges.entrySet()) {
+                var date = changesForDateEntry.getKey();
+
+                Preconditions.checkState(
+                        date.isAfter(LocalDate.now()) || date.isEqual(LocalDate.now()),
+                        "Projection scenario %s cannot be used because it has asset changes in the past, on date %s",
+                        scenarioId,
+                        date
+                );
+            }
+        }
     }
 
     @Override
     protected SimpleProjectionsStore buildResult(SerProjections projections) {
-        return null;
+        var castedMap = Map.<String, ProjectionScenario>copyOf(projections.getScenarios());
+        return new SimpleProjectionsStore(castedMap);
     }
 
     /**
