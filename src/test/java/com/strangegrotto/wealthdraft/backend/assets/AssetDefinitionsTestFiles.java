@@ -5,10 +5,8 @@ import com.strangegrotto.wealthdraft.TestResourceDirnames;
 
 public enum AssetDefinitionsTestFiles implements TestFileProvider  {
     DISALLOWED_TAG_VALUES("disallowed-tag-value.yml"),
-    INTRINSIC_TAG_COLLISION("intrinsic-tag-collision.yml"),
     UNRECOGNIZED_TAG("unrecognized-tag.yml"),
     EVERY_ASSET_TYPE("every-asset-type.yml"),
-    UNSPECIFIED_TAGS_IS_EMPTY_MAP("unspecified-tags-is-empty-map.yml"),
     MISSING_REQUIRED_TAG("missing-required-tag.yml"),
     TEST_DEFAULT_TAGS("test-default-tags.yml"),
     EXAMPLE(TestResourceDirnames.EXAMPLES, "assets.yml");

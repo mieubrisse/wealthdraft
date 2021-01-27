@@ -1,5 +1,6 @@
 package com.strangegrotto.wealthdraft.backend.assetallocation.impl;
 
+import com.strangegrotto.wealthdraft.backend.assetallocation.api.types.TargetAssetAllocation;
 import com.strangegrotto.wealthdraft.backend.filters.impl.ExpectedExampleFilters;
 
 import java.math.BigDecimal;
@@ -22,11 +23,9 @@ public class ExpectedExampleTargetAssetAllocations {
             BigDecimal.valueOf(0.01)
     ).withDenominatorFilterIdOpt(ExpectedExampleFilters.DOMESTIC_ASSETS_FILTER_ID);
 
-    public static final SerTargetAssetAllocations TARGET_ALLOCATIONS = ImmSerTargetAssetAllocations.of(
-            List.of(
+    public static final List<TargetAssetAllocation> TARGET_ALLOCATIONS = List.of(
                     TARGET_ALLOCATION_1,
                     TARGET_ALLOCATION_2,
                     TARGET_ALLOCATION_3
-            )
     );
 }

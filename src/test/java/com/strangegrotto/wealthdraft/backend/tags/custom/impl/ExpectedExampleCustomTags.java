@@ -20,7 +20,7 @@ public class ExpectedExampleCustomTags {
             DOM_OR_INTL_TAG, ImmSerCustomTagDefinition.builder()
                     .addAllowedValues(DOMESTIC_ASSET_TAG_VALUE, INTERNATIONAL_ASSET_TAG_VALUE)
                     .defaultValue(DOMESTIC_ASSET_TAG_VALUE)
-                    .required(true)
+                    .required(false)
                     .build(),
             BROKER_TAG, ImmSerCustomTagDefinition.builder().build(),
             IS_RETIREMENT_TAG, ImmSerCustomTagDefinition.builder()

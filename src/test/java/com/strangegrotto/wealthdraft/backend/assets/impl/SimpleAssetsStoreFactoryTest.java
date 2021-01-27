@@ -61,11 +61,6 @@ public class SimpleAssetsStoreFactoryTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testErrorOnCollisionWithIntrinsicTag() throws IOException {
-        parseAssetsFile(Main.getObjectMapper(), AssetDefinitionsTestFiles.INTRINSIC_TAG_COLLISION);
-    }
-
-    @Test(expected = IllegalStateException.class)
     public void testErrorOnUnrecognizedTag() throws IOException {
         parseAssetsFile(Main.getObjectMapper(), AssetDefinitionsTestFiles.UNRECOGNIZED_TAG);
     }

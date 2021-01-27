@@ -1,6 +1,10 @@
 bank:
   name: Bank Account
   type: BANK_ACCOUNT
+  tags:
+    isRetirement: false
 stock:
   name: Stonks
   type: STOCK
+  tags:
+    isRetirement: false

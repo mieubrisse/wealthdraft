@@ -2,6 +2,7 @@ package com.strangegrotto.wealthdraft.backend.assetallocation.impl;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.escape.ArrayBasedEscaperMap;
