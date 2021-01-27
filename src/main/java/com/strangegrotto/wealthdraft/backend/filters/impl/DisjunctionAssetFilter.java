@@ -18,10 +18,10 @@ import java.util.stream.Collectors;
 abstract class DisjunctionAssetFilter extends AbstractCompoundAssetFilter {
     @Value.Parameter
     @JsonProperty("any")
-    public abstract List<ValidatableAssetFilter> getTags();
+    public abstract List<SerAssetFilter> getTags();
 
     @Override
-    protected final List<ValidatableAssetFilter> getConstituentFilters() {
+    protected final List<SerAssetFilter> getConstituentFilters() {
         return this.getTags();
     }
 

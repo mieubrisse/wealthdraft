@@ -54,7 +54,7 @@ public class EmbeddedFilterAssetFilterTest {
 
         var filter1 = ImmEmbeddedFilterAssetFilter.of(filterId2);
 
-        var filters = Map.<String, ValidatableAssetFilter>of(
+        var filters = Map.<String, SerAssetFilter>of(
                 filterId1, filter1,
                 filterId2, ImmEmbeddedFilterAssetFilter.of(filterId3),
                 filterId3, ImmEmbeddedFilterAssetFilter.of(filterId1)

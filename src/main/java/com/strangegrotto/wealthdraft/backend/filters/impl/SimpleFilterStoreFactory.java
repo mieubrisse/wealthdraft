@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.Map;
 
 public class SimpleFilterStoreFactory extends AbstractYmlBackedStoreFactory<
-        Map<String, ValidatableAssetFilter>,
-        Map<String, ValidatableAssetFilter>,
+        Map<String, SerAssetFilter>,
+        Map<String, SerAssetFilter>,
         SimpleFiltersStore> {
     private final CustomTagStore customTagStore;
 
@@ -41,12 +41,12 @@ public class SimpleFilterStoreFactory extends AbstractYmlBackedStoreFactory<
     }
 
     @Override
-    protected Map<String, ValidatableAssetFilter> postprocess(Map<String, ValidatableAssetFilter> deserialized) {
+    protected Map<String, SerAssetFilter> postprocess(Map<String, SerAssetFilter> deserialized) {
         return deserialized;
     }
 
     @Override
-    protected void validate(Map<String, ValidatableAssetFilter> postprocessed) {
+    protected void validate(Map<String, SerAssetFilter> postprocessed) {
         for (var filterEntry : postprocessed.entrySet()) {
             var filterName = filterEntry.getKey();
             var filter = filterEntry.getValue();
@@ -68,7 +68,7 @@ public class SimpleFilterStoreFactory extends AbstractYmlBackedStoreFactory<
     }
 
     @Override
-    protected SimpleFiltersStore buildResult(Map<String, ValidatableAssetFilter> stringAssetFilterMap) {
+    protected SimpleFiltersStore buildResult(Map<String, SerAssetFilter> stringAssetFilterMap) {
         Map<String, AssetFilter> filters = Map.copyOf(stringAssetFilterMap);
         return new SimpleFiltersStore(filters);
     }

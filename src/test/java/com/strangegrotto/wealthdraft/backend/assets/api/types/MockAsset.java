@@ -15,16 +15,16 @@ public class MockAsset implements Asset {
 
     @Override
     public String getName() {
-        return this.getName();
+        return this.name;
     }
 
     @Override
     public AssetType getType() {
-        return this.getType();
+        return this.type;
     }
 
     @Override
     public Map<String, String> getTags() {
-        return this.getTags();
+        return this.tags;
     }
 }

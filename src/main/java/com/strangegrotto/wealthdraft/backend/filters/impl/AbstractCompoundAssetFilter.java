@@ -29,14 +29,14 @@ abstract class AbstractCompoundAssetFilter implements SerAssetFilter {
     }
 
     @Override
-    public void validate(Map<String, ValidatableAssetFilter> allFilters, Map<String, CustomTagDefinition> customTags) {
+    public void validate(Map<String, SerAssetFilter> allFilters, Map<String, CustomTagDefinition> customTags) {
         for (var filter : getConstituentFilters()) {
             filter.validate(allFilters, customTags);
         }
     }
 
     @Override
-    public Optional<List<String>> checkForCycles(Map<String, ValidatableAssetFilter> allFilters, LinkedHashSet<String> parentFilters) {
+    public Optional<List<String>> checkForCycles(Map<String, SerAssetFilter> allFilters, LinkedHashSet<String> parentFilters) {
         for (var filter : getConstituentFilters()) {
             var cycleOpt = filter.checkForCycles(allFilters, parentFilters);
             if (cycleOpt.isPresent()) {
@@ -46,7 +46,7 @@ abstract class AbstractCompoundAssetFilter implements SerAssetFilter {
         return Optional.empty();
     }
 
-    protected abstract List<ValidatableAssetFilter> getConstituentFilters();
+    protected abstract List<SerAssetFilter> getConstituentFilters();
 
     // Reduce function used for deciding
     protected abstract Map<String, Asset> combineFilterMatches(Map<String, Asset> filterResultA, Map<String, Asset> filterResultB);

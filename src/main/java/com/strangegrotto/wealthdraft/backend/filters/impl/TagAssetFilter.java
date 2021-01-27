@@ -34,7 +34,7 @@ abstract class TagAssetFilter implements SerAssetFilter {
     }
 
     @Override
-    public void validate(Map<String, ValidatableAssetFilter> allFilters, Map<String, CustomTagDefinition> customTags) {
+    public void validate(Map<String, SerAssetFilter> allFilters, Map<String, CustomTagDefinition> customTags) {
         var intrinsicTagNamesAndValues = IntrinsicAssetTag.getTagNamesToAllowedValues();
 
         var tagName = getTag();
@@ -62,7 +62,7 @@ abstract class TagAssetFilter implements SerAssetFilter {
     }
 
     @Override
-    public Optional<List<String>> checkForCycles(Map<String, ValidatableAssetFilter> allFilters, LinkedHashSet<String> parentFilters) {
+    public Optional<List<String>> checkForCycles(Map<String, SerAssetFilter> allFilters, LinkedHashSet<String> parentFilters) {
         return Optional.empty();
     }
 }

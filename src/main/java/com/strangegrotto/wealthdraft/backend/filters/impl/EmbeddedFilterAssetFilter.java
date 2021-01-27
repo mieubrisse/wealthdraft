@@ -32,13 +32,13 @@ abstract class EmbeddedFilterAssetFilter implements SerAssetFilter {
     }
 
     @Override
-    public void validate(Map<String, ValidatableAssetFilter> allFilters, Map<String, CustomTagDefinition> customTags) {
+    public void validate(Map<String, SerAssetFilter> allFilters, Map<String, CustomTagDefinition> customTags) {
         var filterId = getFilterId();
         Preconditions.checkState(allFilters.containsKey(filterId));
     }
 
     @Override
-    public Optional<List<String>> checkForCycles(Map<String, ValidatableAssetFilter> allFilters, LinkedHashSet<String> parentFilters) {
+    public Optional<List<String>> checkForCycles(Map<String, SerAssetFilter> allFilters, LinkedHashSet<String> parentFilters) {
         var embeddedFilterName = getFilterId();
         Preconditions.checkState(
                 allFilters.containsKey(embeddedFilterName),

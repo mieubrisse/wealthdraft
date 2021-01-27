@@ -17,10 +17,10 @@ import java.util.stream.Collectors;
 abstract class ConjunctionAssetFilter extends AbstractCompoundAssetFilter {
     @Value.Parameter
     @JsonProperty("all")
-    public abstract List<ValidatableAssetFilter> getFilters();
+    public abstract List<SerAssetFilter> getFilters();
 
     @Override
-    protected final List<ValidatableAssetFilter> getConstituentFilters() {
+    protected final List<SerAssetFilter> getConstituentFilters() {
         return getFilters();
     }
 
