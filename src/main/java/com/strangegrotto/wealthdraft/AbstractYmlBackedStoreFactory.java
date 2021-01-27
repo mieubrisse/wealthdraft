@@ -32,7 +32,7 @@ public abstract class AbstractYmlBackedStoreFactory<DESERIALIZED, POSTPROCESSED,
 
     protected abstract POSTPROCESSED postprocess(DESERIALIZED deserialized);
 
-    // TODO make the return type an error?
+    // TODO throw a checked validation exception
     protected abstract void validate(POSTPROCESSED postprocessed);
 
     protected abstract OUTPUT buildResult(POSTPROCESSED postprocessed);
