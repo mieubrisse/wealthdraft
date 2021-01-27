@@ -1,4 +1,10 @@
 ## TBD
+* Gigantic refactor into a microservice-like architecture, to:
+    * Vastly reduce code coupling
+    * Decouple backend calculations and rendering
+    * Pave the way for an eventual transition to a database on the backend
+    * Pave the way for a GUI on the frontend
+    * Make it easier to add new components going forward
 * Separate tags into their own file
 
 ## 0.14.0
