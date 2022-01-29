@@ -3,6 +3,7 @@ package com.strangegrotto.wealthdraft.tax;
 import com.google.common.collect.ImmutableList;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.govconstants.RetirementConstants;
+import com.strangegrotto.wealthdraft.scenarios.HsaContrib;
 import com.strangegrotto.wealthdraft.scenarios.ImmutableIncomeStreams;
 import com.strangegrotto.wealthdraft.scenarios.IncomeStreams;
 import com.strangegrotto.wealthdraft.scenarios.TaxScenario;
@@ -38,11 +39,15 @@ public class DeductionsCalculator {
         double deductionMultiplier = phaseoutRangeFillPct == 0 ? 1.0 : 1.0 - phaseoutRangeFillPct;
         long tradIraDeduction = (long) (deductionMultiplier * scenario.getIraContrib().getTrad());
 
+        HsaContrib hsaContrib = scenario.getHsaContrib();
+        long totalHsaContrib = hsaContrib.getViaPayroll() + hsaContrib.getViaOtherMethods();
+
         return ImmutableDeductions.builder()
                 .trad401kDeduction(reg401kContrib)
                 .tradIraDeduction(tradIraDeduction)
                 // TODO reduce the standard deduction in various scenarios
                 .standardDeduction(govConstants.getStandardDeduction())
+                .hsaDeduction(totalHsaContrib)
                 .build();
     }
 

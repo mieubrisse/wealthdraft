@@ -1,3 +1,7 @@
+## TBD
+* Fixed an issue where foreign-excluded income was allowed to be used for IRA contributions (this is prohibited!)
+* Added HSA contributions, though note that this doesn't quite work right for AMT!
+
 ## 0.14.1
 * Added a `taxAlreadyPaid` section to tax scenarios, to also show exactly how much tax you'll be predicted to pay
 

@@ -462,18 +462,46 @@ public class Main {
             ));
         }
 
-        // IRA contributions MUST be done with earned income, and trad 401k contributions can
+        // IRA contributions MUST be done with earned, NON-FOREIGN-EXCLUDED income, and trad 401k contributions can
         //  only be done via an employer (i.e. earned income) so total_ira_contrib + trad_401k_contrib must be
-        // See: https://www.investopedia.com/retirement/ira-contribution-limits/
-        if (grossIncomeStreams.getEarnedIncome() < totalIraContrib + trad401kContrib) {
+        // See:
+        //   https://www.investopedia.com/retirement/ira-contribution-limits/
+        //   https://www.hrblock.com/expat-tax-preparation/resource-center/income/retirement/ira-us-citizens-living-abroad
+        long earnedIncome = grossIncomeStreams.getEarnedIncome();
+        long foreignEarnedIncome = (long)(scenario.getFractionForeignEarnedIncome() * (double)grossIncomeStreams.getEarnedIncome());
+        long foreignExcludedIncome = Math.min(
+                foreignEarnedIncome,
+                govConstantsForYear.getForeignIncomeConstants().getForeignEarnedIncomeExemption()
+        );
+        long iraContributionEligibleIncome = Math.max(
+                0L,
+                earnedIncome - trad401kContrib - foreignExcludedIncome
+        );
+        if (totalIraContrib > iraContributionEligibleIncome) {
             return ValOrGerr.newGerr(
-                    "IRA contributions are limited to earned income and trad 401k contributions can only be done " +
-                            "using earned income so total_ira_contrib + trad_401k_contrib must be < earned_income, but" +
-                            "earned_income {} is < total_ira_contrib {} + trad_401k_contrib {}",
-                    grossIncomeStreams.getEarnedIncome(),
+                    "IRA contributions are limited to earned, non-foreign-excluded income (with trad 401k contributions reducing earned income) " +
+                            "but in this scenario total_ira_contrib '{}' is > eligible_earned_income '{}'",
                     totalIraContrib,
-                    trad401kContrib
+                    iraContributionEligibleIncome
             );
+        }
+
+        // Unlike IRA contributions, HSA contributions don't need to be done with earned income
+        long hsaContribLimit = retirementConstants.getHsaContribLimit();
+        long totalHsaContrib = scenario.getHsaContrib().getViaPayroll() + scenario.getHsaContrib().getViaOtherMethods();
+        if (totalHsaContrib > hsaContribLimit) {
+            return ValOrGerr.newGerr(
+                    "The HSA contribution limit is {} but the scenario's total HSA contribution is {}",
+                    hsaContribLimit,
+                    totalHsaContrib
+            );
+        }
+        if (totalHsaContrib < hsaContribLimit) {
+            warnings.add(ValidationWarning.of(
+                    "The HSA contribution limit {} but the scenario's total HSA contribution is only {}",
+                    hsaContribLimit,
+                    totalHsaContrib
+            ));
         }
 
         return ValOrGerr.val(warnings);

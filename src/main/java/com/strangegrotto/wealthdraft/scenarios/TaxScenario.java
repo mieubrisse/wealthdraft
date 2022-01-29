@@ -25,6 +25,8 @@ public interface TaxScenario {
 
     TradOrRothContribs getIraContrib();
 
+    HsaContrib getHsaContrib();
+
     List<Long> getEarnedIncome();
 
     // What fraction of my earned income was from foreign sources

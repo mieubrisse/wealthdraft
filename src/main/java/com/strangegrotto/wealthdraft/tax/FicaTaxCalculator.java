@@ -12,22 +12,26 @@ public class FicaTaxCalculator {
     private FicaTaxCalculator(){}
 
     public static Map<Tax, Double> calculateFicaTax(TaxScenario scenario, GovConstantsForYear govConstants) {
-        // FICA doesn't care about 401k and IRA contributions, so no deductions here :(
+        // FICA doesn't allow trad 401k and IRA deductions, nor foreign-earned income exclusion :(
         // See: https://ttlc.intuit.com/community/retirement/discussion/are-contributions-to-401k-plans-subject-to-fica-and-medicare/00/30372
-        IncomeStreams income = scenario.getIncomeStreams();
-        FicaConstants ficaConstants = govConstants.getFicaConstants();
-        long earnedIncome = income.getEarnedIncome();
+        // However, it DOES allow a deduction for HSA contribution made exclusively through employer payroll
+        long hsaContribViaPayrollDeduction = scenario.getHsaContrib().getViaPayroll();
 
+        IncomeStreams income = scenario.getIncomeStreams();
+        IncomeStreams taxableIncome = DeductionsCalculator.applyDeduction(income, hsaContribViaPayrollDeduction);
+        long taxableEarnedIncome = taxableIncome.getEarnedIncome();
+
+        FicaConstants ficaConstants = govConstants.getFicaConstants();
         ImmutableMap.Builder<Tax, Double> result = ImmutableMap.builder();
 
         // Social security tax
-        long socialSecurityTaxableAmount = Math.min(ficaConstants.getSocialSecurityWageCap(), earnedIncome);
+        long socialSecurityTaxableAmount = Math.min(ficaConstants.getSocialSecurityWageCap(), taxableEarnedIncome);
         double socialSecurityTax = ficaConstants.getSocialSecurityRate() * (double)socialSecurityTaxableAmount;
         result.put(Tax.SOCIAL_SECURITY, socialSecurityTax);
 
         // Medicare tax
-        double medicareBaseTax = ficaConstants.getMedicareBaseRate() * (double)earnedIncome;
-        long medicareSurtaxableAmount = Math.max(0, earnedIncome - ficaConstants.getMedicareSurtaxFloor());
+        double medicareBaseTax = ficaConstants.getMedicareBaseRate() * (double)taxableEarnedIncome;
+        long medicareSurtaxableAmount = Math.max(0, taxableEarnedIncome - ficaConstants.getMedicareSurtaxFloor());
         double medicareSurtax = ficaConstants.getMedicareSurtaxExtraRate() * (double)medicareSurtaxableAmount;
         double medicareTax = medicareBaseTax + medicareSurtax;
         result.put(Tax.MEDICARE, medicareTax);

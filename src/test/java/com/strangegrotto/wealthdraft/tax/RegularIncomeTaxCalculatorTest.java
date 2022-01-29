@@ -14,7 +14,7 @@ public class RegularIncomeTaxCalculatorTest {
                 .preferentialUnearnedIncome(50000)
                 .build();
 
-        IncomeStreams result = RegularIncomeTaxCalculator.applyStdDeductionGivenFEI(input, 50000, 15000);
+        IncomeStreams result = RegularIncomeTaxCalculator.applyPostFEIEDeductions(input, 50000, 15000);
         // Earned income shouldn't be reduced since it's all FEI excluded
         Assert.assertEquals(50000, result.getEarnedIncome());
 

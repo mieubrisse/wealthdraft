@@ -14,6 +14,8 @@ public interface RetirementConstants {
     long getTradIraDeductiblePhaseoutFloor();
     long getTradIraDeductiblePhaseoutCeiling();
 
+    long getHsaContribLimit();
+
     @Value.Check
     default void check() {
         Preconditions.checkState(getPersonal401kContribLimit() > 0, "Personal 401k contribution limit must be > 0");
@@ -26,6 +28,10 @@ public interface RetirementConstants {
         Preconditions.checkState(
                 getTradIraDeductiblePhaseoutCeiling() > getTradIraDeductiblePhaseoutFloor(),
                 "Ceiling where traditional IRA is no longer deductible must be > floor where traditional IRA deduction starts phasing out"
+        );
+        Preconditions.checkState(
+                getHsaContribLimit() > 0,
+                "HSA contribution limit must be > 0"
         );
     }
 }

@@ -24,27 +24,29 @@ public class RegularIncomeTaxCalculator {
      * @return A map of tax type -> tax amount under the regular income tax system
      */
     public static Map<Tax, Double> calculateRegularIncomeTax(TaxScenario scenario, GovConstantsForYear govConstants) {
-        // Regular income tax allows trad IRA, trad 401k, and standard deduction
-        // We don't apply the standard deduction yet though; that gets added later
+        // Regular income tax allows trad IRA, trad 401k, HSA, and standard deduction
+        // We don't apply the standard deduction & HSA deduction yet though; that gets added later
+        // This is because the standard deduction & HSA seem to be special in that they get applied AFTER FEIE:
+        // https://www.taxesforexpats.com/articles/retirement/contributions-to-retirement-plans-are-not-all-made-equal.html
         Deductions deductions = DeductionsCalculator.calculateAllowedDeductions(scenario, govConstants);
         log.debug("Deductions: {}", deductions);
 
         long retirementDeductions = deductions.getTrad401kDeduction() +
                 deductions.getTradIraDeduction();
         IncomeStreams taxableIncome = DeductionsCalculator.applyDeduction(scenario.getIncomeStreams(), retirementDeductions);
-        log.debug("Reg Fed Taxable Income (includes FEI, std deduc NOT applied): {}", taxableIncome);
+        log.debug("Reg Fed Taxable Income (includes FEI, but std & HSA deductions ARE NOT applied): {}", taxableIncome);
 
         long excludedFEI = Math.min(
                 govConstants.getForeignIncomeConstants().getForeignEarnedIncomeExemption(),
                 (long)((double)taxableIncome.getEarnedIncome() * scenario.getFractionForeignEarnedIncome())
         );
         log.debug("Excluded FEI: {}", excludedFEI);
-        taxableIncome = applyStdDeductionGivenFEI(
+        taxableIncome = applyPostFEIEDeductions(
                 taxableIncome,
                 excludedFEI,
-                govConstants.getStandardDeduction()
+                govConstants.getStandardDeduction() + deductions.getHsaDeduction()
         );
-        log.debug("Reg Fed Taxable Income (includes FEI, std deduc IS applied): {}", taxableIncome);
+        log.debug("Reg Fed Taxable Income (includes FEI, and std & HSA deductions ARE applied): {}", taxableIncome);
 
         long earnedIncome = taxableIncome.getEarnedIncome();
         long nonPrefUnearnedIncome = taxableIncome.getNonPreferentialUnearnedIncome();
@@ -76,32 +78,33 @@ public class RegularIncomeTaxCalculator {
     }
 
     /**
-     * We can't just use {@link DeductionsCalculator#applyDeduction} as-is with the standard deduction because
-     * then it will potentially reduce dollars which should have been excluded under foreign-earned income.
+     * We can't just use {@link DeductionsCalculator#applyDeduction} as-is with certain post-FEIE deductions (e.g. standard & HSA)
+     * because the calculator could potentially reduce dollars which will end up excluded anyway under FEIE (thereby making
+     * the deduction meaningless). This will instead apply the deduction *after* FEIE.
      * @param income Income streams to reduce
      * @param excludedForeignEarnedIncome The amount of foreign-earned income that can actually be excluded
-     * @param stdDeduction Standard deduction
-     * @return Income streams with standard deduction applied (given the FEIE)
+     * @param postFEIEDeduction Amount to be deducted *after* FEIE is applied
+     * @return Income streams with post-FEIE deductions applied (given the FEIE)
      */
     @VisibleForTesting
-    static IncomeStreams applyStdDeductionGivenFEI(
+    static IncomeStreams applyPostFEIEDeductions(
             IncomeStreams income,
             // Of the foreign-earned income, how much is actually excluded based on FEIE and time spent abroad
             long excludedForeignEarnedIncome,
-            long stdDeduction) {
+            long postFEIEDeduction) {
         Preconditions.checkArgument(
                 excludedForeignEarnedIncome <= income.getEarnedIncome(),
                 "Excluded foreign-earned income cannot be greater than earned income!");
 
-        // To apply the standard deduction, we need to subtract out the FEI and then add it back
-        //  after the deduction is applied (so the std deduction doesn't erroneously reduce any FEI excluded
+        // To apply the deductions, we need to subtract out the FEI and then add it back
+        //  after the deductions are applied (so the deductions don't erroneously reduce any FEI excluded
         //  dollars)
         IncomeStreams incomeLessFEI = ImmutableIncomeStreams.builder()
                 .earnedIncome(income.getEarnedIncome() - excludedForeignEarnedIncome)
                 .nonPreferentialUnearnedIncome(income.getNonPreferentialUnearnedIncome())
                 .preferentialUnearnedIncome(income.getPreferentialUnearnedIncome())
                 .build();
-        IncomeStreams afterDeduction = DeductionsCalculator.applyDeduction(incomeLessFEI, stdDeduction);
+        IncomeStreams afterDeduction = DeductionsCalculator.applyDeduction(incomeLessFEI, postFEIEDeduction);
         return ImmutableIncomeStreams.builder()
                 .earnedIncome(afterDeduction.getEarnedIncome() + excludedForeignEarnedIncome)
                 .nonPreferentialUnearnedIncome(afterDeduction.getNonPreferentialUnearnedIncome())

@@ -1,5 +1,7 @@
 package com.strangegrotto.wealthdraft.tax;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.strangegrotto.wealthdraft.govconstants.AmtConstants;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
@@ -16,6 +18,7 @@ public class AmtTaxCalculator {
 
     private AmtTaxCalculator(){}
 
+    // TODO THIS NEEDS TO ALLOW FOR FOREIGN-EARNED INCOME EXCLUSION!!
     public static Map<Tax, Double> calculateAmtTax(TaxScenario scenario, GovConstantsForYear govConstants) {
         AmtConstants amtConstants = govConstants.getAmtConstants();
 
@@ -34,10 +37,13 @@ public class AmtTaxCalculator {
                 .preferentialUnearnedIncome(grossIncomeStreams.getPreferentialUnearnedIncome())
                 .build();
 
-        // AMT allows trad IRA and trad 401k, but not standard deduction
+        // AMT allows trad IRA, trad 401k, and HSA deductions but not standard deduction
         Deductions deductions = DeductionsCalculator.calculateAllowedDeductions(scenario, govConstants);
         long retirementDeductions = deductions.getTrad401kDeduction() +
-                deductions.getTradIraDeduction();
+                deductions.getTradIraDeduction() +
+                // TODO THIS IS WRONG TO ADD HSA HERE!!! THIS WILL MEAN THAT FOREIGN EARNED INCOME EXCLUSION WILL MAKE
+                //   THE HSA DEDUCTION MEANINGLESS!!!
+                deductions.getHsaDeduction();
         log.debug("Retirement Deductions: {}", retirementDeductions);
         taxableIncomeStreams = DeductionsCalculator.applyDeduction(
                 taxableIncomeStreams,
@@ -48,8 +54,9 @@ public class AmtTaxCalculator {
         long nonPrefUnearnedIncome = taxableIncomeStreams.getNonPreferentialUnearnedIncome();
         long prefUnearnedIncome = taxableIncomeStreams.getPreferentialUnearnedIncome();
 
+        // Non-preferential income: hits the AMT rates
         long nonPrefIncome = earnedIncome + nonPrefUnearnedIncome;
-        long prefIncome = prefUnearnedIncome; // Is there a preferential earned income??
+        log.debug("Non-preferential income: {}", nonPrefIncome);
         double nonPreferentialTax = calculateNonPreferentialTax(
                 taxableIncomeStreams.getTotal(),
                 nonPrefIncome,
@@ -58,19 +65,24 @@ public class AmtTaxCalculator {
                 scenario.getFractionForeignEarnedIncome(),
                 amtConstants);
         // TODO figure out how to calculate AMT foreign tax credit and subtract it
+        log.debug("Non-preferential income tax: {}", nonPreferentialTax);
         result.put(Tax.FED_NON_PREF_INCOME, nonPreferentialTax);
 
         // Preferential income: these are "stacked" on top of non-pref income, so unfortunately they don't start at the absolute
         //  lowest rate
+        long prefIncome = prefUnearnedIncome; // Is there a preferential earned income??
         ProgressiveTaxCalculator fedLtcgTaxCalculator = new ProgressiveTaxCalculator(govConstants.getFederalLtcgBrackets());
         double prefPlusNonPrefLtcgTax = fedLtcgTaxCalculator.calculateTax(nonPrefIncome + prefIncome);
-        log.debug("Pref + nonpref LTCG tax: {}", prefPlusNonPrefLtcgTax);
+        log.debug("Pref + nonpref LTCG tax (nonpref LTCG tax will be subtracted): {}", prefPlusNonPrefLtcgTax);
         double nonPrefLtcgTax = fedLtcgTaxCalculator.calculateTax(nonPrefIncome);
-        log.debug("Nonpref LTCG tax: {}", nonPrefLtcgTax);
+        log.debug("Nonpref LTCG tax (will be subtracted): {}", nonPrefLtcgTax);
         double prefIncomeTax = prefPlusNonPrefLtcgTax - nonPrefLtcgTax;
         result.put(Tax.FED_PREF_INCOME, prefIncomeTax);
+        log.debug("Preferential income tax: {}", prefIncomeTax);
 
-        return result.build();
+        Map<Tax, Double> resultTaxMap = result.build();
+        log.debug("Result object: {}", resultTaxMap);
+        return resultTaxMap;
     }
 
     private static double calculateNonPreferentialTax(
