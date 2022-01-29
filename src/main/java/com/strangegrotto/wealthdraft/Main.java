@@ -244,7 +244,6 @@ public class Main {
             if (cycleOpt.isPresent()) {
                 throw new IllegalStateException(Strings.lenientFormat(
                         "Found an asset filter cycle: %s",
-                        filterName,
                         String.join(" -> ", cycleOpt.get())
                 ));
             }
@@ -538,6 +537,7 @@ public class Main {
             totalTaxes.putAll(amtTaxes);
         }
 
+        // Render total tax section
         display.printEmptyLine();
         display.printSectionHeader("TOTAL TAX");
         log.info(
@@ -547,11 +547,25 @@ public class Main {
                 higherTaxSystem
         );
         renderTaxesSection(display, "Scenario Tax", totalTaxes, grossIncome);
+        double totalTaxesSum = totalTaxes.values()
+                .stream()
+                .reduce(0D, Double::sum);
+        double taxAlreadyPaidSum = scenario.getTaxAlreadyPaid()
+                .stream()
+                .reduce(0L, Long::sum)
+                .doubleValue();
+        double taxToPay = totalTaxesSum - taxAlreadyPaidSum;
+        display.printCurrencyItem("Tax Already Paid", taxAlreadyPaidSum);
+        display.printCurrencyItem("Tax To Pay", taxToPay);
     }
 
 
-
-    private static void renderTaxesSection(Display display, String titleCaseSumName, Map<Tax, Double> taxes, long grossIncome) {
+    private static void renderTaxesSection(
+            Display display,
+            String titleCaseSumName,
+            Map<Tax, Double> taxes,
+            long grossIncome
+    ) {
         double totalTaxes = 0D;
 
         List<Tax> displayOrder = taxes.keySet().stream()

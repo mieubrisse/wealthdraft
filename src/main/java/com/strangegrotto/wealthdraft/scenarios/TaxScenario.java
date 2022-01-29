@@ -45,6 +45,8 @@ public interface TaxScenario {
     //  Right now this relies on the user to know this, but ideally this should be handled in the YAML
     List<Long> getAmtAdjustments();
 
+    List<Long> getTaxAlreadyPaid();
+
     @Value.Check
     default void check() {
         // TODO In the check, make sure that any List element has >= 1 element, because

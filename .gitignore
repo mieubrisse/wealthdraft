@@ -8,6 +8,7 @@ build
 out
 
 # Ignore IntelliJ files
+.idea
 *.ipr
 *.iws
 *.iml

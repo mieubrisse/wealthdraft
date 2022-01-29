@@ -1,3 +1,6 @@
+## 0.14.1
+* Added a `taxAlreadyPaid` section to tax scenarios, to also show exactly how much tax you'll be predicted to pay
+
 ## 0.14.0
 * Split asset filters into their own file
 
