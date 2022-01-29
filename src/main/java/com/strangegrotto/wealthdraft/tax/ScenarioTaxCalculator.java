@@ -9,9 +9,18 @@ public class ScenarioTaxCalculator {
     private ScenarioTaxCalculator() {}
 
     public static ScenarioTaxes calculateScenarioTax(TaxScenario scenario, GovConstantsForYear govConstants) {
-        Map<Tax, Double> primarySystemIncomeTaxes = RegularIncomeTaxCalculator.calculateRegularIncomeTax(scenario, govConstants);
-        Map<Tax, Double> amtTaxes = AmtTaxCalculator.calculateAmtTax(scenario, govConstants);
-        Map<Tax, Double> ficaTaxes = FicaTaxCalculator.calculateFicaTax(scenario, govConstants);
+        Map<Tax, Double> primarySystemIncomeTaxes = RegularIncomeTaxCalculator.calculateRegularIncomeTax(
+                scenario,
+                govConstants
+        );
+        Map<Tax, Double> amtTaxes = AmtTaxCalculator.calculateAmtTax(
+                scenario,
+                govConstants
+        );
+        Map<Tax, Double> ficaTaxes = FicaTaxCalculator.calculateFicaTax(
+                scenario,
+                govConstants
+        );
 
         return ImmutableScenarioTaxes.builder()
                 .primarySystemIncomeTaxes(primarySystemIncomeTaxes)
