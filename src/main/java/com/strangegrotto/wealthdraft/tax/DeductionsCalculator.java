@@ -89,7 +89,6 @@ public class DeductionsCalculator {
         );
         long remainingDeduction = deduction;
         for (IncomeToDeductionBuilder pair : incomesToReduceInOrder) {
-            Function<Long, ImmutableIncomeStreams.Builder> builderFunc = pair.builderFunc;
             long grossAmountToReduce = pair.income;
             long resultingIncome = grossAmountToReduce;
             if (remainingDeduction > 0) {
