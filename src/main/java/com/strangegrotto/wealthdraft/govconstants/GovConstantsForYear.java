@@ -1,12 +1,13 @@
 package com.strangegrotto.wealthdraft.govconstants;
 
+import java.util.List;
+
+import org.immutables.value.Value;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
 import com.strangegrotto.wealthdraft.validator.DeserializationValidator;
-import org.immutables.value.Value;
-
-import java.util.List;
 
 @Value.Immutable
 @JsonDeserialize(as = ImmutableGovConstantsForYear.class)
@@ -17,6 +18,7 @@ public interface GovConstantsForYear {
     @JsonProperty("fica") FicaConstants getFicaConstants();
     @JsonProperty("foreignIncome") ForeignIncomeConstants getForeignIncomeConstants();
     @JsonProperty("retirement") RetirementConstants getRetirementConstants();
+    @JsonProperty("hsaContribLimit") long getHsaContributionLimit();
     long getStandardDeduction();
 
     @Value.Check

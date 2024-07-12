@@ -1,15 +1,16 @@
 package com.strangegrotto.wealthdraft.scenarios;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.base.Preconditions;
-import com.strangegrotto.wealthdraft.validator.DeserializationValidator;
+import java.util.List;
+import java.util.function.Function;
+
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.function.Function;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.base.Preconditions;
+import com.strangegrotto.wealthdraft.validator.DeserializationValidator;
 
 // TODO Rename this to clarify that this is particularly around tax...
 //  ...OR fuse this with the asset scenario calculator that's getting built
@@ -24,6 +25,8 @@ public interface TaxScenario {
     TradOrRothContribs get401kContrib();
 
     TradOrRothContribs getIraContrib();
+
+    long getHsaContrib();
 
     List<Long> getEarnedIncome();
 

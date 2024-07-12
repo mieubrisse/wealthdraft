@@ -9,4 +9,6 @@ public interface Deductions {
     long getTradIraDeduction();
 
     long getStandardDeduction();
+
+    long getHsaDeduction();
 }

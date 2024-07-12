@@ -1,15 +1,16 @@
 package com.strangegrotto.wealthdraft.tax;
 
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.collect.ImmutableMap;
 import com.strangegrotto.wealthdraft.govconstants.AmtConstants;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.scenarios.ImmutableIncomeStreams;
 import com.strangegrotto.wealthdraft.scenarios.IncomeStreams;
 import com.strangegrotto.wealthdraft.scenarios.TaxScenario;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Map;
 
 public class AmtTaxCalculator {
     private static final Logger log = LoggerFactory.getLogger(AmtTaxCalculator.class);
@@ -36,12 +37,12 @@ public class AmtTaxCalculator {
 
         // AMT allows trad IRA and trad 401k, but not standard deduction
         Deductions deductions = DeductionsCalculator.calculateAllowedDeductions(scenario, govConstants);
-        long retirementDeductions = deductions.getTrad401kDeduction() +
-                deductions.getTradIraDeduction();
-        log.debug("Retirement Deductions: {}", retirementDeductions);
+        long retirementAndHsaDeductions = deductions.getTrad401kDeduction() +
+                deductions.getTradIraDeduction() + deductions.getHsaDeduction();
+        log.debug("Retirement + HSA Deductions: {}", retirementAndHsaDeductions);
         taxableIncomeStreams = DeductionsCalculator.applyDeduction(
                 taxableIncomeStreams,
-                retirementDeductions);
+                retirementAndHsaDeductions);
         log.debug("AMT Taxable Income (includes FEI): {}", taxableIncomeStreams);
 
         long earnedIncome = taxableIncomeStreams.getEarnedIncome();

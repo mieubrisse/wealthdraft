@@ -1,5 +1,10 @@
 package com.strangegrotto.wealthdraft.tax;
 
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -7,10 +12,6 @@ import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.scenarios.ImmutableIncomeStreams;
 import com.strangegrotto.wealthdraft.scenarios.IncomeStreams;
 import com.strangegrotto.wealthdraft.scenarios.TaxScenario;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Map;
 
 public class RegularIncomeTaxCalculator {
     private static final Logger log = LoggerFactory.getLogger(RegularIncomeTaxCalculator.class);
@@ -29,9 +30,10 @@ public class RegularIncomeTaxCalculator {
         Deductions deductions = DeductionsCalculator.calculateAllowedDeductions(scenario, govConstants);
         log.debug("Deductions: {}", deductions);
 
-        long retirementDeductions = deductions.getTrad401kDeduction() +
-                deductions.getTradIraDeduction();
-        IncomeStreams taxableIncome = DeductionsCalculator.applyDeduction(scenario.getIncomeStreams(), retirementDeductions);
+        long retirementAndHsaDeductions = deductions.getTrad401kDeduction() +
+                deductions.getTradIraDeduction() + deductions.getHsaDeduction();
+        log.debug("Retirement + HSA Deductions: {}", retirementAndHsaDeductions);
+        IncomeStreams taxableIncome = DeductionsCalculator.applyDeduction(scenario.getIncomeStreams(), retirementAndHsaDeductions);
         log.debug("Reg Fed Taxable Income (includes FEI, std deduc NOT applied): {}", taxableIncome);
 
         long excludedFEI = Math.min(

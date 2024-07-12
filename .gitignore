@@ -12,3 +12,7 @@ out
 *.ipr
 *.iws
 *.iml
+
+bin/
+
+.vscode

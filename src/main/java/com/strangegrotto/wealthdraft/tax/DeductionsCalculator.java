@@ -1,14 +1,14 @@
 package com.strangegrotto.wealthdraft.tax;
 
+import java.util.List;
+import java.util.function.Function;
+
 import com.google.common.collect.ImmutableList;
 import com.strangegrotto.wealthdraft.govconstants.GovConstantsForYear;
 import com.strangegrotto.wealthdraft.govconstants.RetirementConstants;
 import com.strangegrotto.wealthdraft.scenarios.ImmutableIncomeStreams;
 import com.strangegrotto.wealthdraft.scenarios.IncomeStreams;
 import com.strangegrotto.wealthdraft.scenarios.TaxScenario;
-
-import java.util.List;
-import java.util.function.Function;
 
 public class DeductionsCalculator {
     private DeductionsCalculator(){}
@@ -19,14 +19,15 @@ public class DeductionsCalculator {
     public static Deductions calculateAllowedDeductions(TaxScenario scenario, GovConstantsForYear govConstants) {
         long grossTotalIncome = scenario.getIncomeStreams().getTotal();
         long reg401kContrib = scenario.get401kContrib().getTrad();
+        long hsaContrib = scenario.getHsaContrib();
 
         // MAGI (which DOESN'T show up on the 1040) is sometimes defined as "AGI, with certain deductions like
-        // IRA contrib added back in". If we sue this way, we get a circular dependency: you need IRA contrib to calculate
+        // IRA contrib added back in". If we use this way, we get a circular dependency: you need IRA contrib to calculate
         //  AGI to calculate MAGI to determine whether you can include IRA contributions:
         //  https://money.stackexchange.com/questions/94585/circular-dependency-involving-ira-deduction
         // Instead, we do things in the logical order and find MAGI *first*
         // See also : https://www.investopedia.com/terms/m/magi.asp
-        long modifiedAdjustedGrossIncome = grossTotalIncome - reg401kContrib; // TODO implement HSA deduction here
+        long modifiedAdjustedGrossIncome = grossTotalIncome - reg401kContrib - hsaContrib;
 
         // Figure out how much the trad IRA deduction reduces by (if anything)
         RetirementConstants retirementConstants = govConstants.getRetirementConstants();
@@ -43,6 +44,7 @@ public class DeductionsCalculator {
                 .tradIraDeduction(tradIraDeduction)
                 // TODO reduce the standard deduction in various scenarios
                 .standardDeduction(govConstants.getStandardDeduction())
+                .hsaDeduction(hsaContrib)
                 .build();
     }
 
@@ -87,7 +89,6 @@ public class DeductionsCalculator {
         );
         long remainingDeduction = deduction;
         for (IncomeToDeductionBuilder pair : incomesToReduceInOrder) {
-            Function<Long, ImmutableIncomeStreams.Builder> builderFunc = pair.builderFunc;
             long grossAmountToReduce = pair.income;
             long resultingIncome = grossAmountToReduce;
             if (remainingDeduction > 0) {
