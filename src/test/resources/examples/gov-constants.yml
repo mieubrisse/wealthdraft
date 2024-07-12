@@ -73,6 +73,8 @@
     # The threshold over which trad IRA contributions are not deductible at all
     tradIraDeductiblePhaseoutCeiling: 75000
 
+  hsaContribLimit: 5000
+
   standardDeduction: 12400   # NOTE: this is currently set for singles!
 
 # ==================================== 2020 ===================================================
@@ -148,5 +150,7 @@
 
     # The threshold over which trad IRA contributions are not deductible at all
     tradIraDeductiblePhaseoutCeiling: 74000
+
+  hsaContribLimit: 5000
 
   standardDeduction: 12200   # NOTE: this is currently set for singles!

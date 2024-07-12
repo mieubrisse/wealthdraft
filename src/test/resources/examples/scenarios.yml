@@ -13,6 +13,8 @@ exampleScenario1:
     trad: 5000
     roth: 0
 
+  hsaContrib: 5000
+
   # Earned income definition: https://www.irs.gov/credits-deductions/individuals/earned-income-tax-credit/earned-income
   # Some examples:
   #  - Salary
