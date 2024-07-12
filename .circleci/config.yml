@@ -51,7 +51,7 @@ jobs:
 
   publish-github-release:
     docker:
-      - image: cimg/golang:1.15
+      - image: cimg/go:1.15
     steps:
       - attach_workspace:
           at: ./workspace
