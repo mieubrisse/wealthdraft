@@ -58,7 +58,7 @@ jobs:
       - run:
           name: "Publish JAR to release on GitHub"
           command: |
-            go install github.com/tcnksm/ghr@latest
+            go install github.com/tcnksm/ghr@0.14.0
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} <<pipeline.git.tag>> ./workspace/
 
 workflows:
