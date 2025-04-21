@@ -582,6 +582,12 @@ public class Main {
         double taxToPay = totalTaxesSum - taxAlreadyPaidSum;
         display.printCurrencyItem("Tax Already Paid", taxAlreadyPaidSum);
         display.printCurrencyItem("Tax To Pay", taxToPay);
+
+        // Render net income section
+        display.printEmptyLine();
+        display.printSectionHeader("NET INCOME");
+        double netIncome = grossIncome - totalTaxesSum;
+        display.printCurrencyItem("Net Income", netIncome);
     }
 
 

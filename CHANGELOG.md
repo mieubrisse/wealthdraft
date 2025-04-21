@@ -1,3 +1,5 @@
+**NOTE: This changelog has been abandoned after version 0.14.1. I'll reconstruct it if it's worth having a changelog again.**
+
 ## 0.14.1
 * Added a `taxAlreadyPaid` section to tax scenarios, to also show exactly how much tax you'll be predicted to pay
 
