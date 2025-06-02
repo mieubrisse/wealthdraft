@@ -1,12 +1,12 @@
 package com.strangegrotto.wealthdraft.assetallocation.renderer;
 
-import com.strangegrotto.wealthdraft.Display;
-import com.strangegrotto.wealthdraft.assetallocation.calculator.AssetAllocationCalcResult;
-import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocation;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.LinkedHashMap;
+
+import com.strangegrotto.wealthdraft.Display;
+import com.strangegrotto.wealthdraft.assetallocation.calculator.AssetAllocationCalcResult;
+import com.strangegrotto.wealthdraft.assetallocation.datamodel.TargetAssetAllocation;
 
 // TODO Convert this, and all the other calculator-renderers (e.g. NetWorthRenderer) to return POJOs so that
 //  we split up the calculation & rendering step (and can write good unit tests)
@@ -47,6 +47,7 @@ public class AssetAllocationRenderer {
                     colorWrapper.wrap(formatCurrencyValue(calcResult.getCurrentDenominatorValue())),
                     colorWrapper.wrap(formatFractionAsPercent(calcResult.getCurrentFraction())),
                     colorWrapper.wrap(formatFractionAsPercent(calcResult.getTargetFraction())),
+                    colorWrapper.wrap(formatCurrencyValue(calcResult.getTargetNumeratorValue())),
                     colorWrapper.wrap(formatCurrencyValue(calcResult.getCorrectionNeeded())),
                     colorWrapper.wrap(formatFractionAsPercent(calcResult.getDeviationFraction())),
                     colorWrapper.wrap(calcResult.getDeviationStatus().toString())

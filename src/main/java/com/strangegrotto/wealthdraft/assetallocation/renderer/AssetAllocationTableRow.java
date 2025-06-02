@@ -1,7 +1,8 @@
 package com.strangegrotto.wealthdraft.assetallocation.renderer;
 
-import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
 import org.immutables.value.Value;
+
+import com.strangegrotto.wealthdraft.WealthdraftImmutableStyle;
 
 @WealthdraftImmutableStyle
 @Value.Immutable
@@ -10,8 +11,9 @@ abstract class AssetAllocationTableRow {
     abstract String getDenominatorStr();
     abstract String getNumeratorValue();
     abstract String getDenominatorValue();
-    abstract String getCurrentNumDenomPct();
+    abstract String getNumDenomPct();
     abstract String getTargetNumDenomPct();
+    abstract String getTargetAmount();
     abstract String getCorrectionNeeded();
     abstract String getDeviationPct();
     abstract String getDeviationStatus();

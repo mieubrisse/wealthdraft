@@ -1,6 +1,5 @@
 package com.strangegrotto.wealthdraft.assetallocation.renderer;
 
-import com.google.common.base.Preconditions;
 import com.jakewharton.picnic.CellStyle;
 import com.jakewharton.picnic.Table;
 import com.jakewharton.picnic.TableSection;
@@ -12,8 +11,9 @@ class AssetAllocationTable {
         "Denominator",
         "Numerator ($)",
         "Denominator ($)",
-        "Current Num/Denom",
+        "Num/Denom",
         "Target Num/Denom",
+        "Target ($)",
         "Change Needed",
         "Deviation",
         "Deviation Status"
@@ -53,8 +53,9 @@ class AssetAllocationTable {
                 row.getDenominatorStr(),
                 row.getNumeratorValue(),
                 row.getDenominatorValue(),
-                row.getCurrentNumDenomPct(),
+                row.getNumDenomPct(),
                 row.getTargetNumDenomPct(),
+                row.getTargetAmount(),
                 row.getCorrectionNeeded(),
                 row.getDeviationPct(),
                 row.getDeviationStatus()
