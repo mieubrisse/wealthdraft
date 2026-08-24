@@ -12,11 +12,11 @@ Every input is a YAML file, so my entire financial model lives in version contro
 
 Why this exists
 ---------------
-Palantir began trading on the NYSE on September 30, 2020. I had equity and was about to owe a large, unfamiliar amount of tax on it. Estimated payments were due well before I understood how to compute the number.
+In the fall of 2020 a company I held equity in went public. I was about to owe a large, unfamiliar amount of tax on it, and estimated payments were due well before I understood how to compute the number.
 
 The obvious move was to buy TurboTax and let Intuit work it out. But filing software produces one number on one day in April, and what I needed was to sit down in October and ask what happens to my liability if I exercise in November instead of January. That is a different question, and answering it meant understanding the rules myself rather than renting an answer from a company with no particular incentive to explain them.
 
-So I read the source material and implemented the rules until the model reproduced them. The first commit landed on October 8, 2020, eight days after the listing. It was written in Go for two days before I moved it to Java, because Go's YAML deserialization was fighting me harder than the tax code was.
+So I went and read. IRS documentation first, then the enormous secondary literature that exists because the primary material is so hard to act on: practitioner analyses, explainer articles, forum threads where somebody had already hit the exact edge case I was staring at. A lot of those citations are still sitting in the code comments next to the rules they explain, which is the closest thing this project has to a bibliography. The first commit landed on October 8, 2020. It was written in Go for two days before I moved it to Java, because Go's YAML deserialization was fighting me harder than the tax code was.
 
 This was 2020. There were no AI coding assistants. Every rule in here is one I read, worked out, and wrote by hand, including the parts I got wrong the first time and the parts I'm still not certain about, which are marked with `TODO` in the code rather than papered over.
 
@@ -77,13 +77,16 @@ Some of this is scope I chose. Some of it is unfinished.
 * **The foreign-earned-income fraction is self-reported.** The tool doesn't run the physical presence or bona fide residence day counts for you. You assert the fraction and it applies the exclusion.
 * **Projections only compound bank account interest.** Stock growth is an unimplemented stub, and the `defaultAnnualGrowth` field in `projections.yml` is parsed but never applied. Projected equity holdings stay flat.
 * **Projections are anchored to the day you run them, not to your last snapshot date.** Starting values come from your most recent recorded snapshot, but the 30-year date grid starts from today. If that snapshot is six months stale, its numbers get treated as current.
-* **Money is `double`, not `BigDecimal`, inside the bracket engine.** Fine for estimation, wrong for anything requiring exactness.
+* **No foreign housing exclusion**, tracked as [#4](https://github.com/mieubrisse/wealthdraft/issues/4).
+* **Money is `double`, not `BigDecimal`, inside the bracket engine.** Fine for estimation, wrong for anything requiring exactness, and tracked as [#28](https://github.com/mieubrisse/wealthdraft/issues/28).
+
+The practical effect of those gaps is that the model runs conservative. It tends to overestimate what I owe and I usually get a little back at filing, because most of what it doesn't model would reduce the bill rather than raise it. For a tool whose whole job is telling me what to pay in advance, that's the direction I want the error to point.
 
 On net worth: I now use [ProjectionLab](https://projectionlab.com/) for this, and it's excellent. Its projection modelling is far beyond what's here, and it doesn't ask me to hand-write YAML for every position. I stopped building this half of Wealthdraft once I found a tool that had already solved it properly. What I kept is the tax engine, which I still run every month.
 
 Why the configuration is YAML in a git repo
 -------------------------------------------
-The payoff is scenario history. When I model a decision in March and revisit it in September, the March assumptions are still in the repo exactly as I wrote them, and a diff shows which input moved and what it did to the output. Speculative what-ifs live on a branch until they stop being speculative. When the IRS numbers change, the new year's constants arrive as a commit rather than an overwrite, so last year's calculation still reproduces.
+My own configs live in a separate private repository, which keeps the real numbers out of this one while still giving them a history. The payoff is scenario history. When I model a decision in March and revisit it in September, the March assumptions are still there exactly as I wrote them, and a diff shows which input moved and what it did to the output. Speculative what-ifs live on a branch until they stop being speculative. When the IRS numbers change, the new year's constants arrive as a commit rather than an overwrite, so last year's calculation still reproduces.
 
 The cost is real. It's a lot of manual data entry, which is precisely why the net-worth side lost to a purpose-built tool while the tax side didn't. Tax inputs change a handful of times a year. Portfolio positions change constantly.
 
@@ -91,7 +94,7 @@ Design notes
 ------------
 Written for Java 11, built with Gradle.
 
-* **`ValOrGerr<T>`** is a hand-rolled Result type used instead of exceptions for expected failures, so that one malformed projection scenario reports itself while the other scenarios still parse. It carries an error chain with originating stack frames, modelled on Palantir's Go `stacktrace` library. The code carries a `TODO` questioning whether this was the right call in a language that has exceptions. I'd probably agree with that TODO now.
+* **`ValOrGerr<T>`** is a hand-rolled Result type used instead of exceptions for expected failures, so that one malformed projection scenario reports itself while the other scenarios still parse. It carries an error chain with originating stack frames, borrowed from how Go libraries wrap errors. The code carries a `TODO` questioning whether this was the right call in a language that has exceptions. I'd probably agree with that TODO now.
 * **[Immutables](https://immutables.github.io/)** generates the value types, with `@Value.Check` validators enforcing invariants at construction: bracket floors are unique, ratios fall within `[0,1]`, history dates aren't in the future.
 * **Custom Jackson deserializers** handle the parts that don't map cleanly onto types: tagged asset definitions, the filter language's structural type deduction, and the projection scenario inheritance unroller.
 * **67 unit tests** cover the tax calculators, filters, allocation math, and deserializers.
@@ -106,7 +109,7 @@ Java 11 or later.
 ### Running it
 
 1. Download the latest JAR from [the releases page](https://github.com/mieubrisse/wealthdraft/releases).
-2. Copy the seven example files from `src/test/resources/examples/` somewhere private and edit them to describe your own situation.
+2. Copy the seven example files from `src/test/resources/examples/` and edit them to describe your own situation. Keep them somewhere private; a separate repository works well.
 3. Run it, passing all seven files:
 
 ```bash
