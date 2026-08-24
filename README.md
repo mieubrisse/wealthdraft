@@ -147,3 +147,36 @@ I run it every month. Open items live on [the issues page](https://github.com/mi
 ---
 
 *This is a personal tool I built to understand my own taxes. It is not tax advice and not a substitute for a professional. Don't file on it.*
+
+<!--
+PROVENANCE
+Rewritten 2026-08-24 by an agent running in AgenC.
+  Mission: 18b825a6-16a1-4700-aab7-4182a7c6dd5d
+  Session: 855b4a32-ad24-4afc-8f40-c45f40ec8c79
+  Replay:  agenc session print 855b4a32 --all
+The same mission UUID is on the commit trailers (8c38dbb, f4c34a4, 69baaea)
+and filed issues #78-#81. Every factual claim here was checked against the
+source by an agent in a separate context from the one that wrote the prose;
+where the two disagreed, the code won.
+
+Decisions made deliberately, easy to undo by accident:
+
+- No umbrella label. "Wealth management engine" was considered and rejected.
+  On a page linked from a resume, a big claim invites the reader to check
+  whether it holds, and a gap discounts everything else on the page. The
+  specifics carry it instead.
+
+- The company whose 2020 listing prompted this project is unnamed, at the
+  author's request. Its listing date is omitted for the same reason: that
+  date plus "eight days later" identifies it as precisely as naming it
+  would. An unrelated attribution elsewhere in the file was genericised so
+  it wouldn't rebuild the same inference.
+
+- "What it deliberately doesn't do" is load-bearing, not an apology. It is
+  what earns a tax-literate reader's trust in everything above it. Don't
+  trim it for length.
+
+- The overestimation claim comes from the author's own filing experience.
+  Don't strengthen it into a precision claim.
+-->
+
