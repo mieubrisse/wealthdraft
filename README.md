@@ -12,7 +12,7 @@ Every input is a YAML file, so my entire financial model lives in version contro
 
 Why this exists
 ---------------
-Palantir began trading on the NYSE on September 30, 2020. I had equity, I was going to owe a large and unfamiliar amount of tax on it, and I needed to make estimated payments on a number I didn't yet know how to compute.
+Palantir began trading on the NYSE on September 30, 2020. I had equity and was about to owe a large, unfamiliar amount of tax on it. Estimated payments were due well before I understood how to compute the number.
 
 The obvious move was to buy TurboTax and let Intuit work it out. But filing software produces one number on one day in April, and what I needed was to sit down in October and ask what happens to my liability if I exercise in November instead of January. That is a different question, and answering it meant understanding the rules myself rather than renting an answer from a company with no particular incentive to explain them.
 
@@ -47,7 +47,7 @@ Brackets are the easy part. The ordering is what makes tax calculation hard: whi
 
 ### Scenarios
 
-A scenario is one hypothetical tax year: income line items, retirement contributions, capital gains, dividends, AMT adjustments, and tax already paid. You define as many as you want, side by side in one file, and compare them. That's the "what if I contribute more to my 401(k)" or "what if I realize these gains this year instead of next" question, answered against real rules rather than a rule of thumb.
+A scenario is one hypothetical tax year: income line items, retirement contributions, capital gains, dividends, AMT adjustments, and tax already paid. You define as many as you want, side by side in one file, and compare them. That's the "what if I contribute more to my 401(k)" or "what if I realize these gains this year instead of next" question, answered against real rules.
 
 Contributions are validated against that year's statutory limits, so the tool tells you when a scenario is over the 401(k) cap, and also when you're leaving contribution room on the table.
 
@@ -55,7 +55,7 @@ Contributions are validated against that year's statutory limits, so the tool te
 
 The tax engine came first. This side grew around it in late 2020 and early 2021.
 
-* **Assets** are bank accounts (balance, interest rate) and stock positions (quantity, price), each carrying arbitrary tags you define: broker, domestic versus international, whatever you want to slice by. Tags can have allowed values, defaults, and be marked required.
+* **Assets** are bank accounts (balance, interest rate) and stock positions (quantity, price), each carrying arbitrary tags you define, like broker or domestic versus international. Tags can have allowed values, defaults, and be marked required.
 
 * **A small filter language** composes those tags. A leaf filter matches a tag/value pair, `all` intersects, `any` unions, and a filter can embed another filter by name, with cycle detection at parse time. Filters are named and reusable, so `domesticBankAssets` is a thing you define once and reference everywhere.
 
@@ -67,7 +67,7 @@ The tax engine came first. This side grew around it in late 2020 and early 2021.
 
 What it deliberately doesn't do
 ------------------------------
-Some of this is scope I chose. Some of it is unfinished. Either way it's better stated than discovered.
+Some of this is scope I chose. Some of it is unfinished.
 
 * **One filing status at a time.** There's no filing-status concept in the code. The constants file holds one set of numbers per year, and the bundled example is filled in with single-filer values. Switching means editing the constants.
 * **No state income tax.** Federal only.
@@ -137,7 +137,7 @@ Releases are cut by pushing a semver tag (`X.Y.Z`), which triggers CircleCI to b
 
 Project status
 --------------
-Actively used, sparingly developed. Roughly 300 commits since October 2020, concentrated in three bursts: the tax engine in October 2020, the net worth and projection subsystems that December, and asset allocation the following January. Since then it gets touched when my own situation demands something new, like tracking tax already paid in 2022, HSA deductions in 2024, and a net income summary in 2025.
+Actively used, sparingly developed. Roughly 300 commits since October 2020, concentrated in three bursts: the tax engine in October 2020, the net worth and projection subsystems that December, and asset allocation the following January. Since then it gets touched when my own situation demands something new, like tracking tax already paid in 2022, HSA deductions in 2024, a net income summary in April 2025, and a target column that June.
 
 I run it every month. Open items live on [the issues page](https://github.com/mieubrisse/wealthdraft/issues).
 
