@@ -1,29 +1,146 @@
 Wealthdraft
 ===========
-A tax calculator for predicting your taxes. Handles:
+A command-line tax and portfolio modelling tool I wrote to answer a question I couldn't get a straight answer to anywhere else: exactly how much federal tax will I owe this year, and which rules produced that number?
 
-* Regular federal income tax, AMT, and choosing the higher of the two
-* Employment tax (Social Security & Medicare)
-* Net Investment Income Tax
-* 401k, IRA, and standard deductions, and applying them in the right order
-* Foreign-earned income exclusion
+It calculates federal income tax and the Alternative Minimum Tax and charges whichever is higher, models employment tax and the Net Investment Income Tax, applies retirement and standard deductions in the order the rules actually require, and handles the foreign earned income exclusion. Around that core it grew a portfolio side: asset definitions, a small filter language, target-allocation drift tracking, and multi-year net worth projections under branching what-if scenarios.
 
-![](images/example.png)
+Every input is a YAML file, so my entire financial model lives in version control.
+
+![Sample rendered output: a tax scenario breakdown, historical net worth, projections, and an asset allocation table](images/example.png)
+
+*Sample output. Every section shown here is rendered from the example configs in `src/test/resources/examples/`.*
+
+Why this exists
+---------------
+Palantir began trading on the NYSE on September 30, 2020. I had equity, I was going to owe a large and unfamiliar amount of tax on it, and I needed to make estimated payments on a number I didn't yet know how to compute.
+
+The obvious move was to buy TurboTax and let Intuit work it out. But filing software produces one number on one day in April, and what I needed was to sit down in October and ask what happens to my liability if I exercise in November instead of January. That is a different question, and answering it meant understanding the rules myself rather than renting an answer from a company with no particular incentive to explain them.
+
+So I read the source material and implemented the rules until the model reproduced them. The first commit landed on October 8, 2020, eight days after the listing. It was written in Go for two days before I moved it to Java, because Go's YAML deserialization was fighting me harder than the tax code was.
+
+This was 2020. There were no AI coding assistants. Every rule in here is one I read, worked out, and wrote by hand, including the parts I got wrong the first time and the parts I'm still not certain about, which are marked with `TODO` in the code rather than papered over.
+
+What it computes
+----------------
+### Federal income tax and AMT
+
+Brackets are the easy part. The ordering is what makes tax calculation hard: which dollars get reduced by which deduction, and in what sequence, because the rules interact.
+
+* **Progressive brackets**, implemented once as a generic marginal-rate engine and reused for ordinary income, long-term capital gains, and the AMT rate schedule.
+
+* **Long-term capital gains and qualified dividends stack on top of ordinary income** rather than being taxed independently from zero. The calculator computes them as `tax(ordinary + preferential) − tax(ordinary)`, which produces the bump zone: the effect where ordinary income you earn pushes capital gains into a higher preferential bracket.
+
+* **Deductions drain income buckets in strict order**: earned income first, then non-preferential unearned income, then preferential unearned income. This matters. Applying a deduction against capital gains before ordinary income would understate your real marginal rate.
+
+* **Modified AGI is computed before the traditional IRA phaseout**, deliberately, to break a circular dependency: the IRA deduction affects MAGI, and MAGI determines how much of that deduction you're allowed. Computing MAGI from gross income minus 401(k) and HSA contributions first resolves the loop. (The NIIT threshold uses its own separately computed MAGI figure.)
+
+* **AMT is calculated as a full parallel system.** It adds your AMT adjustments back into income, allows retirement and HSA deductions but withholds the standard deduction, and computes the AMT exemption with its phaseout, reduced by 25 cents per dollar of income above the phaseout floor. Both systems are computed in full and the higher liability wins, which is how AMT actually works.
+
+* **The foreign earned income exclusion** is backed out of the bracket calculation with the same subtraction trick, so excluded dollars aren't taxed at their own bracket but still push your remaining income upward through the brackets. The standard deduction is then applied in an FEIE-aware way so it doesn't reduce dollars that were already excluded.
+
+### Employment tax and NIIT
+
+* **Social Security** on earned income up to the annual wage base cap.
+* **Medicare** at the base rate on all earned income, plus the Additional Medicare Tax surtax above the threshold.
+* **401(k), IRA, and HSA contributions do not reduce FICA wages.** This is a rule people routinely get wrong in their own spreadsheets, and it's why your payroll tax doesn't fall when you max your 401(k).
+* **Net Investment Income Tax** on the lesser of net investment income or the amount by which MAGI exceeds the threshold, which is the statutory formula rather than a flat surcharge on investment income.
+
+### Scenarios
+
+A scenario is one hypothetical tax year: income line items, retirement contributions, capital gains, dividends, AMT adjustments, and tax already paid. You define as many as you want, side by side in one file, and compare them. That's the "what if I contribute more to my 401(k)" or "what if I realize these gains this year instead of next" question, answered against real rules rather than a rule of thumb.
+
+Contributions are validated against that year's statutory limits, so the tool tells you when a scenario is over the 401(k) cap, and also when you're leaving contribution room on the table.
+
+### Portfolio and net worth
+
+The tax engine came first. This side grew around it in late 2020 and early 2021.
+
+* **Assets** are bank accounts (balance, interest rate) and stock positions (quantity, price), each carrying arbitrary tags you define: broker, domestic versus international, whatever you want to slice by. Tags can have allowed values, defaults, and be marked required.
+
+* **A small filter language** composes those tags. A leaf filter matches a tag/value pair, `all` intersects, `any` unions, and a filter can embed another filter by name, with cycle detection at parse time. Filters are named and reusable, so `domesticBankAssets` is a thing you define once and reference everywhere.
+
+* **Target allocation** is expressed as a ratio between two filters, numerator over denominator, where the denominator defaults to the whole portfolio. That's what lets you say "international should be 30% of everything" and "cash should be 1% of domestic holdings" in the same file. The output table shows current versus target percentage, the exact dollar amount to move to correct it, and a drift status.
+
+* **Net worth history** is a series of dated asset snapshots at whatever cadence you record them.
+
+* **Projections** take the values from your most recent snapshot and run them 30 years forward on a monthly compounding step. They're built from discrete dated changes rather than a returns model: "sell half the Bitcoin in one year, the rest a year later," written with relative dates like `+3y` or absolute ones. Scenarios inherit from each other through a `base` field, so you can chain sequential decisions without restating the earlier ones, and the deserializer unrolls the inheritance chain with cycle detection.
+
+What it deliberately doesn't do
+------------------------------
+Some of this is scope I chose. Some of it is unfinished. Either way it's better stated than discovered.
+
+* **One filing status at a time.** There's no filing-status concept in the code. The constants file holds one set of numbers per year, and the bundled example is filled in with single-filer values. Switching means editing the constants.
+* **No state income tax.** Federal only.
+* **No itemized deductions.** Standard deduction only, so no SALT, mortgage interest, or charitable deductions.
+* **No credits of any kind.** This computes tax owed before credits.
+* **No self-employment tax**, no capital loss carryovers, no AMT foreign tax credit.
+* **The foreign-earned-income fraction is self-reported.** The tool doesn't run the physical presence or bona fide residence day counts for you. You assert the fraction and it applies the exclusion.
+* **Projections only compound bank account interest.** Stock growth is an unimplemented stub, and the `defaultAnnualGrowth` field in `projections.yml` is parsed but never applied. Projected equity holdings stay flat.
+* **Projections are anchored to the day you run them, not to your last snapshot date.** Starting values come from your most recent recorded snapshot, but the 30-year date grid starts from today. If that snapshot is six months stale, its numbers get treated as current.
+* **Money is `double`, not `BigDecimal`, inside the bracket engine.** Fine for estimation, wrong for anything requiring exactness.
+
+On net worth: I now use [ProjectionLab](https://projectionlab.com/) for this, and it's excellent. Its projection modelling is far beyond what's here, and it doesn't ask me to hand-write YAML for every position. I stopped building this half of Wealthdraft once I found a tool that had already solved it properly. What I kept is the tax engine, which I still run every month.
+
+Why the configuration is YAML in a git repo
+-------------------------------------------
+The payoff is scenario history. When I model a decision in March and revisit it in September, the March assumptions are still in the repo exactly as I wrote them, and a diff shows which input moved and what it did to the output. Speculative what-ifs live on a branch until they stop being speculative. When the IRS numbers change, the new year's constants arrive as a commit rather than an overwrite, so last year's calculation still reproduces.
+
+The cost is real. It's a lot of manual data entry, which is precisely why the net-worth side lost to a purpose-built tool while the tax side didn't. Tax inputs change a handful of times a year. Portfolio positions change constantly.
+
+Design notes
+------------
+Written for Java 11, built with Gradle.
+
+* **`ValOrGerr<T>`** is a hand-rolled Result type used instead of exceptions for expected failures, so that one malformed projection scenario reports itself while the other scenarios still parse. It carries an error chain with originating stack frames, modelled on Palantir's Go `stacktrace` library. The code carries a `TODO` questioning whether this was the right call in a language that has exceptions. I'd probably agree with that TODO now.
+* **[Immutables](https://immutables.github.io/)** generates the value types, with `@Value.Check` validators enforcing invariants at construction: bracket floors are unique, ratios fall within `[0,1]`, history dates aren't in the future.
+* **Custom Jackson deserializers** handle the parts that don't map cleanly onto types: tagged asset definitions, the filter language's structural type deduction, and the projection scenario inheritance unroller.
+* **67 unit tests** cover the tax calculators, filters, allocation math, and deserializers.
+* **CircleCI** builds every branch push outside `master` and `develop`, and publishes a fat JAR to GitHub Releases when a semver tag is pushed.
 
 Usage
 -----
-### Quickstart
-1. Download the latest version of the binary from [the releases page](https://github.com/mieubrisse/wealthdraft/releases)
-2. Copy all the files in `src/test/resources/examples` to your local machine
-3. Modify them as you please
-4. Run `java -jar wealthdraft-X.Y.Z.jar --help` to view which flags to pass in
+### Prerequisites
+
+Java 11 or later.
+
+### Running it
+
+1. Download the latest JAR from [the releases page](https://github.com/mieubrisse/wealthdraft/releases).
+2. Copy the seven example files from `src/test/resources/examples/` somewhere private and edit them to describe your own situation.
+3. Run it, passing all seven files:
+
+```bash
+java -jar wealthdraft-X.Y.Z.jar \
+  --gov-constants gov-constants.yml \
+  --scenarios scenarios.yml \
+  --assets assets.yml \
+  --assets-history assets-history.yml \
+  --projections projections.yml \
+  --asset-allocations asset-allocations.yml \
+  --filters filters.yml
+```
+
+All seven are required. Add `--all` to render past-year scenarios as well as current and future ones, and `--log-level` to control verbosity. Run with `--help` for the full flag list.
+
+The `gov-constants.yml` file holds the statutory numbers for each tax year: brackets, exemptions, contribution limits, wage bases. Adding a new tax year means appending a new top-level block with that year's figures, and each year is self-contained. If you model a future year you don't have constants for, the tool falls back to the most recent year available and logs that it did so.
 
 ### Development
-For easy development, the CLI can be run with the `scripts/build_and_run.sh` script, where any arguments to the script are passed to the CLI. With no arguments, the files in the `src/test/resources/examples` directory will be used. To use your own files, run `build_and_run.sh --help` to see the flags you'll need for overriding these test files with your own.
 
-### Building a binary
-`./gradlew jar` will create a standalone JAR in the `build/libs` directory that can be transferred and used on other machines. This fat JAR can be executed with `java -jar wealthdraft.jar --help` to see usage information.
+`./scripts/build_and_run.sh` builds and runs against the bundled examples. Any arguments are passed through to the CLI.
 
-TODO
-----
-See [the issues page](https://github.com/mieubrisse/wealthdraft/issues)
+```bash
+./gradlew jar     # fat JAR in build/libs/
+./gradlew test    # run the test suite
+```
+
+Releases are cut by pushing a semver tag (`X.Y.Z`), which triggers CircleCI to build and publish the JAR.
+
+Project status
+--------------
+Actively used, sparingly developed. Roughly 300 commits since October 2020, concentrated in three bursts: the tax engine in October 2020, the net worth and projection subsystems that December, and asset allocation the following January. Since then it gets touched when my own situation demands something new, like tracking tax already paid in 2022, HSA deductions in 2024, and a net income summary in 2025.
+
+I run it every month. Open items live on [the issues page](https://github.com/mieubrisse/wealthdraft/issues).
+
+---
+
+*This is a personal tool I built to understand my own taxes. It is not tax advice and not a substitute for a professional. Don't file on it.*
